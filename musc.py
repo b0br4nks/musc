@@ -34,7 +34,7 @@ def dump():
 def simulate_program(program):
     stack = []
     for op in program:
-        assert COUNT_OPS == 4, "[!] exhaustive handling of operations in simulation"
+        assert COUNT_OPS == 4, "[!] Exhaustive handling of operations in simulation"
         if op[0] == OP_PUSH:
             stack.append(op[1])
         elif op[0] == OP_PLUS:
@@ -92,7 +92,7 @@ def compile_program(program, out_file_path):
         out.write("_start:\n")
 
         for op in program:
-            assert COUNT_OPS == 4, "[!] exhaustive handling of operations in compilation!"
+            assert COUNT_OPS == 4, "[!] Exhaustive handling of operations in compilation!"
             if op[0] == OP_PUSH:
                 out.write("    ;; -- push %d --\n" % op[1])
                 out.write("    push %d\n" % op[1])
@@ -120,7 +120,7 @@ def compile_program(program, out_file_path):
         out.write("    syscall\n")
 
 def parse_word_as_op(word):
-    assert COUNT_OPS == 4, "[!] exhaustive op handling in parse_word_as_op"
+    assert COUNT_OPS == 4, "[!] Exhaustive op handling in parse_word_as_op"
     if word == '+':
         return plus()
     elif word == '-':
@@ -139,8 +139,8 @@ def call_cmd(cmd):
     subprocess.call(cmd)
 
 def usage(compiler_name):
-    print("\033[00;34mUsage:\033[00m %s <SUBCOMMAND> [ARGS]" % compiler_name)
-    print("\033[00;34mSUBCOMMANDS:\033[00m")
+    print(f"\033[00;36mUsage:\033[00m {compiler_name} <SUBCOMMAND> [ARGS]")
+    print("\033[00;36mSUBCOMMANDS:\033[00m")
     print("    simulate,--s [file]      Simulate the program")
     print("    compile, --c [file]      Compile the program")
     print("    help,    --h             Print help to STDOUT and exit 0")
@@ -151,14 +151,14 @@ if __name__ == "__main__":
     compiler_name, *argv = argv
     if len(argv) < 1:
         usage(compiler_name)
-        print("\033[00;31m[!] ERROR:\033[00m no subcommand is provided")
+        print("\033[00;31m[ERROR]\033[00m No subcommand is provided")
         exit(1)
     subcommand, *argv = argv
 
     if subcommand in ["simulate","--s"]:
         if len(argv) < 1:
             usage(compiler_name)
-            print("\033[00;31m[!] ERROR:\033[00m no input file is provided")
+            print("\033[00;31m[ERROR]\033[00m No input file is provided")
             exit(1)
         program_path, *argv = argv
         program = load_program_from_file(program_path)
@@ -167,7 +167,7 @@ if __name__ == "__main__":
     elif subcommand in ["compile","--c"]:
         if len(argv) < 1:
             usage(compiler_name)
-            print("\033[00;31m[!] ERROR:\033[00m no input file is provided")
+            print("\033[00;31m[ERROR]\033[00m No input file is provided")
             exit(1)
         program_path, *argv = argv
         program = load_program_from_file(program_path)
@@ -175,6 +175,7 @@ if __name__ == "__main__":
         basename = path.basename(program_path)
         if basename.endswith(musc_ext):
             basename = basename[:-len(musc_ext)]
+        print(f"\033[00;36m[INFO]\033[00m Generating {basename}.asm")
         compile_program(program, basename + ".asm")
         call_cmd(["nasm", "-felf64", basename + ".asm"])
         call_cmd(["ld", "-o", basename, basename + ".o"])
@@ -183,5 +184,5 @@ if __name__ == "__main__":
         exit(0)
     else:
         usage(compiler_name)
-        print("\033[00;31m[!] ERROR:\033[00m unkown subcommand %s" % (subcommand))
+        print(f"\033[00;31m[ERROR]\033[00m Unkown subcommand '{subcommand}'")
         exit(1)
