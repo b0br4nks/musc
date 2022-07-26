@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import subprocess
+import shlex
 from os import path
 
 subscript_counter=0
@@ -134,15 +135,15 @@ def load_program_from_file(file_path):
     with open(file_path, "r") as f:
        return [parse_word_as_op(word) for word in f.read().split()]
 
-def call_cmd(cmd):
-    print(cmd)
+def call_echoed(cmd):
+    print("\033[00;36m[CMD]\033[00m %s" % " ".join(map(shlex.quote, cmd)))
     subprocess.call(cmd)
 
 def usage(compiler_name):
     print(f"\033[00;36mUsage:\033[00m {compiler_name} <SUBCOMMAND> [ARGS]")
     print("\033[00;36mSUBCOMMANDS:\033[00m")
-    print("    simulate,--s [file]      Simulate the program")
-    print("    compile, --c [file]      Compile the program")
+    print("    simulate,--s <file>      Simulate the program")
+    print("    compile, --c <file>      Compile the program")
     print("    help,    --h             Print help to STDOUT and exit 0")
 
 if __name__ == "__main__":
@@ -177,8 +178,8 @@ if __name__ == "__main__":
             basename = basename[:-len(musc_ext)]
         print(f"\033[00;36m[INFO]\033[00m Generating {basename}.asm")
         compile_program(program, basename + ".asm")
-        call_cmd(["nasm", "-felf64", basename + ".asm"])
-        call_cmd(["ld", "-o", basename, basename + ".o"])
+        call_echoed(["nasm", "-felf64", basename + ".asm"])
+        call_echoed(["ld", "-o", basename, basename + ".o"])
     elif subcommand in ["help","--h"]:
         usage(compiler_name)
         exit(0)
