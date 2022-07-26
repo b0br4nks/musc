@@ -22,6 +22,7 @@ OP_DUMP=subscript()
 OP_IF=subscript()
 OP_END=subscript()
 OP_ELSE=subscript()
+OP_DUPL=subscript()
 COUNT_OPS=subscript()
 
 def push(x) -> tuple:
@@ -48,11 +49,14 @@ def end() -> tuple:
 def elze() -> tuple:
     return (OP_ELSE, ) # (else)
 
+def dupl():
+    return (OP_DUPL, ) # (::)
+
 def simulate_program(program):
     stack = []
     ip = 0
     while ip < len(program):
-        assert COUNT_OPS == 8, "Exhaustive handling of operations in simulation"
+        assert COUNT_OPS == 9, "Exhaustive handling of operations in simulation"
         op = program[ip]
         if op[0] == OP_PUSH:
             stack.append(op[1])
@@ -87,6 +91,11 @@ def simulate_program(program):
         elif op[0] == OP_DUMP:
             a = stack.pop()
             print(a)
+            ip += 1
+        elif op[0] == OP_DUPL:
+            a = stack.pop()
+            stack.append(a)
+            stack.append(a)
             ip += 1
         else:
             assert False, "unreachable"
@@ -133,7 +142,7 @@ def compile_program(program, out_file_path):
 
         for ip in range(len(program)):
             op = program[ip]
-            assert COUNT_OPS == 8, "Exhaustive handling of operations in compilation!"
+            assert COUNT_OPS == 9, "Exhaustive handling of operations in compilation!"
             if op[0] == OP_PUSH:
                 out.write("    ;; -- push %d --\n" % op[1])
                 out.write("    push %d\n" % op[1])
@@ -175,6 +184,11 @@ def compile_program(program, out_file_path):
                 out.write("addr_%d:\n" % (ip + 1))
             elif op[0] == OP_END:
                 out.write("addr_%d:\n" % ip)
+            elif op[0] == OP_DUPL:
+                out.write("    ;; -- dupl --\n")
+                out.write("    pop rax\n")
+                out.write("    push rax\n")
+                out.write("    push rax\n")
             else:
                 assert False, "unreachable"
 
@@ -184,7 +198,7 @@ def compile_program(program, out_file_path):
 
 def parse_token_as_op(token):
     (file_path, row, col, word) = token
-    assert COUNT_OPS == 8, "Exhaustive op handling in parse_token_as_op"
+    assert COUNT_OPS == 9, "Exhaustive op handling in parse_token_as_op"
     if word == '+':
         return plus()
     elif word == '-':
@@ -199,6 +213,8 @@ def parse_token_as_op(token):
         return end()
     elif word == 'else':
         return elze()
+    elif word == '::':
+        return dupl()
     else:
         try:
             return push(int(word))
@@ -210,7 +226,7 @@ def crossreference_blocks(program):
     stack = []
     for ip in range(len(program)):
         op = program[ip]
-        assert COUNT_OPS == 8, "Exhaustive handling of ops in crossreference_program. Keep in mind that not all of the ops need to be handled in here. Only those that form blocks."
+        assert COUNT_OPS == 9, "Exhaustive handling of ops in crossreference_program. Keep in mind that not all of the ops need to be handled in here. Only those that form blocks."
         if op[0] == OP_IF:
             stack.append(ip)
         elif op[0] == OP_ELSE:
