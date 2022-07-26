@@ -81,6 +81,7 @@ def simulate_program(program):
                 ip += 1
         elif op[0] == OP_ELSE:
             assert len(op) >= 2, "'else' instruction does not have a reference to the end of its block. Please call crossreference_blocks() on the program before trying to simulate it"
+            ip = op[1]
         elif op[0] == OP_END:
             ip += 1
         elif op[0] == OP_DUMP:
@@ -253,9 +254,9 @@ def call_echoed(cmd):
 def usage(compiler_name):
     print(f"\033[00;36mUsage:\033[00m {compiler_name} <SUBCOMMAND> [ARGS]")
     print("\033[00;36mSUBCOMMANDS:\033[00m")
-    print("    simulate, --s <file>      Simulate the program")
-    print("    compile,  --c <file>      Compile the program")
-    print("    help,     --h             Print help to STDOUT and exit 0")
+    print("    simulate, -s <file>      Simulate the program")
+    print("    compile,  -c <file>      Compile the program")
+    print("    help,     -h             Print help to STDOUT and exit 0")
 
 if __name__ == "__main__":
     argv = sys.argv
@@ -267,7 +268,7 @@ if __name__ == "__main__":
         exit(1)
     subcommand, *argv = argv
 
-    if subcommand in ["simulate","--s"]:
+    if subcommand in ["simulate","-s"]:
         if len(argv) < 1:
             usage(compiler_name)
             print("\033[00;31m[ERROR]\033[00m No input file is provided")
@@ -275,7 +276,7 @@ if __name__ == "__main__":
         program_path, *argv = argv
         program = load_program_from_file(program_path)
         simulate_program(program)
-    elif subcommand in ["compile","--c"]:
+    elif subcommand in ["compile","-c"]:
         if len(argv) < 1:
             usage(compiler_name)
             print("\033[00;31m[ERROR]\033[00m No input file is provided")
@@ -290,7 +291,7 @@ if __name__ == "__main__":
         compile_program(program, basename + ".asm")
         call_echoed(["nasm", "-felf64", basename + ".asm"])
         call_echoed(["ld", "-o", basename, basename + ".o"])
-    elif subcommand in ["help","--h"]:
+    elif subcommand in ["help","-h"]:
         usage(compiler_name)
         exit(0)
     else:
