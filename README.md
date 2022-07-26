@@ -3,11 +3,9 @@
  <img width="200" src="dist/musc_logo.svg">
 </p>
 <h1>The Musc Programming Language</h1>
-
-[Roadmap](#roadmap) | [Usage](#usage) | [Example](Example) | [Example](Example) | [Example](Example)
 </div>
 
-**The development of this language is in progress!**
+<center>**The development of this language is in progress!**</center>
 
 ## Roadmap
 * [x] Compiled ([Compiled language](https://en.wikipedia.org/wiki/Compiled_language))
