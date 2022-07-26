@@ -113,7 +113,7 @@ push(int(a > b))
 ```
 b = pop()
 a = pop()
-push(int(a > b))
+push(int(a < b))
 ```
 
 ### Arithmetics
