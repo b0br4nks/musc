@@ -179,7 +179,7 @@ def compile_program(program, out_file_path):
 
         for ip in range(len(program)):
             op = program[ip]
-            assert COUNT_OPS == 12, "Exhaustive handling of operations in compilation!"
+            assert COUNT_OPS == 13, "Exhaustive handling of operations in compilation!"
             out.write("addr_%d:\n" % ip)
             if op[0] == OP_PUSH:
                 out.write("    ;; -- push %d --\n" % op[1])
@@ -386,7 +386,7 @@ if __name__ == "__main__":
             exit(1)
         program_path, *argv = argv
         program = load_program_from_file(program_path)
-        musc_ext = ".mxc"
+        musc_ext = ".musc"
         basename = path.basename(program_path)
         if basename.endswith(musc_ext):
             basename = basename[:-len(musc_ext)]
