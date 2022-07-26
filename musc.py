@@ -234,9 +234,9 @@ def call_echoed(cmd):
 def usage(compiler_name):
     print(f"\033[00;36mUsage:\033[00m {compiler_name} <SUBCOMMAND> [ARGS]")
     print("\033[00;36mSUBCOMMANDS:\033[00m")
-    print("    simulate,--s <file>      Simulate the program")
-    print("    compile, --c <file>      Compile the program")
-    print("    help,    --h             Print help to STDOUT and exit 0")
+    print("    simulate, --s <file>      Simulate the program")
+    print("    compile,  --c <file>      Compile the program")
+    print("    help,     --h             Print help to STDOUT and exit 0")
 
 if __name__ == "__main__":
     argv = sys.argv
