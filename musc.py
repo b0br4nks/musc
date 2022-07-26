@@ -21,6 +21,7 @@ OP_EQUAL=subscript()
 OP_DUMP=subscript()
 OP_IF=subscript()
 OP_END=subscript()
+OP_ELSE=subscript()
 COUNT_OPS=subscript()
 
 def push(x) -> tuple:
@@ -44,11 +45,14 @@ def iff() -> tuple:
 def end() -> tuple:
     return (OP_END, ) # (end)
 
+def elze() -> tuple:
+    return (OP_ELSE, ) # (else)
+
 def simulate_program(program):
     stack = []
     ip = 0
     while ip < len(program):
-        assert COUNT_OPS == 7, "Exhaustive handling of operations in simulation"
+        assert COUNT_OPS == 8, "Exhaustive handling of operations in simulation"
         op = program[ip]
         if op[0] == OP_PUSH:
             stack.append(op[1])
@@ -75,6 +79,8 @@ def simulate_program(program):
                 ip = op[1]
             else:
                 ip += 1
+        elif op[0] == OP_ELSE:
+            assert len(op) >= 2, "'else' instruction does not have a reference to the end of its block. Please call crossreference_blocks() on the program before trying to simulate it"
         elif op[0] == OP_END:
             ip += 1
         elif op[0] == OP_DUMP:
@@ -126,7 +132,7 @@ def compile_program(program, out_file_path):
 
         for ip in range(len(program)):
             op = program[ip]
-            assert COUNT_OPS == 7, "Exhaustive handling of operations in compilation!"
+            assert COUNT_OPS == 8, "Exhaustive handling of operations in compilation!"
             if op[0] == OP_PUSH:
                 out.write("    ;; -- push %d --\n" % op[1])
                 out.write("    push %d\n" % op[1])
@@ -161,6 +167,11 @@ def compile_program(program, out_file_path):
                 out.write("    test rax, rax\n")
                 assert len(op) >= 2, "'if' instruction does not have a reference to the end of its block. Please call crossreference_blocks() on the program before trying to compile it"
                 out.write("    jz addr_%d\n" % op[1])
+            elif op[0] == OP_ELSE:
+                out.write("    ;; -- else --\n")
+                assert len(op) >= 2, "'else' instruction does not have a reference to the end of its block. Please call crossreference_blocks() on the program before trying to compile it"
+                out.write("    jmp addr_%d\n\n" % op[1])
+                out.write("addr_%d:\n" % (ip + 1))
             elif op[0] == OP_END:
                 out.write("addr_%d:\n" % ip)
             else:
@@ -172,7 +183,7 @@ def compile_program(program, out_file_path):
 
 def parse_token_as_op(token):
     (file_path, row, col, word) = token
-    assert COUNT_OPS == 7, "Exhaustive op handling in parse_token_as_op"
+    assert COUNT_OPS == 8, "Exhaustive op handling in parse_token_as_op"
     if word == '+':
         return plus()
     elif word == '-':
@@ -185,26 +196,34 @@ def parse_token_as_op(token):
         return iff()
     elif word == 'end':
         return end()
+    elif word == 'else':
+        return elze()
     else:
         try:
             return push(int(word))
         except ValueError as err:
-            print(f"{file_path}:{row}:{col}:{err}")
+            print(f"{file_path}:{row}:{col}: {err}")
             exit(1)
 
 def crossreference_blocks(program):
     stack = []
     for ip in range(len(program)):
         op = program[ip]
-        assert COUNT_OPS == 7, "Exhaustive handling of ops in crossreference_program. Keep in mind that not all of the ops need to be handled in here. Only those that form blocks."
+        assert COUNT_OPS == 8, "Exhaustive handling of ops in crossreference_program. Keep in mind that not all of the ops need to be handled in here. Only those that form blocks."
         if op[0] == OP_IF:
             stack.append(ip)
-        elif op[0] == OP_END:
+        elif op[0] == OP_ELSE:
             if_ip = stack.pop()
-            assert program[if_ip][0] == OP_IF, "End can only close if blocks for now"
-            program[if_ip] = (OP_IF, ip)
+            assert program[if_ip][0] == OP_IF, "'else' can only be used in 'if'-blocks"
+            program[if_ip] = (OP_IF, ip + 1)
+            stack.append(ip)
+        elif op[0] == OP_END:
+            block_ip = stack.pop()
+            if program[block_ip][0] == OP_IF or program[block_ip][0] == OP_ELSE:
+                program[block_ip] = (program[block_ip][0], ip)
+            else:
+                assert False, "'end' can only close 'if-else' blocks for now"
     return program
-
 
 def find_col(line, start, predicate) -> int:
     while start < len(line) and not predicate(line[start]):
@@ -256,7 +275,6 @@ if __name__ == "__main__":
         program_path, *argv = argv
         program = load_program_from_file(program_path)
         simulate_program(program)
-
     elif subcommand in ["compile","--c"]:
         if len(argv) < 1:
             usage(compiler_name)
