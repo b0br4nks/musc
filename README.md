@@ -27,7 +27,7 @@ SUBCOMMANDS:
     help,     --h             Print help to STDOUT and exit 0
     
 $ ./musc.py --c <path/to/file.mxc>
-$ ./output
+$ ./<file>
 ```
 Or simply:
 ```console
