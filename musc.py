@@ -24,6 +24,8 @@ OP_END=subscript()
 OP_ELSE=subscript()
 OP_DUPL=subscript()
 OP_GT=subscript()
+OP_WHILE=subscript()
+OP_DO=subscript()
 COUNT_OPS=subscript()
 
 def push(x) -> tuple:
@@ -55,6 +57,12 @@ def dupl():
 
 def gt():
     return (OP_GT, ) # (>)
+
+def whyle():
+    return (OP_WHILE, ) # (while)
+
+def dou():
+    return (OP_DO, ) # (do)
 
 def simulate_program(program):
     stack = []
