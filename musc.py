@@ -19,6 +19,8 @@ OP_PLUS=subscript()
 OP_MINUS=subscript()
 OP_EQUAL=subscript()
 OP_DUMP=subscript()
+OP_IF=subscript()
+OP_END=subscript()
 COUNT_OPS=subscript()
 
 def push(x) -> tuple:
@@ -34,29 +36,51 @@ def equal() -> tuple:
     return (OP_EQUAL, ) # (=)
 
 def dump() -> tuple:
-    return (OP_DUMP, ) # get content
+    return (OP_DUMP, ) # (=>)
+
+def iff() -> tuple:
+    return (OP_IF, ) # (if)
+
+def end() -> tuple:
+    return (OP_END, ) # (end)
 
 def simulate_program(program):
     stack = []
-    for op in program:
-        assert COUNT_OPS == 5, "[!] Exhaustive handling of operations in simulation"
+    ip = 0
+    while ip < len(program):
+        assert COUNT_OPS == 7, "Exhaustive handling of operations in simulation"
+        op = program[ip]
         if op[0] == OP_PUSH:
             stack.append(op[1])
+            ip += 1
         elif op[0] == OP_PLUS:
             a = stack.pop()
             b = stack.pop()
             stack.append(a + b)
+            ip += 1
         elif op[0] == OP_MINUS:
             a = stack.pop()
             b = stack.pop()
             stack.append(b - a)
+            ip += 1
         elif op[0] == OP_EQUAL:
             a = stack.pop()
             b = stack.pop()
             stack.append(int(a == b))
+            ip += 1
+        elif op[0] == OP_IF:
+            a = stack.pop()
+            if a == 0:
+                assert len(op) >= 2, "'if' instruction does not have a reference to the end of its block. Please call crossreference_blocks() on the program before trying to simulate it"
+                ip = op[1]
+            else:
+                ip += 1
+        elif op[0] == OP_END:
+            ip += 1
         elif op[0] == OP_DUMP:
             a = stack.pop()
             print(a)
+            ip += 1
         else:
             assert False, "unreachable"
 
@@ -100,8 +124,9 @@ def compile_program(program, out_file_path):
         out.write("global _start\n")
         out.write("_start:\n")
 
-        for op in program:
-            assert COUNT_OPS == 5, "[!] Exhaustive handling of operations in compilation!"
+        for ip in range(len(program)):
+            op = program[ip]
+            assert COUNT_OPS == 7, "Exhaustive handling of operations in compilation!"
             if op[0] == OP_PUSH:
                 out.write("    ;; -- push %d --\n" % op[1])
                 out.write("    push %d\n" % op[1])
@@ -117,6 +142,10 @@ def compile_program(program, out_file_path):
                 out.write("    pop rbx\n")
                 out.write("    sub rbx, rax\n")
                 out.write("    push rbx\n")
+            elif op[0] == OP_DUMP:
+                out.write("    ;; -- dump --\n")
+                out.write("    pop rdi\n")
+                out.write("    call dump\n")
             elif op[0] == OP_EQUAL:
                 out.write("    ;; -- equal --\n")
                 out.write("    mov rcx, 0\n")
@@ -125,10 +154,15 @@ def compile_program(program, out_file_path):
                 out.write("    pop rbx\n")
                 out.write("    cmp rax, rbx\n")
                 out.write("    cmove rcx, rdx\n")
-            elif op[0] == OP_DUMP:
-                out.write("    ;; -- dump --\n")
-                out.write("    pop rdi\n")
-                out.write("    call dump\n")
+                out.write("    push rcx\n")
+            elif op[0] == OP_IF:
+                out.write("    ;; -- if --\n")
+                out.write("    pop rax\n")
+                out.write("    test rax, rax\n")
+                assert len(op) >= 2, "'if' instruction does not have a reference to the end of its block. Please call crossreference_blocks() on the program before trying to compile it"
+                out.write("    jz addr_%d\n" % op[1])
+            elif op[0] == OP_END:
+                out.write("addr_%d:\n" % ip)
             else:
                 assert False, "unreachable"
 
@@ -138,7 +172,7 @@ def compile_program(program, out_file_path):
 
 def parse_token_as_op(token):
     (file_path, row, col, word) = token
-    assert COUNT_OPS == 5, "[!] Exhaustive op handling in parse_token_as_op"
+    assert COUNT_OPS == 7, "Exhaustive op handling in parse_token_as_op"
     if word == '+':
         return plus()
     elif word == '-':
@@ -147,12 +181,30 @@ def parse_token_as_op(token):
         return dump()
     elif word == '=':
         return equal()
+    elif word == 'if':
+        return iff()
+    elif word == 'end':
+        return end()
     else:
         try:
             return push(int(word))
         except ValueError as err:
             print(f"{file_path}:{row}:{col}:{err}")
             exit(1)
+
+def crossreference_blocks(program):
+    stack = []
+    for ip in range(len(program)):
+        op = program[ip]
+        assert COUNT_OPS == 7, "Exhaustive handling of ops in crossreference_program. Keep in mind that not all of the ops need to be handled in here. Only those that form blocks."
+        if op[0] == OP_IF:
+            stack.append(ip)
+        elif op[0] == OP_END:
+            if_ip = stack.pop()
+            assert program[if_ip][0] == OP_IF, "End can only close if blocks for now"
+            program[if_ip] = (OP_IF, ip)
+    return program
+
 
 def find_col(line, start, predicate) -> int:
     while start < len(line) and not predicate(line[start]):
@@ -173,7 +225,7 @@ def lex_file(file_path):
                 for (col, token) in lex_line(line)]
 
 def load_program_from_file(file_path):
-    return [parse_token_as_op(token) for token in lex_file(file_path)]
+    return crossreference_blocks([parse_token_as_op(token) for token in lex_file(file_path)])
 
 def call_echoed(cmd):
     print("\033[00;36m[CMD]\033[00m %s" % " ".join(map(shlex.quote, cmd)))
