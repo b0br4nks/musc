@@ -10,10 +10,10 @@
 ## Usage
 ```console
 # Simulate the program
-$ ./musc.py -s
+$ ./musc.py -s <path/to/file.mxc>
 
 # Compile the program (Assembly code)
-$ ./musc.py -c
+$ ./musc.py -c <path/to/file.mxc>
 
 # Run the compiled program
 $ ./output

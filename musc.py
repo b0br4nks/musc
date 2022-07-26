@@ -33,7 +33,7 @@ def dump():
 def simulate_program(program):
     stack = []
     for op in program:
-        assert COUNT_OPS == 4, "Exhaustive handling of operations in simulation!"
+        assert COUNT_OPS == 4, "[!]     exhaustive handling of operations in simulation"
         if op[0] == OP_PUSH:
             stack.append(op[1])
         elif op[0] == OP_PLUS:
@@ -91,7 +91,7 @@ def compile_program(program, out_file_path):
         out.write("_start:\n")
 
         for op in program:
-            assert COUNT_OPS == 4, "Exhaustive handling of operations in compilation!"
+            assert COUNT_OPS == 4, "[!]     exhaustive handling of operations in compilation!"
             if op[0] == OP_PUSH:
                 out.write("    ;; -- push %d --\n" % op[1])
                 out.write("    push %d\n" % op[1])
@@ -118,39 +118,60 @@ def compile_program(program, out_file_path):
         out.write("    mov rdi, 0\n")
         out.write("    syscall\n")
 
-# TODO: SoC
-program = [
-    push(16), 
-    push(32), 
-    plus(),
-    dump(),
-    push(256),
-    push(128),
-    minus(),
-    dump()
-]
+def parse_word_as_op(word):
+    assert COUNT_OPS == 4, "[!]     exhaustive op handling in parse_word_as_op"
+    if word == '+':
+        return plus()
+    elif word == '-':
+        return minus()
+    elif word == '=>':
+        return dump()
+    else:
+        return push(int(word))
 
-def usage():
+def load_program_from_file(file_path):
+    with open(file_path, "r") as f:
+       return [parse_word_as_op(word) for word in f.read().split()]
+
+def usage(program):
     print("Usage: musc <SUBCOMMAND> [ARGS]")
     print("SUBCOMMANDS:")
-    print("    -s       Simulate the program")
-    print("    -c       Compile the program")
+    print("    -s <file>      Simulate the program")
+    print("    -c <file>      Compile the program")
 
 def call_cmd(cmd):
     print(cmd)
     subprocess.call(cmd)
 
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        usage()
-        print("ERROR: no subcommand is provided")
-        exit(1)
+def uncons(xs):
+    return (xs[0], xs[1:])
 
-    subcommand = sys.argv[1]
+if __name__ == "__main__":
+    argv = sys.argv
+    assert len(argv) >= 1
+    (program_name, argv) = uncons(argv)
+    if len(argv) < 1:
+        usage(program_name)
+        print("[!]      ERROR: no subcommand is provided")
+        exit(1)
+    (subcommand, argv) = uncons(argv)
 
     if subcommand == "-s":
+        if len(argv) < 1:
+            usage(program_name)
+            print("[!]      ERROR: no input file is provided")
+            exit(1)
+        (program_path, argv) = uncons(argv)
+        program = load_program_from_file(program_path)
         simulate_program(program)
+
     elif subcommand == "-c":
+        if len(argv) < 1:
+            usage(program_name)
+            print("[!]      ERROR: no input file is provided")
+            exit(1)
+        (program_path, argv) = uncons(argv)
+        program = load_program_from_file(program_path)
         compile_program(program, "output.asm")
         call_cmd(["nasm", "-felf64", "output.asm"])
         call_cmd(["ld", "-o", "output", "output.o"])
