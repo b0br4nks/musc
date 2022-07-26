@@ -24,6 +24,7 @@ OP_END=subscript()
 OP_ELSE=subscript()
 OP_DUPL=subscript()
 OP_GT=subscript()
+OP_LT=subscript()
 OP_WHILE=subscript()
 OP_DO=subscript()
 COUNT_OPS=subscript()
@@ -58,6 +59,9 @@ def dupl():
 def gt():
     return (OP_GT, ) # (>)
 
+def lt():
+    return (OP_LT, ) # (<)
+
 def whyle():
     return (OP_WHILE, ) # (while)
 
@@ -68,7 +72,7 @@ def simulate_program(program):
     stack = []
     ip = 0
     while ip < len(program):
-        assert COUNT_OPS == 12, "Exhaustive handling of operations in simulation"
+        assert COUNT_OPS == 13, "Exhaustive handling of operations in simulation"
         op = program[ip]
         if op[0] == OP_PUSH:
             stack.append(op[1])
@@ -114,6 +118,11 @@ def simulate_program(program):
             a = stack.pop()
             b = stack.pop()
             stack.append(int(a < b))
+            ip += 1
+        elif op[0] == OP_LT:
+            a = stack.pop()
+            b = stack.pop()
+            stack.append(int(a > b))
             ip += 1
         elif op[0] == OP_WHILE:
             ip += 1
@@ -229,6 +238,15 @@ def compile_program(program, out_file_path):
                 out.write("    cmp rax, rbx\n");
                 out.write("    cmovg rcx, rdx\n");
                 out.write("    push rcx\n")
+            elif op[0] == OP_LT:
+                out.write("    ;; -- gt --\n")
+                out.write("    mov rcx, 0\n");
+                out.write("    mov rdx, 1\n");
+                out.write("    pop rbx\n");
+                out.write("    pop rax\n");
+                out.write("    cmp rax, rbx\n");
+                out.write("    cmovl rcx, rdx\n");
+                out.write("    push rcx\n")
             elif op[0] == OP_WHILE:
                 out.write("    ;; -- while --\n")
             elif op[0] == OP_DO:
@@ -247,7 +265,7 @@ def compile_program(program, out_file_path):
 
 def parse_token_as_op(token):
     (file_path, row, col, word) = token
-    assert COUNT_OPS == 12, "Exhaustive op handling in parse_token_as_op"
+    assert COUNT_OPS == 13, "Exhaustive op handling in parse_token_as_op"
     if word == '+':
         return plus()
     elif word == '-':
@@ -266,6 +284,8 @@ def parse_token_as_op(token):
         return dupl()
     elif word == '>':
         return gt()
+    elif word == '<':
+        return lt()
     elif word == 'while':
         return whyle()
     elif word == 'do':
@@ -281,7 +301,7 @@ def crossreference_blocks(program):
     stack = []
     for ip in range(len(program)):
         op = program[ip]
-        assert COUNT_OPS == 12, "Exhaustive handling of ops in crossreference_program. Keep in mind that not all of the ops need to be handled in here. Only those that form blocks."
+        assert COUNT_OPS == 13, "Exhaustive handling of ops in crossreference_program. Keep in mind that not all of the ops need to be handled in here. Only those that form blocks."
         if op[0] == OP_IF:
             stack.append(ip)
         elif op[0] == OP_ELSE:
