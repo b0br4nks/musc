@@ -6,7 +6,7 @@ from os import path
 
 subscript_counter=0
 
-def subscript(reset=False):
+def subscript(reset=False) -> int:
     global subscript_counter
     if reset:
         subscript_counter = 0
@@ -17,25 +17,29 @@ def subscript(reset=False):
 OP_PUSH=subscript(True)
 OP_PLUS=subscript()
 OP_MINUS=subscript()
+OP_EQUAL=subscript()
 OP_DUMP=subscript()
 COUNT_OPS=subscript()
 
-def push(x):
+def push(x) -> tuple:
     return (OP_PUSH, x) # add new element onto stack
 
-def plus():
+def plus() -> tuple:
     return (OP_PLUS, ) # (+)
 
-def minus():
+def minus() -> tuple:
     return (OP_MINUS, ) # (-)
 
-def dump():
+def equal() -> tuple:
+    return (OP_EQUAL, ) # (=)
+
+def dump() -> tuple:
     return (OP_DUMP, ) # get content
 
 def simulate_program(program):
     stack = []
     for op in program:
-        assert COUNT_OPS == 4, "[!] Exhaustive handling of operations in simulation"
+        assert COUNT_OPS == 5, "[!] Exhaustive handling of operations in simulation"
         if op[0] == OP_PUSH:
             stack.append(op[1])
         elif op[0] == OP_PLUS:
@@ -46,6 +50,10 @@ def simulate_program(program):
             a = stack.pop()
             b = stack.pop()
             stack.append(b - a)
+        elif op[0] == OP_EQUAL:
+            a = stack.pop()
+            b = stack.pop()
+            stack.append(int(a == b))
         elif op[0] == OP_DUMP:
             a = stack.pop()
             print(a)
@@ -93,7 +101,7 @@ def compile_program(program, out_file_path):
         out.write("_start:\n")
 
         for op in program:
-            assert COUNT_OPS == 4, "[!] Exhaustive handling of operations in compilation!"
+            assert COUNT_OPS == 5, "[!] Exhaustive handling of operations in compilation!"
             if op[0] == OP_PUSH:
                 out.write("    ;; -- push %d --\n" % op[1])
                 out.write("    push %d\n" % op[1])
@@ -109,6 +117,14 @@ def compile_program(program, out_file_path):
                 out.write("    pop rbx\n")
                 out.write("    sub rbx, rax\n")
                 out.write("    push rbx\n")
+            elif op[0] == OP_EQUAL:
+                out.write("    ;; -- equal --\n")
+                out.write("    mov rcx, 0\n")
+                out.write("    mov rdx, 1\n")
+                out.write("    pop rax\n")
+                out.write("    pop rbx\n")
+                out.write("    cmp rax, rbx\n")
+                out.write("    cmove rcx, rdx\n")
             elif op[0] == OP_DUMP:
                 out.write("    ;; -- dump --\n")
                 out.write("    pop rdi\n")
@@ -122,13 +138,15 @@ def compile_program(program, out_file_path):
 
 def parse_token_as_op(token):
     (file_path, row, col, word) = token
-    assert COUNT_OPS == 4, "[!] Exhaustive op handling in parse_token_as_op"
+    assert COUNT_OPS == 5, "[!] Exhaustive op handling in parse_token_as_op"
     if word == '+':
         return plus()
     elif word == '-':
         return minus()
     elif word == '=>':
         return dump()
+    elif word == '=':
+        return equal()
     else:
         try:
             return push(int(word))
@@ -136,7 +154,7 @@ def parse_token_as_op(token):
             print(f"{file_path}:{row}:{col}:{err}")
             exit(1)
 
-def find_col(line, start, predicate):
+def find_col(line, start, predicate) -> int:
     while start < len(line) and not predicate(line[start]):
         start += 1
     return start
