@@ -46,11 +46,11 @@ SUBCOMMANDS:
 ### Simulation
 The simulation is an interpretation of the program
 ```console
-./musc.py -s program.musc
+$ ./musc.py -s program.musc
 ```
 
 ### Compilation
-The compilation generates assembly code and compiles it with [nasm](https://www.nasm.us/).
+The compilation generates assembly code, compiles it with [nasm](https://www.nasm.us/), and then links it with [GNU ld](https://www.gnu.org/software/binutils/). Both should be available in your `$PATH`.
 ```console
 $ ./musc.py -c program.musc
 $ ./program
