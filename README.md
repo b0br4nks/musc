@@ -47,9 +47,9 @@ $ ./musc.py -h
 
 Usage: ./musc.py <SUBCOMMAND> [ARGS]
 SUBCOMMANDS:
-    simulate, -s <file>      Simulate the program
-    compile,  -c <file>      Compile the program
-    help,     -h             Print help to STDOUT and exit 0
+    simulate, -s          <file>      Simulate the program
+    compile,  -c [-r run] <file>      Compile the program
+    help,     -h                      Print help to STDOUT and exit 0
 ```
 
 ### Simulation
