@@ -1,4 +1,12 @@
 #!/usr/bin/env python3
+
+# Program is a list of operations.
+# Op is a dict with the following possible fields:
+# - 'type' -- the type of the Op. {OP_PUSH, OP_PLUS, OP_MINUS, ...} defined bellow
+# - 'loc' -- location of the Op within a file. It's a tuple of 3 elements: `(file_path, row, col)`. `row` and `col` are 1-based indices.
+# - 'value' - optional field. Exists only for OP_PUSH. Contains the value that needs to be pushed onto the stack.
+# - 'jmp' -- optional field. Exists only for block Ops like `if`, `else`, `while`, etc. Contains an index of an Op within the Program that the execution has to jump to depending on the circumstantces. In case of `if` it's the place of else branch, in case of `else` it's the end of the construction, etc. The field is created during crossreference_blocks() step.
+
 import sys
 import subprocess
 import shlex
@@ -226,7 +234,7 @@ def compile_program(program, out_file_path):
 
 def parse_token_as_op(token):
     (file_path, row, col, word) = token
-    loc = (file_path, row, col)
+    loc = (file_path, row + 1, col + 1)
     assert COUNT_OPS == 13, "Exhaustive op handling in parse_token_as_op"
     if word == '+':
         return {'type': OP_PLUS, 'loc': loc}
@@ -256,7 +264,7 @@ def parse_token_as_op(token):
         try:
             return {'type': OP_PUSH, 'value': int(word), 'loc': loc}
         except ValueError as err:
-            print(f"{file_path}:{row}:{col}: {err}")
+            print(f"{loc}")
             exit(1)
 
 def crossreference_blocks(program):
@@ -268,7 +276,9 @@ def crossreference_blocks(program):
             stack.append(ip)
         elif op['type'] == OP_ELSE:
             if_ip = stack.pop()
-            assert program[if_ip]['type'] == OP_IF, "'else' can only be used in 'if'-blocks"
+            if program[if_ip]['type'] != OP_IF:
+                print(f"{program[if_ip]['loc']}: [ERROR] 'else' can only be used in 'if'-blocks")
+                exit(1)
             program[if_ip]['jmp'] = ip + 1
             stack.append(ip)
         elif op['type'] == OP_END:
@@ -281,7 +291,8 @@ def crossreference_blocks(program):
                 program[ip]['jmp'] = program[block_ip]['jmp']
                 program[block_ip]['jmp'] = ip + 1
             else:
-                assert False, "'end' can only close 'if', 'else' or 'do' blocks for now"
+                print(f"{program[block_ip]['loc']}: [ERROR] 'end' can only close 'if', 'else' or 'do' blocks for now")
+                exit(1)
         elif op['type'] == OP_WHILE:
             stack.append(ip)
         elif op['type'] == OP_DO:
@@ -289,7 +300,9 @@ def crossreference_blocks(program):
             program[ip]['jmp'] = while_ip
             stack.append(ip)
 
-    assert len(stack) == 0, "unclosed blocks" 
+    if len(stack) > 0:
+        print(f"{program[stack.pop()]['loc']}: [ERROR] unclosed block")
+        exit(1)
 
     return program
 
