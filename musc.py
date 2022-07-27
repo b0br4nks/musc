@@ -226,34 +226,35 @@ def compile_program(program, out_file_path):
 
 def parse_token_as_op(token):
     (file_path, row, col, word) = token
+    loc = (file_path, row, col)
     assert COUNT_OPS == 13, "Exhaustive op handling in parse_token_as_op"
     if word == '+':
-        return {'type': OP_PLUS}
+        return {'type': OP_PLUS, 'loc': loc}
     elif word == '-':
-        return {'type': OP_MINUS} 
+        return {'type': OP_MINUS, 'loc': loc} 
     elif word == '=>':
-        return {'type': OP_DUMP}
+        return {'type': OP_DUMP, 'loc': loc}
     elif word == '=':
-        return {'type': OP_EQUAL}
+        return {'type': OP_EQUAL, 'loc': loc}
     elif word == 'if':
-        return {'type': OP_IF}
+        return {'type': OP_IF, 'loc': loc}
     elif word == 'end':
-        return {'type': OP_END}
+        return {'type': OP_END, 'loc': loc}
     elif word == 'else':
-        return {'type': OP_ELSE}
+        return {'type': OP_ELSE, 'loc': loc}
     elif word == 'cp':
-        return {'type': OP_DUPL}
+        return {'type': OP_DUPL, 'loc': loc}
     elif word == '>':
-        return {'type': OP_GT}
+        return {'type': OP_GT, 'loc': loc}
     elif word == '<':
-        return {'type': OP_LT}
+        return {'type': OP_LT, 'loc': loc}
     elif word == 'while':
-        return {'type': OP_WHILE}
+        return {'type': OP_WHILE, 'loc': loc}
     elif word == 'do':
-        return {'type': OP_DO}
+        return {'type': OP_DO, 'loc': loc}
     else:
         try:
-            return {'type': OP_PUSH, 'value': int(word)}
+            return {'type': OP_PUSH, 'value': int(word), 'loc': loc}
         except ValueError as err:
             print(f"{file_path}:{row}:{col}: {err}")
             exit(1)
