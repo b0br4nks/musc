@@ -12,32 +12,36 @@
 A [stack-oriented language](https://en.wikipedia.org/wiki/Stack-oriented_programming) is one which primarily uses a stack, instead of (or in addition to) named variables, to manage data flow. This concept is closely related to that of [concatenative languages](https://en.wikipedia.org/wiki/Concatenative_programming_language), most of which are stack-based.
 
 ## Roadmap
-* [x] Compiled ([Compiled language](https://en.wikipedia.org/wiki/Compiled_language))
-* [x] Native ([Native](https://en.wikipedia.org/wiki/Native_%28computing%29))
-* [ ] Turing-complete ([Turing completeness](https://en.wikipedia.org/wiki/Turing_completeness))
-* [ ] Statically typed ([Static type checking](https://en.wikipedia.org/wiki/Type_system#Static_type_checking))
-* [ ] Self-hosted (Written in itself, no more Python. [Self-hosting](https://en.wikipedia.org/wiki/Self-hosting_(compilers)))
+<span style="color: green;">●</span> Compiled ([Compiled language](https://en.wikipedia.org/wiki/Compiled_language))
+
+<span style="color: green;">●</span> Native ([Native](https://en.wikipedia.org/wiki/Native_%28computing%29))
+
+<span style="color: red;">●</span> Turing-complete ([Turing completeness](https://en.wikipedia.org/wiki/Turing_completeness))
+
+<span style="color: red;">●</span> Statically typed ([Static type checking](https://en.wikipedia.org/wiki/Type_system#Static_type_checking))
+
+<span style="color: red;">●</span> Self-hosted (Written in itself, no more Python. [Self-hosting](https://en.wikipedia.org/wiki/Self-hosting_(compilers)))
 
 ## Example
 Two simple programs:
 - the first one prints numbers from 10 to 0 in descending order (multi-line example);
 - the second one prints numbers from 0 to 10 in ascending order (one line example);
 
+descending order
 ```musc
-first:
-
 10 while :: -1 > do
 	:: =>
 	1 -
 end
+```
 
-second:
-
+ascending order
+```
 0 while :: 11 < do :: => 1 + end
 ```
 
 ## Usage
-### Quick Start
+### Help
 ```console
 $ ./musc.py -h
 
@@ -47,6 +51,7 @@ SUBCOMMANDS:
     compile,  -c <file>      Compile the program
     help,     -h             Print help to STDOUT and exit 0
 ```
+
 ### Simulation
 The simulation is an interpretation of the program
 ```console
@@ -62,6 +67,7 @@ $ ./musc.py -s tests/01_arithmetics.musc
 
 ### Compilation
 The compilation generates assembly code, compiles it with [nasm](https://www.nasm.us/), and then links it with [GNU ld](https://www.gnu.org/software/binutils/). Both should be available in your `$PATH`.
+
 ```console
 $ cat tests/01_arithmetics.musc
 1 1 + =>
@@ -85,60 +91,65 @@ This is what the language supports so far.
 
 - `<integer>` - push the integer onto the stack. Right now the integer is anything that is parsable by [int](https://docs.python.org/3/library/functions.html#int) function.
 ```
-push(<integer>)
+a --> a
 ```
 - `::` - duplicate an element on top of the stack.
+
 ```
-a = pop()
-push(a)
-push(a)
+a --> a a
 ```
+
 - `=>` - print the element on top of the stack to stdout and remove it from the stack.
 ```
-a = pop()
-print(a)
+a b --> a
 ```
 
 ### Comparison
 
 - `=` - checks if two elements on top of the stack are equal. Removes the elements from the stack and pushes `1` if they are equal and `0` if they are not.
 ```
-a = pop()
-b = pop()
-push(int(a == b))
+[a: int] [b: int] --> [a == b : bool]
 ```
 - `>` - applies the greater comparison on top two elements.
 ```
-b = pop()
-a = pop()
-push(int(a > b))
+[a: int] [b: int] --> [a > b  : bool]
 ```
 - `<` - applies the less comparison on top two elements.
 ```
-b = pop()
-a = pop()
-push(int(a < b))
+[a: int] [b: int] --> [a < b  : bool]
 ```
 
 ### Arithmetics
 
 - `+` - sums up two elements on the top of the stack.
 ```
-a = pop()
-b = pop()
-push(a + b)
+[a: int] [b: int] --> [a + b: int]
 ```
 - `-` - subtracts the top of the stack from the element below.
 ```
-a = pop()
-b = pop()
-push(b - a)
+[a: int] [b: int] --> [a - b: int]
 ```
 
 ### Control Flow
 
-- `if <if-branch> else <else-branch> end` - pops the element on top of the stack and if the element is not `0` executes the `<if-branch>`, otherwise `<else-branch>`.
-- `while <condition> do <body> end` - keeps executing both `<condition>` and `<body>` until `<condition>` produces `0` at the top of the stack. Checking the result of the `<codition>` removes it from the stack.
+#### if-else condition
+
+```
+<condition> if
+    <body>
+else <condition> if
+    <body>
+else
+    <body>
+end
+```
+#### while loop
+
+```
+while <condition> do
+    <body>
+end
+```
 
 ## FAQ
 Why would you use a [stack-oriented language](https://en.wikipedia.org/wiki/Stack-oriented_programming), and is there any practical advantages of such a paradigm ?
