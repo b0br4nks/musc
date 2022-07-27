@@ -306,7 +306,7 @@ def lex_file(file_path):
     with open(file_path, "r") as f:
         return [(file_path, row, col, token)
                 for (row, line) in enumerate(f.readlines())
-                for (col, token) in lex_line(line)]
+                for (col, token) in lex_line(line.split("--")[0])]
 
 def load_program_from_file(file_path):
     return crossreference_blocks([parse_token_as_op(token) for token in lex_file(file_path)])
