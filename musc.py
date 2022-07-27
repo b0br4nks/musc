@@ -54,7 +54,7 @@ def elze() -> tuple:
     return (OP_ELSE, ) # (else)
 
 def dupl():
-    return (OP_DUPL, ) # (::)
+    return (OP_DUPL, ) # (cp)
 
 def gt():
     return (OP_GT, ) # (>)
@@ -280,7 +280,7 @@ def parse_token_as_op(token):
         return end()
     elif word == 'else':
         return elze()
-    elif word == '::':
+    elif word == 'cp':
         return dupl()
     elif word == '>':
         return gt()

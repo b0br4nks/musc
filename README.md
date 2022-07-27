@@ -29,15 +29,15 @@ Two simple programs:
 
 descending order
 ```musc
-10 while :: -1 > do
-	:: =>
+10 while cp -1 > do
+	cp =>
 	1 -
 end
 ```
 
 ascending order
 ```
-0 while :: 11 < do :: => 1 + end
+0 while cp 11 < do cp => 1 + end
 ```
 
 ## Usage
@@ -93,7 +93,7 @@ This is what the language supports so far.
 ```
 a --> a
 ```
-- `::` - duplicate an element on top of the stack.
+- `cp` - duplicate an element on top of the stack.
 ```
 a --> a a
 ```
