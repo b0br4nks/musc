@@ -7,6 +7,10 @@
 
 <center>**The development of this language is in progress!</center>
 
+## Stack-Oriented
+
+A [stack-oriented language](https://en.wikipedia.org/wiki/Stack-oriented_programming) is one which primarily uses a stack, instead of (or in addition to) named variables, to manage data flow. This concept is closely related to that of [concatenative languages](https://en.wikipedia.org/wiki/Concatenative_programming_language), most of which are stack-based.
+
 ## Roadmap
 * [x] Compiled ([Compiled language](https://en.wikipedia.org/wiki/Compiled_language))
 * [x] Native ([Native](https://en.wikipedia.org/wiki/Native_%28computing%29))
@@ -135,3 +139,16 @@ push(b - a)
 
 - `if <if-branch> else <else-branch> end` - pops the element on top of the stack and if the element is not `0` executes the `<if-branch>`, otherwise `<else-branch>`.
 - `while <condition> do <body> end` - keeps executing both `<condition>` and `<body>` until `<condition>` produces `0` at the top of the stack. Checking the result of the `<codition>` removes it from the stack.
+
+## FAQ
+Why would you use a [stack-oriented language](https://en.wikipedia.org/wiki/Stack-oriented_programming), and is there any practical advantages of such a paradigm ?
+
+* CPU Time 
+
+* [Memory leak](https://en.wikipedia.org/wiki/Memory_leak) 
+
+* [Fragmentation](https://en.wikipedia.org/wiki/Fragmentation_of_memory) 
+
+* [Locality](https://www.cs.cornell.edu/courses/cs3110/2009fa/Lectures/lec24.html)
+
+([source](https://stackoverflow.com/questions/5589999/why-use-a-stack-oriented-language/45818678#45818678) for full answers)
