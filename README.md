@@ -46,10 +46,15 @@ ascending order
 $ ./musc.py -h
 
 Usage: ./musc.py <SUBCOMMAND> [ARGS]
-SUBCOMMANDS:
-    simulate, -s          <file>      Simulate the program
-    compile,  -c [-r run] <file>      Compile the program
-    help,     -h                      Print help to STDOUT and exit 0
+
+SUBCOMMANDS
+     -s           <file>      Simulate the program
+     -c [OPTIONS] <file>      Compile the program
+     -h                       Print help to STDOUT and exit 0
+
+OPTIONS
+     -r                       Run the program after successful compilation
+     -o         <file|dir>    Customize the output path
 ```
 
 ### Simulation
@@ -74,9 +79,9 @@ $ cat tests/01_arithmetics.musc
 2 2 - =>
 1 3 + 1 - =>
 $ ./musc.py -c tests/01_arithmetics.musc
-[INFO] Generating 01_arithmetics.asm
-[CMD] nasm -felf64 01_arithmetics.asm
-[CMD] ld -o 01_arithmetics 01_arithmetics.o
+[INFO] Generating ./01_arithmetics.asm
+[CMD] nasm -felf64 ./01_arithmetics.asm
+[CMD] ld -o ./01_arithmetics ./01_arithmetics.o
 $ ./01_arithmetics
 2
 0

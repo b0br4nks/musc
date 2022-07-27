@@ -355,11 +355,15 @@ def cmd_echoed(cmd):
     subprocess.call(cmd)
 
 def usage(compiler_name):
-    print(f"Usage: {compiler_name} <SUBCOMMAND> [ARGS]")
-    print("SUBCOMMANDS:")
-    print("    simulate, -s          <file>      Simulate the program")
-    print("    compile,  -c [-r run] <file>      Compile the program")
-    print("    help,     -h                      Print help to STDOUT and exit 0")
+    print(f"Usage: {compiler_name} <SUBCOMMAND> [ARGS]\n")
+    print("SUBCOMMANDS")
+    print("     -s           <file>      Simulate the program")
+    print("     -c [OPTIONS] <file>      Compile the program")
+    print("     -h                       Print help to STDOUT and exit 0\n")
+    print("OPTIONS")
+    print("     -r                       Run the program after successful compilation")
+    print("     -o         <file|dir>    Customize the output path")
+    
 
 if __name__ == "__main__":
     argv = sys.argv
@@ -382,29 +386,52 @@ if __name__ == "__main__":
     elif subcommand in ["compile","-c"]:
         run = False
         program_path = None
+        output_path = None
         while len(argv) > 0:
-            flag, *argv = argv
-            if flag == "-r":
+            arg, *argv = argv
+            if arg == "-r":
                 run = True
+            elif arg == "-o":
+                if len(argv) == 0:
+                    usage(compiler_name)
+                    print("[ERROR] No argument is provided for parameter -o")
+                    exit(1)
+                output_path, *argv = argv
             else:
-                program_path = flag
-                break;
+                program_path = arg
+                break
         if program_path is None:
             usage(compiler_name)
             print("[ERROR] No input file is provided")
             exit(1)
+            
+        basename = None
+        basedir = None
+        if output_path is not None:
+            if path.isdir(output_path):
+                basename = path.basename(program_path)
+                musc_ext = '.musc'
+                if basename.endswith(musc_ext):
+                    basename = basename[:-len(musc_ext)]
+                basedir = path.dirname(output_path)
+            else:
+                basename = path.basename(output_path)
+                basedir = path.dirname(output_path)
+        else:
+            basename = path.basename(program_path)
+            musc_ext = '.musc'
+            if basename.endswith(musc_ext):
+                basename = basename[:-len(musc_ext)]
+            basedir = path.dirname(program_path)
+        basepath = path.join(basedir, basename)
 
-        program = load_program_from_file(program_path)
-        musc_ext = ".musc"
-        basename = path.basename(program_path)
-        if basename.endswith(musc_ext):
-            basename = basename[:-len(musc_ext)]
         print(f"[INFO] Generating {basename}.asm")
-        compile_program(program, basename + ".asm")
-        cmd_echoed(["nasm", "-felf64", basename + ".asm"])
-        cmd_echoed(["ld", "-o", basename, basename + ".o"])
+        program = load_program_from_file(program_path)
+        compile_program(program, basepath + ".asm")
+        cmd_echoed(["nasm", "-felf64", basepath + ".asm"])
+        cmd_echoed(["ld", "-o", basepath, basepath + ".o"])
         if run:
-            cmd_echoed(["./" + basename])
+            cmd_echoed([basepath])
     elif subcommand in ["help","-h"]:
         usage(compiler_name)
         exit(0)
