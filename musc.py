@@ -350,16 +350,16 @@ def lex_file(file_path):
 def load_program_from_file(file_path):
     return crossreference_blocks([parse_token_as_op(token) for token in lex_file(file_path)])
 
-def call_echoed(cmd):
-    print("\033[00;36m[CMD]\033[00m %s" % " ".join(map(shlex.quote, cmd)))
+def cmd_echoed(cmd):
+    print("[CMD] %s" % " ".join(map(shlex.quote, cmd)))
     subprocess.call(cmd)
 
 def usage(compiler_name):
-    print(f"\033[00;36mUsage:\033[00m {compiler_name} <SUBCOMMAND> [ARGS]")
-    print("\033[00;36mSUBCOMMANDS:\033[00m")
-    print("    simulate, -s <file>      Simulate the program")
-    print("    compile,  -c <file>      Compile the program")
-    print("    help,     -h             Print help to STDOUT and exit 0")
+    print(f"Usage: {compiler_name} <SUBCOMMAND> [ARGS]")
+    print("SUBCOMMANDS:")
+    print("    simulate, -s      <file>      Simulate the program")
+    print("    compile,  -c [-r] <file>      Compile the program")
+    print("    help,     -h                  Print help to STDOUT and exit 0")
 
 if __name__ == "__main__":
     argv = sys.argv
@@ -367,37 +367,48 @@ if __name__ == "__main__":
     compiler_name, *argv = argv
     if len(argv) < 1:
         usage(compiler_name)
-        print("\033[00;31m[ERROR]\033[00m No subcommand is provided")
+        print("[ERROR] No subcommand is provided")
         exit(1)
     subcommand, *argv = argv
 
     if subcommand in ["simulate","-s"]:
         if len(argv) < 1:
             usage(compiler_name)
-            print("\033[00;31m[ERROR]\033[00m No input file is provided")
+            print("[ERROR] No input file is provided")
             exit(1)
         program_path, *argv = argv
         program = load_program_from_file(program_path)
         simulate_program(program)
     elif subcommand in ["compile","-c"]:
-        if len(argv) < 1:
+        run = False
+        program_path = None
+        while len(argv) > 0:
+            flag, *argv = argv
+            if flag == "-r":
+                run = True
+            else:
+                program_path = flag
+                break;
+        if program_path is None:
             usage(compiler_name)
-            print("\033[00;31m[ERROR]\033[00m No input file is provided")
+            print("[ERROR] No input file is provided")
             exit(1)
-        program_path, *argv = argv
+
         program = load_program_from_file(program_path)
         musc_ext = ".musc"
         basename = path.basename(program_path)
         if basename.endswith(musc_ext):
             basename = basename[:-len(musc_ext)]
-        print(f"\033[00;36m[INFO]\033[00m Generating {basename}.asm")
+        print(f"[INFO] Generating {basename}.asm")
         compile_program(program, basename + ".asm")
-        call_echoed(["nasm", "-felf64", basename + ".asm"])
-        call_echoed(["ld", "-o", basename, basename + ".o"])
+        cmd_echoed(["nasm", "-felf64", basename + ".asm"])
+        cmd_echoed(["ld", "-o", basename, basename + ".o"])
+        if run:
+            cmd_echoed(["./" + basename])
     elif subcommand in ["help","-h"]:
         usage(compiler_name)
         exit(0)
     else:
         usage(compiler_name)
-        print(f"\033[00;31m[ERROR]\033[00m Unkown subcommand '{subcommand}'")
+        print(f"[ERROR] Unkown subcommand '{subcommand}'")
         exit(1)
