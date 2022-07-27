@@ -94,7 +94,6 @@ This is what the language supports so far.
 a --> a
 ```
 - `::` - duplicate an element on top of the stack.
-
 ```
 a --> a a
 ```
