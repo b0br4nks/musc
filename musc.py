@@ -364,8 +364,7 @@ def usage(compiler_name):
     print("     -r                       Run the program after successful compilation")
     print("     -o         <file|dir>    Customize the output path")
     
-
-if __name__ == "__main__":
+if __name__ == "__main__" and "__file__" in globals():
     argv = sys.argv
     assert len(argv) >= 1
     compiler_name, *argv = argv
