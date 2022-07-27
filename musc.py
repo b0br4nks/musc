@@ -29,45 +29,6 @@ OP_WHILE=subscript()
 OP_DO=subscript()
 COUNT_OPS=subscript()
 
-def push(x) -> tuple:
-    return (OP_PUSH, x) # add new element onto stack
-
-def plus() -> tuple:
-    return (OP_PLUS, ) # (+)
-
-def minus() -> tuple:
-    return (OP_MINUS, ) # (-)
-
-def equal() -> tuple:
-    return (OP_EQUAL, ) # (=)
-
-def dump() -> tuple:
-    return (OP_DUMP, ) # (=>)
-
-def iff() -> tuple:
-    return (OP_IF, ) # (if)
-
-def end() -> tuple:
-    return (OP_END, ) # (end)
-
-def elze() -> tuple:
-    return (OP_ELSE, ) # (else)
-
-def dupl():
-    return (OP_DUPL, ) # (cp)
-
-def gt():
-    return (OP_GT, ) # (>)
-
-def lt():
-    return (OP_LT, ) # (<)
-
-def whyle():
-    return (OP_WHILE, ) # (while)
-
-def dou():
-    return (OP_DO, ) # (do)
-
 def simulate_program(program):
     stack = []
     ip = 0
@@ -267,32 +228,32 @@ def parse_token_as_op(token):
     (file_path, row, col, word) = token
     assert COUNT_OPS == 13, "Exhaustive op handling in parse_token_as_op"
     if word == '+':
-        return plus()
+        return (OP_PLUS, )
     elif word == '-':
-        return minus()
+        return (OP_MINUS, ) 
     elif word == '=>':
-        return dump()
+        return (OP_DUMP, )
     elif word == '=':
-        return equal()
+        return (OP_EQUAL, )
     elif word == 'if':
-        return iff()
+        return (OP_IF, )
     elif word == 'end':
-        return end()
+        return (OP_END, )
     elif word == 'else':
-        return elze()
+        return (OP_ELSE, )
     elif word == 'cp':
-        return dupl()
+        return (OP_DUPL, )
     elif word == '>':
-        return gt()
+        return (OP_GT, )
     elif word == '<':
-        return lt()
+        return (OP_LT, )
     elif word == 'while':
-        return whyle()
+        return (OP_WHILE, )
     elif word == 'do':
-        return dou()
+        return (OP_DO, )
     else:
         try:
-            return push(int(word))
+            return (OP_PUSH, int(word))
         except ValueError as err:
             print(f"{file_path}:{row}:{col}: {err}")
             exit(1)
