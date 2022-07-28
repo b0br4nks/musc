@@ -36,6 +36,8 @@ OP_LT=subscript()
 OP_WHILE=subscript()
 OP_DO=subscript()
 OP_MEM=subscript()
+OP_LOAD=subscript()
+OP_STORE=subscript()
 COUNT_OPS=subscript()
 
 MEM_CAPACITY = 640_000
@@ -44,7 +46,7 @@ def simulate_program(program):
     stack = []
     ip = 0
     while ip < len(program):
-        assert COUNT_OPS == 14, "Exhaustive handling of operations in simulation"
+        assert COUNT_OPS == 15, "Exhaustive handling of operations in simulation"
         op = program[ip]
         if op['type'] == OP_PUSH:
             stack.append(op['value'])
@@ -115,7 +117,7 @@ def compile_program(program, out_file_path):
     with open(out_file_path, "w") as out:
         out.write("segment .text\n")
         out.write("dump:\n")
-        out.write("    mov     r9, -3689348814741910323\n")
+        out.write("    mov     r9, -3689348815741910323\n")
         out.write("    sub     rsp, 40\n")
         out.write("    mov     BYTE [rsp+31], 10\n")
         out.write("    lea     rcx, [rsp+30]\n")
@@ -152,7 +154,7 @@ def compile_program(program, out_file_path):
 
         for ip in range(len(program)):
             op = program[ip]
-            assert COUNT_OPS == 14, "Exhaustive handling of operations in compilation!"
+            assert COUNT_OPS == 15, "Exhaustive handling of operations in compilation!"
             out.write("addr_%d:\n" % ip)
             if op['type'] == OP_PUSH:
                 out.write("    ;; -- push %d --\n" % op['value'])
@@ -231,6 +233,17 @@ def compile_program(program, out_file_path):
             elif op['type'] == OP_MEM:
                 out.write("    ;; -- mem --\n")
                 out.write("    push mem\n")
+            elif op['type'] == OP_LOAD:
+                out.write("    ;; -- load --\n")
+                out.write("    pop rax\n")
+                out.write("    xor rbx, rbx\n")
+                out.write("    mov bl, [rax]\n")
+                out.write("    push rbx\n")
+            elif op['type'] == OP_STORE:
+                out.write("    ;; -- store --\n")
+                out.write("    pop rbx\n");
+                out.write("    pop rax\n");
+                out.write("    mov [rax], bl\n");
             else:
                 assert False, "unreachable"
 
@@ -244,7 +257,7 @@ def compile_program(program, out_file_path):
 def parse_token_as_op(token):
     (file_path, row, col, word) = token
     loc = (file_path, row + 1, col + 1)
-    assert COUNT_OPS == 14, "Exhaustive op handling in parse_token_as_op"
+    assert COUNT_OPS == 15, "Exhaustive op handling in parse_token_as_op"
     if word == '+':
         return {'type': OP_PLUS, 'loc': loc}
     elif word == '-':
@@ -271,6 +284,10 @@ def parse_token_as_op(token):
         return {'type': OP_DO, 'loc': loc}
     elif word == 'mem':
         return {'type': OP_MEM, 'loc': loc}
+    elif word == 's&':
+        return {'type': OP_STORE, 'loc': loc}
+    elif word == 'l&':
+        return {'type': OP_LOAD, 'loc': loc}
     else:
         try:
             return {'type': OP_PUSH, 'value': int(word), 'loc': loc}
@@ -282,7 +299,7 @@ def crossreference_blocks(program):
     stack = []
     for ip in range(len(program)):
         op = program[ip]
-        assert COUNT_OPS == 14, "Exhaustive handling of ops in crossreference_program. Keep in mind that not all of the ops need to be handled in here. Only those that form blocks."
+        assert COUNT_OPS == 15, "Exhaustive handling of ops in crossreference_program. Keep in mind that not all of the ops need to be handled in here. Only those that form blocks."
         if op['type'] == OP_IF:
             stack.append(ip)
         elif op['type'] == OP_ELSE:

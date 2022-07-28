@@ -159,6 +159,10 @@ end
 
 - `mem` - pushes the address of the beginning of the memory where the stack can be read and written.
 
+- `s&` - store a given byte at the given address.
+
+- `l&` - load a byte from the given address.
+
 ## FAQ
 Why would you use a [stack-oriented language](https://en.wikipedia.org/wiki/Stack-oriented_programming), and is there any practical advantages of such a paradigm ?
 
