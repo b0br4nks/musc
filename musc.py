@@ -327,7 +327,7 @@ def lex_file(file_path):
 def load_program_from_file(file_path):
     return crossreference_blocks([parse_token_as_op(token) for token in lex_file(file_path)])
 
-def cmd_echoed(cmd):
+def cmd_call_echoed(cmd):
     print("[CMD] %s" % " ".join(map(shlex.quote, cmd)))
     subprocess.call(cmd)
 
@@ -404,10 +404,10 @@ if __name__ == "__main__" and "__file__" in globals():
         print(f"[INFO] Generating {basename}.asm")
         program = load_program_from_file(program_path)
         compile_program(program, basepath + ".asm")
-        cmd_echoed(["nasm", "-felf64", basepath + ".asm"])
-        cmd_echoed(["ld", "-o", basepath, basepath + ".o"])
+        cmd_call_echoed(["nasm", "-felf64", basepath + ".asm"])
+        cmd_call_echoed(["ld", "-o", basepath, basepath + ".o"])
         if run:
-            cmd_echoed([basepath])
+            cmd_call_echoed([basepath])
     elif subcommand in ["help","-h"]:
         usage(compiler_name)
         exit(0)
