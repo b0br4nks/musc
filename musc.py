@@ -35,13 +35,16 @@ OP_GT=subscript()
 OP_LT=subscript()
 OP_WHILE=subscript()
 OP_DO=subscript()
+OP_MEM=subscript()
 COUNT_OPS=subscript()
+
+MEM_CAPACITY = 640_000
 
 def simulate_program(program):
     stack = []
     ip = 0
     while ip < len(program):
-        assert COUNT_OPS == 13, "Exhaustive handling of operations in simulation"
+        assert COUNT_OPS == 14, "Exhaustive handling of operations in simulation"
         op = program[ip]
         if op['type'] == OP_PUSH:
             stack.append(op['value'])
@@ -102,7 +105,8 @@ def simulate_program(program):
                 ip = op['jmp']
             else:
                 ip += 1
-
+        elif op['type'] == OP_MEM:
+            assert False, "not implemented"
         else:
             assert False, "unreachable"
 
@@ -148,7 +152,7 @@ def compile_program(program, out_file_path):
 
         for ip in range(len(program)):
             op = program[ip]
-            assert COUNT_OPS == 13, "Exhaustive handling of operations in compilation!"
+            assert COUNT_OPS == 14, "Exhaustive handling of operations in compilation!"
             out.write("addr_%d:\n" % ip)
             if op['type'] == OP_PUSH:
                 out.write("    ;; -- push %d --\n" % op['value'])
@@ -224,6 +228,9 @@ def compile_program(program, out_file_path):
                 out.write("    test rax, rax\n")
                 assert 'jmp' in op, "'do' instruction does not have a reference to the end of its block. Please call crossreference_blocks() on the program before trying to compile it"
                 out.write("    jz addr_%d\n" % op['jmp'])
+            elif op['type'] == OP_MEM:
+                out.write("    ;; -- mem --\n")
+                out.write("    push mem\n")
             else:
                 assert False, "unreachable"
 
@@ -231,11 +238,13 @@ def compile_program(program, out_file_path):
         out.write("    mov rax, 60\n")
         out.write("    mov rdi, 0\n")
         out.write("    syscall\n")
+        out.write("segment .bss\n")
+        out.write("mem: resb %d\n" % MEM_CAPACITY)
 
 def parse_token_as_op(token):
     (file_path, row, col, word) = token
     loc = (file_path, row + 1, col + 1)
-    assert COUNT_OPS == 13, "Exhaustive op handling in parse_token_as_op"
+    assert COUNT_OPS == 14, "Exhaustive op handling in parse_token_as_op"
     if word == '+':
         return {'type': OP_PLUS, 'loc': loc}
     elif word == '-':
@@ -260,6 +269,8 @@ def parse_token_as_op(token):
         return {'type': OP_WHILE, 'loc': loc}
     elif word == 'do':
         return {'type': OP_DO, 'loc': loc}
+    elif word == 'mem':
+        return {'type': OP_MEM, 'loc': loc}
     else:
         try:
             return {'type': OP_PUSH, 'value': int(word), 'loc': loc}
@@ -271,7 +282,7 @@ def crossreference_blocks(program):
     stack = []
     for ip in range(len(program)):
         op = program[ip]
-        assert COUNT_OPS == 13, "Exhaustive handling of ops in crossreference_program. Keep in mind that not all of the ops need to be handled in here. Only those that form blocks."
+        assert COUNT_OPS == 14, "Exhaustive handling of ops in crossreference_program. Keep in mind that not all of the ops need to be handled in here. Only those that form blocks."
         if op['type'] == OP_IF:
             stack.append(ip)
         elif op['type'] == OP_ELSE:

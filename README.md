@@ -155,6 +155,10 @@ while <condition> do
 end
 ```
 
+### Memory
+
+- `mem` - pushes the address of the beginning of the memory where the stack can be read and written.
+
 ## FAQ
 Why would you use a [stack-oriented language](https://en.wikipedia.org/wiki/Stack-oriented_programming), and is there any practical advantages of such a paradigm ?
 
