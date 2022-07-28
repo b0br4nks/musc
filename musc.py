@@ -275,7 +275,7 @@ def parse_token_as_op(token):
         try:
             return {'type': OP_PUSH, 'value': int(word), 'loc': loc}
         except ValueError as err:
-            print(f"{loc}")
+            print(f"{file_path}:{row}:{col}: {err}")
             exit(1)
 
 def crossreference_blocks(program):
