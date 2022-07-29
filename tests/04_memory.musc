@@ -1,0 +1,7 @@
+mem 0 + 1 &s
+mem 1 + 32 &s
+mem 2 + 128 &s
+
+mem 0 &l =>
+mem 1 &l =>
+mem 2 &l =>
