@@ -461,7 +461,7 @@ def load_program_from_file(file_path):
 
 def cmd_call_echoed(cmd):
     print("[CMD] %s" % " ".join(map(shlex.quote, cmd)))
-    subprocess.call(cmd)
+    return subprocess.call(cmd)
 
 def usage(compiler_name):
     print(f"Usage: {compiler_name} <SUBCOMMAND> [ARGS]\n")
@@ -539,7 +539,7 @@ if __name__ == "__main__" and "__file__" in globals():
         cmd_call_echoed(["nasm", "-felf64", basepath + ".asm"])
         cmd_call_echoed(["ld", "-o", basepath, basepath + ".o"])
         if run:
-            cmd_call_echoed([basepath])
+            exit(cmd_call_echoed([basepath]))
     elif subcommand in ["help","-h"]:
         usage(compiler_name)
         exit(0)
