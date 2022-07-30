@@ -3,9 +3,13 @@
  <img width="200" src="dist/musc_logo.svg">
 </p>
 <h1>The Musc Programming Language</h1>
-</div>
 
-<center>**The development of this language is in progress!</center>
+
+**The development of this language is in progress!
+
+[Roadmap](https://b0br4nks.github.io/musc/#roadmap) | [Example](https://b0br4nks.github.io/musc/#example) | [Usage](https://b0br4nks.github.io/musc/#usage) | [Language Reference](https://b0br4nks.github.io/musc/#language-reference) | [FAQ](https://b0br4nks.github.io/musc/#faq)
+
+</div>
 
 ## Stack-Oriented
 
