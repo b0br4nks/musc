@@ -5,7 +5,7 @@
 <h1>The Musc Programming Language</h1>
 
 
-**The development of this language is in progress!
+**The development of this language is in progress!<br>
 
 [Roadmap](https://b0br4nks.github.io/musc/#roadmap) | [Example](https://b0br4nks.github.io/musc/#example) | [Usage](https://b0br4nks.github.io/musc/#usage) | [Language Reference](https://b0br4nks.github.io/musc/#language-reference) | [FAQ](https://b0br4nks.github.io/musc/#faq)
 
