@@ -8,7 +8,11 @@
 **The development of this language is in progress!<br>
 </div>
 
-[Roadmap](https://b0br4nks.github.io/musc/#roadmap) | [Example](https://b0br4nks.github.io/musc/#example) | [Usage](https://b0br4nks.github.io/musc/#usage) | [Language Reference](https://b0br4nks.github.io/musc/#language-reference) | [FAQ](https://b0br4nks.github.io/musc/#faq)
+- [Roadmap](#roadmap)
+- [Example](#example)
+- [Usage](#usage)
+- [Language Reference](#language-reference)
+- [FAQ](/#faq)
 
 ## Stack-Oriented
 
