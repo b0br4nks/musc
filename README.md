@@ -12,7 +12,7 @@
 - [Example](#example)
 - [Usage](#usage)
 - [Language Reference](#language-reference)
-- [FAQ](/#faq)
+- [FAQ](#faq)
 
 ## Stack-Oriented
 
@@ -169,6 +169,10 @@ end
 - `&s` - store a given byte at the given address.
 
 - `&l` - load a byte from the given address.
+
+### System
+
+- `syscall<n>` - perform a syscall with n arguments where n is in range `[1..6]`. (`syscall1`, `syscall2`, ..., `syscall6`)
 
 ## FAQ
 Why would you use a [stack-oriented language](https://en.wikipedia.org/wiki/Stack-oriented_programming), and is there any practical advantages of such a paradigm ?

@@ -39,7 +39,11 @@ OP_MEM=subscript()
 OP_LOAD=subscript()
 OP_STORE=subscript()
 OP_SYSCALL1=subscript()
+OP_SYSCALL2=subscript()
 OP_SYSCALL3=subscript()
+OP_SYSCALL4=subscript()
+OP_SYSCALL5=subscript()
+OP_SYSCALL6=subscript()
 COUNT_OPS=subscript()
 
 MEM_CAPACITY = 640_000
@@ -49,7 +53,7 @@ def simulate_program(program):
     mem = bytearray(MEM_CAPACITY)
     ip = 0
     while ip < len(program):
-        assert COUNT_OPS == 18, "Exhaustive handling of operations in simulation"
+        assert COUNT_OPS == 22, "Exhaustive handling of operations in simulation"
         op = program[ip]
         if op['type'] == OP_PUSH:
             stack.append(op['value'])
@@ -125,6 +129,8 @@ def simulate_program(program):
             ip += 1
         elif op['type'] == OP_SYSCALL1:
             assert False, "not implemented"
+        elif op['type'] == OP_SYSCALL2:
+            assert False, "not implemented"
         elif op['type'] == OP_SYSCALL3:
             syscall_number = stack.pop()
             arg1 = stack.pop()
@@ -144,6 +150,12 @@ def simulate_program(program):
             else:
                 assert False, "unknown syscall number %d" % syscall_number
             ip += 1
+        elif op['type'] == OP_SYSCALL4:
+            assert False, "not implemented"
+        elif op['type'] == OP_SYSCALL5:
+            assert False, "not implemented"
+        elif op['type'] == OP_SYSCALL6:
+            assert False, "not implemented"
         else:
             assert False, "unreachable"
 
@@ -152,7 +164,7 @@ def compile_program(program, out_file_path):
     with open(out_file_path, "w") as out:
         out.write("segment .text\n")
         out.write("dump:\n")
-        out.write("    mov     r9, -3689348818741910323\n")
+        out.write("    mov     r9, -3689348822741910323\n")
         out.write("    sub     rsp, 40\n")
         out.write("    mov     BYTE [rsp+31], 10\n")
         out.write("    lea     rcx, [rsp+30]\n")
@@ -189,7 +201,7 @@ def compile_program(program, out_file_path):
 
         for ip in range(len(program)):
             op = program[ip]
-            assert COUNT_OPS == 18, "Exhaustive handling of operations in compilation!"
+            assert COUNT_OPS == 22, "Exhaustive handling of operations in compilation!"
             out.write("addr_%d:\n" % ip)
             if op['type'] == OP_PUSH:
                 out.write("    ;; -- push %d --\n" % op['value'])
@@ -280,16 +292,49 @@ def compile_program(program, out_file_path):
                 out.write("    pop rax\n")
                 out.write("    mov [rax], bl\n")
             elif op['type'] == OP_SYSCALL1:
-                out.write("    ;; -- syscall --\n")
+                out.write("    ;; -- syscall1 --\n")
                 out.write("    pop rax\n")
                 out.write("    pop rdi\n")
                 out.write("    syscall\n")
+                elif op['type'] == OP_SYSCALL2:
+                out.write("    ;; -- syscall2 -- \n")
+                out.write("    pop rax\n");
+                out.write("    pop rdi\n");
+                out.write("    pop rsi\n");
+                out.write("    syscall\n");
             elif op['type'] == OP_SYSCALL3:
-                out.write("    ;; -- syscall --\n")
+                out.write("    ;; -- syscall3 --\n")
                 out.write("    pop rax\n")
                 out.write("    pop rdi\n")
                 out.write("    pop rsi\n")
                 out.write("    pop rdx\n")
+                out.write("    syscall\n")
+            elif op['type'] == OP_SYSCALL4:
+                out.write("    ;; -- syscall4 --\n")
+                out.write("    pop rax\n")
+                out.write("    pop rdi\n")
+                out.write("    pop rsi\n")
+                out.write("    pop rdx\n")
+                out.write("    pop r10\n")
+                out.write("    syscall\n")
+            elif op['type'] == OP_SYSCALL5:
+                out.write("    ;; -- syscall5 --\n")
+                out.write("    pop rax\n")
+                out.write("    pop rdi\n")
+                out.write("    pop rsi\n")
+                out.write("    pop rdx\n")
+                out.write("    pop r10\n")
+                out.write("    pop r8\n")
+                out.write("    syscall\n")
+            elif op['type'] == OP_SYSCALL6:
+                out.write("    ;; -- syscall6 --\n")
+                out.write("    pop rax\n")
+                out.write("    pop rdi\n")
+                out.write("    pop rsi\n")
+                out.write("    pop rdx\n")
+                out.write("    pop r10\n")
+                out.write("    pop r8\n")
+                out.write("    pop r9\n")
                 out.write("    syscall\n")
             else:
                 assert False, "unreachable"
@@ -304,7 +349,7 @@ def compile_program(program, out_file_path):
 def parse_token_as_op(token):
     (file_path, row, col, word) = token
     loc = (file_path, row + 1, col + 1)
-    assert COUNT_OPS == 18, "Exhaustive op handling in parse_token_as_op"
+    assert COUNT_OPS == 22, "Exhaustive op handling in parse_token_as_op"
     if word == '+':
         return {'type': OP_PLUS, 'loc': loc}
     elif word == '-':
@@ -337,8 +382,16 @@ def parse_token_as_op(token):
         return {'type': OP_LOAD, 'loc': loc}
     elif word == 'syscall1':
         return {'type': OP_SYSCALL1, 'loc': loc}
+    elif word == 'syscall2':
+        return {'type': OP_SYSCALL2, 'loc': loc}
     elif word == 'syscall3':
         return {'type': OP_SYSCALL3, 'loc': loc}
+    elif word == 'syscall4':
+        return {'type': OP_SYSCALL4, 'loc': loc}
+    elif word == 'syscall5':
+        return {'type': OP_SYSCALL5, 'loc': loc}
+    elif word == 'syscall6':
+        return {'type': OP_SYSCALL6, 'loc': loc}
     else:
         try:
             return {'type': OP_PUSH, 'value': int(word), 'loc': loc}
@@ -350,7 +403,7 @@ def crossreference_blocks(program):
     stack = []
     for ip in range(len(program)):
         op = program[ip]
-        assert COUNT_OPS == 18, "Exhaustive handling of ops in crossreference_program. Keep in mind that not all of the ops need to be handled in here. Only those that form blocks."
+        assert COUNT_OPS == 22, "Exhaustive handling of ops in crossreference_program. Keep in mind that not all of the ops need to be handled in here. Only those that form blocks."
         if op['type'] == OP_IF:
             stack.append(ip)
         elif op['type'] == OP_ELSE:
