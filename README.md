@@ -11,7 +11,18 @@
 - [Roadmap](#roadmap)
 - [Example](#example)
 - [Usage](#usage)
+	- [Help](#help)
+	- [Simulation](#simulation)
+	- [Compilation](#compilation)
 - [Language Reference](#language-reference)
+	- [Stack Manipulation](#stack-manipulation)
+	- [Comparison](#comparison)
+	- [Arithmetics](#arithmetics)
+	- [Control Flow](#control-flow)
+		- [if-else condition](#if-else-condition)
+		- [while loop](#while-loop)
+	- [Memory](#memory)
+	- [System](#system)
 - [FAQ](#faq)
 
 ## Stack-Oriented
