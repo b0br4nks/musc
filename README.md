@@ -133,6 +133,17 @@ $ ls output/
 03_arithmetics*  03_arithmetics.asm  03_arithmetics.o
 ```
 
+Or
+```console
+$ ./musc.py -c -o ./output ./tests/03_arithmetics.musc
+[INFO] Generating output.asm
+[CMD] nasm -felf64 ./output.asm
+[CMD] ld -o ./output ./output.o
+[CMD] ./output
+$ ls
+output*  output.asm  output.o  dist/  LICENCE  musc.py*  README.md  test.py*  tests/
+```
+
 You can chain the `-r` and `-o` subcommands:
 ```console
 $ mkdir output && ./musc.py -c -r -o output/ ./tests/03_arithmetics.musc
