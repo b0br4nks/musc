@@ -1,8 +1,0 @@
--- 03_loops.musc
-
-10 while cp -1 > do
-	cp =>
-	1 -
-end
-
-0 while cp 11 < do cp => 1 + end

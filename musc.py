@@ -296,7 +296,7 @@ def compile_program(program, out_file_path):
                 out.write("    pop rax\n")
                 out.write("    pop rdi\n")
                 out.write("    syscall\n")
-                elif op['type'] == OP_SYSCALL2:
+            elif op['type'] == OP_SYSCALL2:
                 out.write("    ;; -- syscall2 -- \n")
                 out.write("    pop rax\n");
                 out.write("    pop rdi\n");

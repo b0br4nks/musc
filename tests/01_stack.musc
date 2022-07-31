@@ -1,0 +1,10 @@
+-- 01_stack.musc
+
+-- push
+1 2 3 => => =>
+1 => 2 => 3 =>
+
+-- duplicate
+1 cp => =>
+2 cp => cp => =>
+

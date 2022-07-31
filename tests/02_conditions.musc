@@ -1,9 +1,0 @@
--- 02_conditions.musc
-
-32 32 + 65 = if
-	64 =>
-else
-	128 =>
-end
-
-32 32 + 64 = if 64 => else 128 => end

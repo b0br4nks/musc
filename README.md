@@ -78,32 +78,70 @@ OPTIONS
 ### Simulation
 The simulation is an interpretation of the program
 ```console
-$ cat tests/01_arithmetics.musc
-1 1 + =>
-2 2 - =>
-1 3 + 1 - =>
-$ ./musc.py -s tests/01_arithmetics.musc
-2
-0
+$ cat ./tests/03_arithmetics.musc
+-- 03_arithmetics.musc
+
+-- add
+1 2 + =>
+
+-- substract
+3 2 - =>
+$ ./musc.py -s ./tests/03_arithmetics.musc
 3
+1
 ```
 
 ### Compilation
-The compilation generates assembly code, compiles it with [nasm](https://www.nasm.us/), and then links it with [GNU ld](https://www.gnu.org/software/binutils/). Both should be available in your `$PATH`.
+The compilation generates assembly code, compiles it with [nasm](https://www.nasm.us/), and then links it with [GNU ld](https://www.gnu.org/software/outpututils/). Both should be available in your `$PATH`.
 
 ```console
-$ cat tests/01_arithmetics.musc
-1 1 + =>
-2 2 - =>
-1 3 + 1 - =>
-$ ./musc.py -c tests/01_arithmetics.musc
-[INFO] Generating ./01_arithmetics.asm
-[CMD] nasm -felf64 ./01_arithmetics.asm
-[CMD] ld -o ./01_arithmetics ./01_arithmetics.o
-$ ./01_arithmetics
-2
-0
+$ cat ./tests/03_arithmetics.musc
+-- 03_arithmetics.musc
+
+-- add
+1 2 + =>
+
+-- substract
+3 2 - =>
+$ ./musc.py -c ./tests/03_arithmetics.musc
+[INFO] Generating 03_arithmetics.asm
+[CMD] nasm -felf64 tests/03_arithmetics.asm
+[CMD] ld -o tests/03_arithmetics tests/03_arithmetics.o
+$ ./tests/03_arithmetics
 3
+1
+```
+
+The `-r` subcommand allows you to run the program after successful compilation:
+```console
+$ ./musc.py -c -r ./tests/03_arithmetics.musc
+[INFO] Generating 03_arithmetics.asm
+[CMD] nasm -felf64 tests/03_arithmetics.asm
+[CMD] ld -o tests/03_arithmetics tests/03_arithmetics.o
+[CMD] tests/03_arithmetics
+3
+1
+```
+
+The `-o` subcommand allows you to customize the output path
+```console
+$ mkdir output && ./musc.py -c -o output/ ./tests/03_arithmetics.musc
+[INFO] Generating 03_arithmetics.asm
+[CMD] nasm -felf64 output/03_arithmetics.asm
+[CMD] ld -o output/03_arithmetics output/03_arithmetics.o
+$ ls output/
+03_arithmetics*  03_arithmetics.asm  03_arithmetics.o
+```
+
+You can chain the `-r` and `-o` subcommands:
+```console
+$ mkdir output && ./musc.py -c -r -o output/ ./tests/03_arithmetics.musc
+[INFO] Generating 03_arithmetics.asm
+[CMD] nasm -felf64 output/03_arithmetics.asm
+[CMD] ld -o output/03_arithmetics output/03_arithmetics.o
+[CMD] output/03_arithmetics
+3
+1
 ```
 
 ## Language Reference

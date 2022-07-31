@@ -1,0 +1,7 @@
+-- 03_arithmetics.musc
+
+-- add
+1 2 + =>
+
+-- substract
+3 2 - =>
