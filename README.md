@@ -17,7 +17,7 @@
 - [Language Reference](#language-reference)
 	- [Stack Manipulation](#stack-manipulation)
 	- [Comparison](#comparison)
-	- [Arithmetics](#arithmetics)
+	- [Arithmetic](#arithmetic)
 	- [Control Flow](#control-flow)
 		- [if-else condition](#if-else-condition)
 		- [while loop](#while-loop)
@@ -113,7 +113,7 @@ $ ./tests/03_arithmetics
 ```
 
 The `-r` subcommand allows you to run the program after successful compilation:
-```console
+```consolebin*  bin.asm  bin.o  dist/  LICENCE  musc.py*  README.md  test.py*  tests/
 $ ./musc.py -c -r ./tests/03_arithmetics.musc
 [INFO] Generating 03_arithmetics.asm
 [CMD] nasm -felf64 tests/03_arithmetics.asm
@@ -190,7 +190,7 @@ a b --> a
 [a: int] [b: int] --> [a < b  : bool]
 ```
 
-### Arithmetics
+### Arithmetic
 
 - `+` - sums up two elements on the top of the stack.
 ```
