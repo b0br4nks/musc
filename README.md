@@ -179,9 +179,14 @@ a --> a a
 a b --> a
 ```
 
-- `swap` - swap two elements on the top of the stack.
+- `~` - swap two elements on the top of the stack.
 ```
 a b --> b a
+```
+
+- `#` - drops the top element of the stack.
+```
+a b --> a
 ```
 
 ### Comparison
