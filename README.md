@@ -113,7 +113,8 @@ $ ./tests/03_arithmetics
 ```
 
 The `-r` subcommand allows you to run the program after successful compilation:
-```consolebin*  bin.asm  bin.o  dist/  LICENCE  musc.py*  README.md  test.py*  tests/
+
+```console
 $ ./musc.py -c -r ./tests/03_arithmetics.musc
 [INFO] Generating 03_arithmetics.asm
 [CMD] nasm -felf64 tests/03_arithmetics.asm
@@ -123,7 +124,8 @@ $ ./musc.py -c -r ./tests/03_arithmetics.musc
 1
 ```
 
-The `-o` subcommand allows you to customize the output path
+The `-o` subcommand allows you to customize the output path:
+
 ```console
 $ mkdir output && ./musc.py -c -o output/ ./tests/03_arithmetics.musc
 [INFO] Generating 03_arithmetics.asm
@@ -133,7 +135,8 @@ $ ls output/
 03_arithmetics*  03_arithmetics.asm  03_arithmetics.o
 ```
 
-Or
+Or as a file:
+
 ```console
 $ ./musc.py -c -o ./output ./tests/03_arithmetics.musc
 [INFO] Generating output.asm
@@ -145,6 +148,7 @@ output*  output.asm  output.o  dist/  LICENCE  musc.py*  README.md  test.py*  te
 ```
 
 You can chain the `-r` and `-o` subcommands:
+
 ```console
 $ mkdir output && ./musc.py -c -r -o output/ ./tests/03_arithmetics.musc
 [INFO] Generating 03_arithmetics.asm
