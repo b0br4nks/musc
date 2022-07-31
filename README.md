@@ -180,6 +180,9 @@ a b --> a
 ```
 
 - `swap` - swap two elements on the top of the stack.
+```
+a b --> b a
+```
 
 ### Comparison
 
