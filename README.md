@@ -179,6 +179,8 @@ a --> a a
 a b --> a
 ```
 
+- `swap` - swap two elements on the top of the stack.
+
 ### Comparison
 
 - `=` - checks if two elements on top of the stack are equal. Removes the elements from the stack and pushes `1` if they are equal and `0` if they are not.
