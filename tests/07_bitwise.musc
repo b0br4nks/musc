@@ -1,0 +1,12 @@
+-- left shift
+2 4 << =>
+
+-- right shift
+32 1 >> =>
+
+-- bit or
+1 2 | =>
+
+-- bit and
+1 2 & =>
+
