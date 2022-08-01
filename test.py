@@ -10,6 +10,8 @@ def cmd_run_echoed(cmd, **kwargs):
     return subprocess.run(cmd, **kwargs)
 
 def test():
+    s_failed = 0
+    c_failed = 0
     for entry in os.scandir("./tests/"):
         musc_ext = '.musc'
         if entry.is_file() and entry.path.endswith(musc_ext):
@@ -22,24 +24,29 @@ def test():
 
             sim_output = cmd_run_echoed(["./musc.py", "-s", entry.path], capture_output=True, check=True).stdout
             if sim_output != expected_output:
+                s_failed += 1
                 print("[ERROR] Unexpected simulation output")
                 print("  Expected:")
                 print("    %s" % expected_output)
-                print("  Compilation output:")
+                print("  Actual:")
                 print("    %s" % sim_output)
-                exit(1)
+                # exit(1)
 
             cmd_run_echoed(["./musc.py", "-c", entry.path], check=True)
             com_output = cmd_run_echoed([entry.path[:-len(musc_ext)]], capture_output=True, check=True).stdout
             if com_output != expected_output:
-                print("[ERROR] Unexpected simulation output")
+                c_failed += 1
+                print("[ERROR] Unexpected compilation output")
                 print("  Expected:")
                 print("    %s" % expected_output)
-                print("  Compilation output:")
+                print("  Actual:")
                 print("    %s" % com_output)
-                exit(1)
+                # exit(1)
 
-            print('[INFO] %s OK' % entry.path)
+    print()
+    print("Simulation failed: %d, Compilation failed: %d" % (s_failed, c_failed))
+    if s_failed != 0 or c_failed != 0:
+        exit(1)
 
 def record():
     for entry in os.scandir("./tests/"):
