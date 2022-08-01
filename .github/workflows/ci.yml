@@ -15,4 +15,4 @@ jobs:
           architecture: x64
       - name: run tests
         run: |
-          python ./test.py
+          python ./test.py -t
