@@ -197,9 +197,10 @@ def simulate_program(program):
 # TODO: SoC, verify if dump is stable
 def compile_program(program, out_file_path):
     with open(out_file_path, "w") as out:
+        out.write("BITS 64\n")
         out.write("segment .text\n")
         out.write("dump:\n")
-        out.write("    mov     r9, -3689348828741910328\n")
+        out.write("    mov     r9, -3689348814741910323\n")
         out.write("    sub     rsp, 40\n")
         out.write("    mov     BYTE [rsp+31], 10\n")
         out.write("    lea     rcx, [rsp+30]\n")
@@ -233,7 +234,6 @@ def compile_program(program, out_file_path):
         out.write("    ret\n")
         out.write("global _start\n")
         out.write("_start:\n")
-
         for ip in range(len(program)):
             op = program[ip]
             assert COUNT_OPS == 28, "Exhaustive handling of operations in compilation!"
