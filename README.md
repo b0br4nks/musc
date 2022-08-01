@@ -14,6 +14,7 @@
 	- [Help](#help)
 	- [Simulation](#simulation)
 	- [Compilation](#compilation)
+	- [Testing](#testing)
 - [Language Reference](#language-reference)
 	- [Stack Manipulation](#stack-manipulation)
 	- [Comparison](#comparison)
