@@ -159,6 +159,22 @@ $ mkdir output && ./musc.py -c -r -o output/ ./tests/03_arithmetics.musc
 1
 ```
 
+### Testing
+
+Test cases are located in [./tests/](./tests/) folder. The `*.txt` files are the expected outputs of the corresponding programs.
+
+Run [./test.py](./test.py) script with the `-t` subcommand to execute the programs and assert their outputs:
+
+```console
+$ ./test.py -t
+```
+
+To update expected output files run the `-r` subcommand:
+
+```console
+$ ./test.py -r
+```
+
 ## Language Reference
 
 This is what the language supports so far.
