@@ -1,4 +1,4 @@
--- 02_conditions.musc
+-- 02_comparison.musc
 
 -- equal
 1 3 = =>

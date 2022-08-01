@@ -1,4 +1,4 @@
--- 03_arithmetics.musc
+-- 03_arithmetic.musc
 
 -- add
 1 2 + =>

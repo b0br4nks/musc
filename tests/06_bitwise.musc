@@ -1,3 +1,5 @@
+-- 06_bitwise.musc
+
 -- left shift
 2 4 << =>
 
