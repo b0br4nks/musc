@@ -12,6 +12,8 @@ import subprocess
 import shlex
 from os import path
 
+debug=False
+
 subscript_counter=0
 
 def subscript(reset=False) -> int:
@@ -193,8 +195,10 @@ def simulate_program(program):
             assert False, "not implemented"
         else:
             assert False, "unreachable"
+    if debug:
+        print("[INFO] Memory dump")
+        print(mem[:20])
 
-# TODO: SoC, verify if dump is stable
 def compile_program(program, out_file_path):
     with open(out_file_path, "w") as out:
         out.write("BITS 64\n")
@@ -544,7 +548,9 @@ def cmd_call_echoed(cmd):
     return subprocess.call(cmd)
 
 def usage(compiler_name):
-    print(f"Usage: {compiler_name} <SUBCOMMAND> [ARGS]\n")
+    print(f"Usage: {compiler_name} [OPTIONS] <SUBCOMMAND> [ARGS]\n")
+    print("OPTIONS")
+    print("     -dbg                     Enable debug mode\n")
     print("SUBCOMMANDS")
     print("     -s           <file>      Simulate the program")
     print("     -c [OPTIONS] <file>      Compile the program")
@@ -557,6 +563,17 @@ if __name__ == "__main__" and "__file__" in globals():
     argv = sys.argv
     assert len(argv) >= 1
     compiler_name, *argv = argv
+
+    while len(argv) > 0:
+        if argv[0] == '-dbg':
+            debug = True
+            argv = argv[1:]
+        else:
+            break
+
+    if debug:
+        print("[INFO] Debug mode is enabled")
+
     if len(argv) < 1:
         usage(compiler_name)
         print("[ERROR] No subcommand is provided")
