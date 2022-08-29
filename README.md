@@ -185,26 +185,26 @@ This is what the language supports so far.
 
 - `<integer>` - push the integer onto the stack. Right now the integer is anything that is parsable by [int](https://docs.python.org/3/library/functions.html#int) function.
 ```
-a --> a
+a -- a
 ```
 - `cp` - duplicate an element on top of the stack.
 ```
-a --> a a
+a -- a a
 ```
 
 - `=>` - print the element on top of the stack to stdout and remove it from the stack.
 ```
-a b --> a
+a b -- a
 ```
 
 - `~` - swap two elements on the top of the stack.
 ```
-a b --> b a
+a b -- b a
 ```
 
 - `#` - drops the top element of the stack.
 ```
-a b --> a
+a b -- a
 ```
 
 ### Comparison
