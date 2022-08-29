@@ -19,6 +19,7 @@
 	- [Stack Manipulation](#stack-manipulation)
 	- [Comparison](#comparison)
 	- [Arithmetic](#arithmetic)
+	- [Bitwise](#bitwise)
 	- [Control Flow](#control-flow)
 		- [if-else condition](#if-else-condition)
 		- [while loop](#while-loop)
@@ -230,6 +231,25 @@ a b --> a
 - `-` - subtracts the top of the stack from the element below.
 ```
 [a: int] [b: int] --> [a - b: int]
+```
+
+### Bitwise
+
+- `>>` - right bit shift. 
+```
+[a: int] [b: int] -- [a >> b: int]
+```
+- `<<` - left bit shift.
+```
+[a: int] [b: int] -- [a << b: int]
+```
+- `|` - bit `or`.
+```
+[a: int] [b: int] -- [a | b: int]
+```
+- `&` - bit `and`. 
+```
+[a: int] [b: int] -- [a | b: int]
 ```
 
 ### Control Flow
