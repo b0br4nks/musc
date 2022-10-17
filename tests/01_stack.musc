@@ -1,16 +1,28 @@
 -- 01_stack.musc
 
+-- 888 is a separation line
+
 -- push
 1 2 3 => => =>
 1 => 2 => 3 =>
+
+888 =>
 
 -- duplicate
 1 cp => =>
 2 cp => cp => =>
 
+888 =>
+
 -- swap
 1 2 ~ => =>
+
+888 =>
 
 -- drop
 1 2 # =>
 
+888 =>
+
+-- over
+1 2 over =>
