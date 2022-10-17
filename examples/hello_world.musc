@@ -1,0 +1,16 @@
+-- "Hello, World\n"
+mem
+cp 72 &s 1 +
+cp 101 &s 1 +
+cp 108 &s 1 +
+cp 108 &s 1 +
+cp 111 &s 1 +
+cp 44 &s 1 +
+cp 32 &s 1 +
+cp 87 &s 1 +
+cp 111 &s 1 +
+cp 114 &s 1 +
+cp 108 &s 1 +
+cp 100 &s 1 +
+cp 10 &s 1 +
+mem - mem 1 1 syscall3
