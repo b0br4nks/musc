@@ -36,7 +36,7 @@ A [stack-oriented language](https://en.wikipedia.org/wiki/Stack-oriented_program
 
 <span style="color: green;">●</span> Native ([Native](https://en.wikipedia.org/wiki/Native_%28computing%29))
 
-<span style="color: red;">●</span> Turing-complete ([Turing completeness](https://en.wikipedia.org/wiki/Turing_completeness))
+<span style="color: green;">●</span> [Turing-complete](./examples/rule_110.musc) ([Turing completeness](https://en.wikipedia.org/wiki/Turing_completeness))
 
 <span style="color: red;">●</span> Statically typed ([Static type checking](https://en.wikipedia.org/wiki/Type_system#Static_type_checking))
 
