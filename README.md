@@ -231,6 +231,14 @@ a b -- a b a
 ```
 [a: int] [b: int] --> [a < b  : bool]
 ```
+- `>=` - applies the greater or equal comparison on top two elements.
+```
+[a: int] [b: int] -- [a >= b : bool]
+```
+- `<=` - applies the greater or equal comparison on top two elements.
+```
+[a: int] [b: int] -- [a <= b : bool]
+```
 
 ### Arithmetic
 
