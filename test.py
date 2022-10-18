@@ -78,7 +78,7 @@ if __name__ == '__main__':
     exe_name, *argv = sys.argv
 
     folder = "./tests/"
-    subcmd = "-t"
+    subcmd = "-h"
 
     while len(argv) > 0:
         arg, *argv = argv

@@ -165,6 +165,23 @@ $ mkdir output && ./musc.py -c -r -o output/ ./tests/03_arithmetics.musc
 
 Test cases are located in [./tests/](./tests/) folder. The `*.txt` files are the expected outputs of the corresponding programs.
 
+However, you can choose in which folder the tests should be executed with the `-f` subcommand:
+```console
+$ ./test.py -f <folder>
+```
+
+Run [./test.py](./test.py) script with the `-h` subcommand to print more info on the stdout (default, if no subcommand is provided):
+```console
+Usage: ./test.py [OPTIONS] [SUBCOMMAND]
+OPTIONS:
+    -f <folder> Folder with the tests. (Default: ./tests/)
+SUBCOMMANDS:
+    -t          Run the tests. 
+    -r          Record expected output of the tests.
+    -c          Clean the directory.
+    -h          Print this message to stdout and exit with 0 code.(Default when no subcommand is provided)
+```
+
 Run [./test.py](./test.py) script with the `-t` subcommand to execute the programs and assert their outputs:
 
 ```console
@@ -176,6 +193,9 @@ To update expected output files run the `-r` subcommand:
 ```console
 $ ./test.py -r
 ```
+
+The [./examples/](./examples/) contains programs that are meant for showcasing the language rather then testing it:
+
 
 ## Language Reference
 
