@@ -221,15 +221,15 @@ a b -- a b a
 
 - `=` - checks if two elements on top of the stack are equal. Removes the elements from the stack and pushes `1` if they are equal and `0` if they are not.
 ```
-[a: int] [b: int] --> [a == b : bool]
+[a: int] [b: int] -- [a == b : bool]
 ```
 - `>` - applies the greater comparison on top two elements.
 ```
-[a: int] [b: int] --> [a > b  : bool]
+[a: int] [b: int] -- [a > b  : bool]
 ```
 - `<` - applies the less comparison on top two elements.
 ```
-[a: int] [b: int] --> [a < b  : bool]
+[a: int] [b: int] -- [a < b  : bool]
 ```
 - `>=` - applies the greater or equal comparison on top two elements.
 ```
@@ -244,15 +244,15 @@ a b -- a b a
 
 - `+` - sums up two elements on the top of the stack.
 ```
-[a: int] [b: int] --> [a + b: int]
+[a: int] [b: int] -- [a + b: int]
 ```
 - `-` - subtracts the top of the stack from the element below.
 ```
-[a: int] [b: int] --> [a - b: int]
+[a: int] [b: int] -- [a - b: int]
 ```
 - `mod` - perform [Euclidean division](https://en.wikipedia.org/wiki/Euclidean_division) between two elements on top of the stack.
 ```
-[a: int] [b: int] --> [a / b: int] [a % b: int]
+[a: int] [b: int] -- [a / b: int] [a % b: int]
 ```
 
 ### Bitwise
