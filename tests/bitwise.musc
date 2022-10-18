@@ -1,14 +1,14 @@
 -- 06_bitwise.musc
 
 -- left shift
-2 4 << =>
+2 4 << fmt
 
 -- right shift
-32 1 >> =>
+32 1 >> fmt
 
 -- bit or
-1 2 | =>
+1 2 | fmt
 
 -- bit and
-1 2 & =>
+1 2 & fmt
 

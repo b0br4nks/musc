@@ -2,20 +2,20 @@
 
 -- if-else multi-line
 32 32 + 65 = if
-	64 =>
+	64 fmt
 else
-	128 =>
+	128 fmt
 end
 
 -- if-else oneline
-32 32 + 64 = if 64 => else 128 => end
+32 32 + 64 = if 64 fmt else 128 fmt end
 
 -- while multi-line
 10 while cp -1 > do
-	cp =>
+	cp fmt
 	1 -
 end
 
 -- while oneline
-0 while cp 11 < do cp => 1 + end
+0 while cp 11 < do cp fmt 1 + end
 

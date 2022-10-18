@@ -1,4 +1,4 @@
 -- sequence 100
 100 0 while pcp > do
-    cp => 1 +
+    cp fmt 1 +
 end

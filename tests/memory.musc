@@ -8,7 +8,7 @@ mem 3 + 67 &s
 mem 4 + 10 &s
 
 -- print 'MUSC' to stdout
-5 mem 1 1 syscall3 =>
+5 mem 1 1 syscall3 fmt
 
 -- more dynamic way
 mem cp 77 &s
@@ -17,7 +17,7 @@ mem cp 77 &s
 1 + cp 67 &s
 1 + cp 10 &s
 1 +
-mem - mem 1 1 syscall3 =>
+mem - mem 1 1 syscall3 fmt
 
 -- increament each character by 1 making it 'NVTD'
 mem 0 + cp &l 1 + &s
@@ -26,4 +26,4 @@ mem 2 + cp &l 1 + &s
 mem 3 + cp &l 1 + &s
 
 -- print 'NVTD' to stdout
-5 mem 1 1 syscall3 =>
+5 mem 1 1 syscall3 fmt

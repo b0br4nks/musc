@@ -3,34 +3,34 @@
 -- 888 is a separation line
 
 -- push
-1 2 3 => => =>
-1 => 2 => 3 =>
+1 2 3 fmt fmt fmt
+1 fmt 2 fmt 3 fmt
 
-888 =>
+888 fmt
 
 -- duplicate
-1 cp => =>
-2 cp => cp => =>
+1 cp fmt fmt
+2 cp fmt cp fmt fmt
 
-888 =>
+888 fmt
 
 -- pairduplicate
-1 2 pcp => => => =>
+1 2 pcp fmt fmt fmt fmt
 
-888 =>
+888 fmt
 
 -- swap
-1 2 ~ => =>
+1 2 ~ fmt fmt
 
-888 =>
+888 fmt
 
 -- drop
-1 2 # =>
+1 2 # fmt
 
-888 =>
+888 fmt
 
 -- over
-1 2 over =>
+1 2 over fmt
 
 -- bigint
-9999999999999999999 =>
+9999999999999999999 fmt

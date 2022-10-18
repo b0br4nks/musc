@@ -50,14 +50,14 @@ Two simple programs:
 descending order
 ```musc
 10 while cp -1 > do
-	cp =>
+	cp fmt
 	1 -
 end
 ```
 
 ascending order
 ```
-0 while cp 11 < do cp => 1 + end
+0 while cp 11 < do cp fmt 1 + end
 ```
 
 ## Usage
@@ -84,10 +84,10 @@ $ cat ./tests/03_arithmetics.musc
 -- 03_arithmetics.musc
 
 -- add
-1 2 + =>
+1 2 + fmt
 
 -- substract
-3 2 - =>
+3 2 - fmt
 $ ./musc.py -s ./tests/03_arithmetics.musc
 3
 1
@@ -101,10 +101,10 @@ $ cat ./tests/03_arithmetics.musc
 -- 03_arithmetics.musc
 
 -- add
-1 2 + =>
+1 2 + fmt
 
 -- substract
-3 2 - =>
+3 2 - fmt
 $ ./musc.py -c ./tests/03_arithmetics.musc
 [INFO] Generating 03_arithmetics.asm
 [CMD] nasm -felf64 tests/03_arithmetics.asm
@@ -225,7 +225,7 @@ a -- a a
 a b -- a b a b
 ```
 
-- `=>` - print the element on top of the stack to stdout and remove it from the stack.
+- `fmt` - print the element on top of the stack to stdout and remove it from the stack.
 ```
 a b -- a
 ```
