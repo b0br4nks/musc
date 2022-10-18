@@ -189,12 +189,20 @@ $ ./test.py -t
 ```
 
 To update expected output files run the `-r` subcommand:
-
 ```console
 $ ./test.py -r
 ```
 
 The [./examples/](./examples/) contains programs that are meant for showcasing the language rather then testing it:
+```console
+$ ./test.py -f ./examples/ -r
+```
+
+To clean the folder from the `*.asm` `*.o` and `binary* (ELF 64-bit LSB executable)`, you can run the `-c` subcommand:
+```console
+$ ./test.py -c
+$ ./test.py -f ./examples/ -c
+```
 
 
 ## Language Reference

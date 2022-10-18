@@ -583,7 +583,7 @@ def parse_token_as_op(token):
         try:
             return {'type': OP_PUSH, 'value': int(word), 'loc': loc}
         except ValueError as err:
-            print("%s:%d:%d: unkown word `%s`" % (loc + (word, )))
+            print("%s:%d:%d: unknown word `%s`" % (loc + (word, )))
             exit(1)
 
 def crossreference_blocks(program):
