@@ -27,6 +27,7 @@ def subscript(reset=False) -> int:
 OP_PUSH=subscript(True)
 OP_PLUS=subscript()
 OP_MINUS=subscript()
+OP_MOD=subscript()
 OP_EQUAL=subscript()
 OP_RSH=subscript()
 OP_LSH=subscript()
@@ -63,7 +64,7 @@ def simulate_program(program):
     mem = bytearray(MEM_CAPACITY)
     ip = 0
     while ip < len(program):
-        assert COUNT_OPS == 30, "Exhaustive handling of operations in simulation"
+        assert COUNT_OPS == 31, "Exhaustive handling of operations in simulation"
         op = program[ip]
         if op['type'] == OP_PUSH:
             stack.append(op['value'])
@@ -77,6 +78,11 @@ def simulate_program(program):
             a = stack.pop()
             b = stack.pop()
             stack.append(b - a)
+            ip += 1
+        elif op['type'] == OP_MOD:
+            a = stack.pop()
+            b = stack.pop()
+            stack.append(b % a)
             ip += 1
         elif op['type'] == OP_EQUAL:
             a = stack.pop()
@@ -257,7 +263,7 @@ def compile_program(program, out_file_path):
         out.write("_start:\n")
         for ip in range(len(program)):
             op = program[ip]
-            assert COUNT_OPS == 30, "Exhaustive handling of operations in compilation!"
+            assert COUNT_OPS == 31, "Exhaustive handling of operations in compilation!"
             out.write("addr_%d:\n" % ip)
             if op['type'] == OP_PUSH:
                 out.write("    ;; -- push %d --\n" % op['value'])
@@ -287,14 +293,21 @@ def compile_program(program, out_file_path):
                 out.write("    cmp rax, rbx\n")
                 out.write("    cmove rcx, rdx\n")
                 out.write("    push rcx\n")
+            elif op['type'] == OP_MOD:
+                out.write("    ;; -- mod --\n")
+                out.write("    xor rdx, rdx\n")
+                out.write("    pop rbx\n")
+                out.write("    pop rax\n")
+                out.write("    div rbx\n")
+                out.write("    push rdx\n")
             elif op['type'] == OP_RSH:
-                out.write("    ;; -- shr --\n")
+                out.write("    ;; -- rsh --\n")
                 out.write("    pop rcx\n")
                 out.write("    pop rbx\n")
                 out.write("    shr rbx, cl\n")
                 out.write("    push rbx\n")
             elif op['type'] == OP_LSH:
-                out.write("    ;; -- shl --\n")
+                out.write("    ;; -- lsh --\n")
                 out.write("    pop rcx\n")
                 out.write("    pop rbx\n")
                 out.write("    shl rbx, cl\n")
@@ -357,21 +370,21 @@ def compile_program(program, out_file_path):
                 out.write("    push rbx\n")
             elif op['type'] == OP_GT:
                 out.write("    ;; -- gt --\n")
-                out.write("    mov rcx, 0\n");
-                out.write("    mov rdx, 1\n");
-                out.write("    pop rbx\n");
-                out.write("    pop rax\n");
-                out.write("    cmp rax, rbx\n");
-                out.write("    cmovg rcx, rdx\n");
+                out.write("    mov rcx, 0\n")
+                out.write("    mov rdx, 1\n")
+                out.write("    pop rbx\n")
+                out.write("    pop rax\n")
+                out.write("    cmp rax, rbx\n")
+                out.write("    cmovg rcx, rdx\n")
                 out.write("    push rcx\n")
             elif op['type'] == OP_LT:
-                out.write("    ;; -- gt --\n")
-                out.write("    mov rcx, 0\n");
-                out.write("    mov rdx, 1\n");
-                out.write("    pop rbx\n");
-                out.write("    pop rax\n");
-                out.write("    cmp rax, rbx\n");
-                out.write("    cmovl rcx, rdx\n");
+                out.write("    ;; -- lt --\n")
+                out.write("    mov rcx, 0\n")
+                out.write("    mov rdx, 1\n")
+                out.write("    pop rbx\n")
+                out.write("    pop rax\n")
+                out.write("    cmp rax, rbx\n")
+                out.write("    cmovl rcx, rdx\n")
                 out.write("    push rcx\n")
             elif op['type'] == OP_WHILE:
                 out.write("    ;; -- while --\n")
@@ -453,11 +466,13 @@ def compile_program(program, out_file_path):
 def parse_token_as_op(token):
     (file_path, row, col, word) = token
     loc = (file_path, row + 1, col + 1)
-    assert COUNT_OPS == 30, "Exhaustive op handling in parse_token_as_op"
+    assert COUNT_OPS == 31, "Exhaustive op handling in parse_token_as_op"
     if word == '+':
         return {'type': OP_PLUS, 'loc': loc}
     elif word == '-':
         return {'type': OP_MINUS, 'loc': loc} 
+    elif word == 'mod':
+        return {'type': OP_MOD, 'loc': loc}
     elif word == '=>':
         return {'type': OP_DUMP, 'loc': loc}
     elif word == '=':
@@ -523,7 +538,7 @@ def crossreference_blocks(program):
     stack = []
     for ip in range(len(program)):
         op = program[ip]
-        assert COUNT_OPS == 30, "Exhaustive handling of ops in crossreference_program. Keep in mind that not all of the ops need to be handled in here. Only those that form blocks."
+        assert COUNT_OPS == 31, "Exhaustive handling of ops in crossreference_program. Keep in mind that not all of the ops need to be handled in here. Only those that form blocks."
         if op['type'] == OP_IF:
             stack.append(ip)
         elif op['type'] == OP_ELSE:

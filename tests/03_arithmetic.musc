@@ -5,3 +5,6 @@
 
 -- substract
 3 2 - =>
+
+-- modulo
+5999 3977 mod =>
