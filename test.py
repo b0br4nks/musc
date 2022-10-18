@@ -9,10 +9,10 @@ def cmd_run_echoed(cmd, **kwargs):
     print("[CMD] %s" % " ".join(map(shlex.quote, cmd)))
     return subprocess.run(cmd, **kwargs)
 
-def test():
+def test(folder):
     s_failed = 0
     c_failed = 0
-    for entry in os.scandir("./tests/"):
+    for entry in os.scandir(folder):
         musc_ext = '.musc'
         if entry.is_file() and entry.path.endswith(musc_ext):
             print('[INFO] Testing %s' % entry.path)
@@ -48,8 +48,8 @@ def test():
     if s_failed != 0 or c_failed != 0:
         exit(1)
 
-def record():
-    for entry in os.scandir("./tests/"):
+def record(folder):
+    for entry in os.scandir(folder):
         musc_ext = '.musc'
         if entry.is_file() and entry.path.endswith(musc_ext):
             sim_output = cmd_run_echoed(["./musc.py", "-s", entry.path], capture_output=True, check=True).stdout
@@ -59,7 +59,9 @@ def record():
                 txt_file.write(sim_output)
 
 def usage(exe_name):
-    print("Usage: ./test.py [SUBCOMMAND]")
+    print("Usage: ./test.py [OPTIONS] [SUBCOMMAND]")
+    print("OPTIONS:")
+    print("    -f <folder> Folder with the tests. (Default: ./tests/)")
     print("SUBCOMMANDS:")
     print("    -t          Run the tests. ")
     print("    -r          Record expected output of the tests.")
@@ -67,28 +69,38 @@ def usage(exe_name):
     print("    -h          Print this message to stdout and exit with 0 code.(Default when no subcommand is provided)")
 
 # NOTE: temporary
-def clean():
-    for entry in os.scandir("./tests/"):
+def clean(folder):
+    for entry in os.scandir(folder):
         if entry.is_file() and not entry.path.endswith('.musc') and not entry.path.endswith('.txt'):
             os.remove(entry.path)
 
 if __name__ == '__main__':
     exe_name, *argv = sys.argv
 
-    if len(argv) == 0:
+    folder = "./tests/"
+    subcmd = "-t"
+
+    while len(argv) > 0:
+        arg, *argv = argv
+        if arg == '-f':
+            if len(argv) == 0:
+                print("[ERROR] no <folder> is provided for option `-f`")
+                exit(1)
+            folder, *argv = argv
+        else:
+            subcmd = arg
+            break
+
+    if subcmd == '-r':
+        record(folder)
+    elif subcmd == '-t':
+        test(folder)
+    elif subcmd == '-c':
+        clean(folder)
+    elif subcmd == '-h':
         usage(exe_name)
     else:
-        subcmd, *argv = argv
-        if subcmd == '-r':
-            record()
-        elif subcmd == '-t':
-            test()
-        elif subcmd == '-c':
-            clean()
-        elif subcmd == '-h':
-            usage(exe_name)
-        else:
-            usage(exe_name)
-            print("[ERROR] unknown subcommand `%s`" % subcmd, file=sys.stderr)
-            exit(1);
+        usage(exe_name)
+        print("[ERROR] unknown subcommand `%s`" % subcmd, file=sys.stderr)
+        exit(1)
 
