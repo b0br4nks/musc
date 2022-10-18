@@ -223,6 +223,10 @@ a b -- a b a
 ```
 [a: int] [b: int] -- [a == b : bool]
 ```
+- `!=` - checks if two elements on top of the stack are not equal.
+```
+[a: int] [b: int] -- [a != b : bool]
+```
 - `>` - applies the greater comparison on top two elements.
 ```
 [a: int] [b: int] -- [a > b  : bool]

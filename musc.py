@@ -33,6 +33,7 @@ OP_GT=subscript()
 OP_LT=subscript()
 OP_GE=subscript()
 OP_LE=subscript()
+OP_NE=subscript()
 OP_RSH=subscript()
 OP_LSH=subscript()
 OP_BOR=subscript()
@@ -66,7 +67,7 @@ def simulate_program(program):
     mem = bytearray(MEM_CAPACITY)
     ip = 0
     while ip < len(program):
-        assert COUNT_OPS == 33, "Exhaustive handling of operations in simulation"
+        assert COUNT_OPS == 34, "Exhaustive handling of operations in simulation"
         op = program[ip]
         if op['type'] == OP_PUSH:
             stack.append(op['value'])
@@ -110,6 +111,11 @@ def simulate_program(program):
             a = stack.pop()
             b = stack.pop()
             stack.append(int(b <= a))
+            ip += 1
+        elif op['type'] == OP_NE:
+            a = stack.pop()
+            b = stack.pop()
+            stack.append(int(b != a))
             ip += 1
         elif op['type'] == OP_RSH:
             a = stack.pop()
@@ -275,7 +281,7 @@ def compile_program(program, out_file_path):
         out.write("_start:\n")
         for ip in range(len(program)):
             op = program[ip]
-            assert COUNT_OPS == 33, "Exhaustive handling of operations in compilation!"
+            assert COUNT_OPS == 34, "Exhaustive handling of operations in compilation!"
             out.write("addr_%d:\n" % ip)
             if op['type'] == OP_PUSH:
                 out.write("    ;; -- push %d --\n" % op['value'])
@@ -348,6 +354,15 @@ def compile_program(program, out_file_path):
                 out.write("    pop rax\n")
                 out.write("    div rbx\n")
                 out.write("    push rdx\n")
+            elif op['type'] == OP_NE:
+                out.write("    ;; -- ne --\n")
+                out.write("    mov rcx, 0\n")
+                out.write("    mov rdx, 1\n")
+                out.write("    pop rbx\n")
+                out.write("    pop rax\n")
+                out.write("    cmp rax, rbx\n")
+                out.write("    cmovne rcx, rdx\n")
+                out.write("    push rcx\n")
             elif op['type'] == OP_RSH:
                 out.write("    ;; -- rsh --\n")
                 out.write("    pop rcx\n")
@@ -496,7 +511,7 @@ def compile_program(program, out_file_path):
 def parse_token_as_op(token):
     (file_path, row, col, word) = token
     loc = (file_path, row + 1, col + 1)
-    assert COUNT_OPS == 33, "Exhaustive op handling in parse_token_as_op"
+    assert COUNT_OPS == 34, "Exhaustive op handling in parse_token_as_op"
     if word == '+':
         return {'type': OP_PLUS, 'loc': loc}
     elif word == '-':
@@ -515,6 +530,8 @@ def parse_token_as_op(token):
         return {'type': OP_GE, 'loc': loc}
     elif word == '<=':
         return {'type': OP_LE, 'loc': loc}
+    elif word == '!=':
+        return {'type': OP_NE, 'loc': loc}
     elif word == '>>':
         return {'type': OP_RSH, 'loc': loc}
     elif word == '<<':
@@ -572,7 +589,7 @@ def crossreference_blocks(program):
     stack = []
     for ip in range(len(program)):
         op = program[ip]
-        assert COUNT_OPS == 33, "Exhaustive handling of ops in crossreference_program. Keep in mind that not all of the ops need to be handled in here. Only those that form blocks."
+        assert COUNT_OPS == 34, "Exhaustive handling of ops in crossreference_program. Keep in mind that not all of the ops need to be handled in here. Only those that form blocks."
         if op['type'] == OP_IF:
             stack.append(ip)
         elif op['type'] == OP_ELSE:
