@@ -242,6 +242,10 @@ a b -- a b a
 ```
 [a: int] [b: int] --> [a - b: int]
 ```
+- `mod` - perform [Euclidean division](https://en.wikipedia.org/wiki/Euclidean_division) between two elements on top of the stack.
+```
+[a: int] [b: int] --> [a / b: int] [a % b: int]
+```
 
 ### Bitwise
 
