@@ -63,7 +63,14 @@ def usage(exe_name):
     print("SUBCOMMANDS:")
     print("    -t          Run the tests. ")
     print("    -r          Record expected output of the tests.")
+    print("    -c          Clean the directory.")
     print("    -h          Print this message to stdout and exit with 0 code.(Default when no subcommand is provided)")
+
+# NOTE: temporary
+def clean():
+    for entry in os.scandir("./tests/"):
+        if entry.is_file() and not entry.path.endswith('.musc') and not entry.path.endswith('.txt'):
+            os.remove(entry.path)
 
 if __name__ == '__main__':
     exe_name, *argv = sys.argv
@@ -76,6 +83,8 @@ if __name__ == '__main__':
             record()
         elif subcmd == '-t':
             test()
+        elif subcmd == '-c':
+            clean()
         elif subcmd == '-h':
             usage(exe_name)
         else:
