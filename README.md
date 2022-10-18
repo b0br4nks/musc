@@ -337,7 +337,7 @@ end
 
 ### System
 
-- `syscall<n>` - perform a syscall with n arguments where n is in range `[1..6]`. (`syscall1`, `syscall2`, ..., `syscall6`)
+- `syscall<n>` - perform a syscall with n arguments where n is in range `[0..6]`. (`syscall0`, `syscall1`, ..., `syscall6`)
 
 ## FAQ
 Why would you use a [stack-oriented language](https://en.wikipedia.org/wiki/Stack-oriented_programming), and is there any practical advantages of such a paradigm ?

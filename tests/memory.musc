@@ -17,5 +17,13 @@ mem cp 77 &s
 1 + cp 67 &s
 1 + cp 10 &s
 1 +
-5 mem - mem 1 1 syscall3 =>
+mem - mem 1 1 syscall3 =>
 
+-- increament each character by 1 making it 'NVTD'
+mem 0 + cp &l 1 + &s
+mem 1 + cp &l 1 + &s
+mem 2 + cp &l 1 + &s
+mem 3 + cp &l 1 + &s
+
+-- print 'NVTD' to stdout
+5 mem 1 1 syscall3 =>
