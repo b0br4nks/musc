@@ -8,7 +8,7 @@ mem 3 + 67 &s
 mem 4 + 10 &s
 
 -- print 'MUSC' to stdout
-5 mem 1 1 syscall3
+5 mem 1 1 syscall3 =>
 
 -- more dynamic way
 mem cp 77 &s
@@ -17,5 +17,5 @@ mem cp 77 &s
 1 + cp 67 &s
 1 + cp 10 &s
 1 +
-mem - mem 1 1 syscall3
+5 mem - mem 1 1 syscall3 =>
 

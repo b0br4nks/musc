@@ -225,6 +225,7 @@ def simulate_program(program):
                     print(s, end='', file=sys.stderr)
                 else:
                     assert False, "unknown file descriptor %d" % fd
+                stack.append(count)
             else:
                 assert False, "unknown syscall number %d" % syscall_number
             ip += 1
@@ -459,12 +460,14 @@ def compile_program(program, out_file_path):
                 out.write("    pop rax\n")
                 out.write("    pop rdi\n")
                 out.write("    syscall\n")
+                out.write("    push rax\n")
             elif op['type'] == OP_SYSCALL2:
                 out.write("    ;; -- syscall2 -- \n")
-                out.write("    pop rax\n");
-                out.write("    pop rdi\n");
-                out.write("    pop rsi\n");
-                out.write("    syscall\n");
+                out.write("    pop rax\n")
+                out.write("    pop rdi\n")
+                out.write("    pop rsi\n")
+                out.write("    syscall\n")
+                out.write("    push rax\n")
             elif op['type'] == OP_SYSCALL3:
                 out.write("    ;; -- syscall3 --\n")
                 out.write("    pop rax\n")
@@ -472,6 +475,7 @@ def compile_program(program, out_file_path):
                 out.write("    pop rsi\n")
                 out.write("    pop rdx\n")
                 out.write("    syscall\n")
+                out.write("    push rax\n")
             elif op['type'] == OP_SYSCALL4:
                 out.write("    ;; -- syscall4 --\n")
                 out.write("    pop rax\n")
@@ -480,6 +484,7 @@ def compile_program(program, out_file_path):
                 out.write("    pop rdx\n")
                 out.write("    pop r10\n")
                 out.write("    syscall\n")
+                out.write("    push rax\n")
             elif op['type'] == OP_SYSCALL5:
                 out.write("    ;; -- syscall5 --\n")
                 out.write("    pop rax\n")
@@ -489,6 +494,7 @@ def compile_program(program, out_file_path):
                 out.write("    pop r10\n")
                 out.write("    pop r8\n")
                 out.write("    syscall\n")
+                out.write("    push rax\n")
             elif op['type'] == OP_SYSCALL6:
                 out.write("    ;; -- syscall6 --\n")
                 out.write("    pop rax\n")
@@ -499,6 +505,7 @@ def compile_program(program, out_file_path):
                 out.write("    pop r8\n")
                 out.write("    pop r9\n")
                 out.write("    syscall\n")
+                out.write("    push rax\n")
             else:
                 assert False, "unreachable"
 
@@ -739,7 +746,7 @@ if __name__ == "__main__" and "__file__" in globals():
         cmd_call_echoed(["nasm", "-felf64", basepath + ".asm"])
         cmd_call_echoed(["ld", "-o", basepath, basepath + ".o"])
         if run:
-            exit(cmd_call_echoed([basepath]))
+            exit(cmd_call_echoed([basepath] + argv))
     elif subcommand in ["help","-h"]:
         usage(compiler_name)
         exit(0)
