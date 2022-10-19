@@ -1,36 +1,42 @@
 -- 01_stack.musc
+-- "===========================\n" 1 1 syscall3 is a separation line
 
--- 888 is a separation line
-
--- push
+-- push int
 1 2 3 fmt fmt fmt
 1 fmt 2 fmt 3 fmt
 
-888 fmt
+"===========================\n" 1 1 syscall3
+
+-- push str
+"Hello, World\n" 1 1 syscall3
+
+"===========================\n" 1 1 syscall3
 
 -- duplicate
 1 cp fmt fmt
 2 cp fmt cp fmt fmt
 
-888 fmt
+"===========================\n" 1 1 syscall3
 
 -- pairduplicate
 1 2 pcp fmt fmt fmt fmt
 
-888 fmt
+"===========================\n" 1 1 syscall3
 
 -- swap
 1 2 ~ fmt fmt
 
-888 fmt
+"===========================\n" 1 1 syscall3
 
 -- drop
 1 2 # fmt
 
-888 fmt
+"===========================\n" 1 1 syscall3
 
 -- over
 1 2 over fmt
+
+"===========================\n" 1 1 syscall3
 
 -- bigint
 9999999999999999999 fmt

@@ -1,14 +1,22 @@
 -- 06_bitwise.musc
+-- "===========================\n" 1 1 syscall3 is a separation line
 
 -- left shift
 2 4 << fmt
 
+"===========================\n" 1 1 syscall3
+
 -- right shift
 32 1 >> fmt
+
+"===========================\n" 1 1 syscall3
 
 -- bit or
 1 2 | fmt
 
+"===========================\n" 1 1 syscall3
+
 -- bit and
 1 2 & fmt
 
+"===========================\n" 1 1 syscall3

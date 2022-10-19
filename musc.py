@@ -29,8 +29,8 @@ def register(reset=False) -> int:
     result = register_counter
     register_counter += 1
     return result
-
-OP_PUSH=register(True)
+OP_PUSH_INT=register(True)
+OP_PUSH_STR=register()
 OP_PLUS=register()
 OP_MINUS=register()
 OP_MOD=register()
@@ -69,20 +69,34 @@ COUNT_OPS=register()
 
 TOKEN_WORD=register(True)
 TOKEN_INT=register()
+TOKEN_STR=register()
 COUNT_TOKENS=register()
 
+STR_CAPACITY = 640_000
 MEM_CAPACITY = 640_000
 
 
 def simulate_program(program):
     stack = []
-    mem = bytearray(MEM_CAPACITY)
+    mem = bytearray(STR_CAPACITY + MEM_CAPACITY)
+    str_size = 0
     ip = 0
     while ip < len(program):
-        assert COUNT_OPS == 35, "Exhaustive handling of operations in simulation"
+        assert COUNT_OPS == 36, "Exhaustive handling of operations in simulation"
         op = program[ip]
-        if op['type'] == OP_PUSH:
+        if op['type'] == OP_PUSH_INT:
             stack.append(op['value'])
+            ip += 1
+        elif op['type'] == OP_PUSH_STR:
+            bs = bytes(op['value'], 'utf-8')
+            n = len(bs)
+            stack.append(n)
+            if 'addr' not in op:
+                op['addr'] = str_size
+                mem[str_size:str_size+n] = bs
+                str_size += n
+                assert str_size <= STR_CAPACITY, "String buffer overflow"
+            stack.append(op['addr'])
             ip += 1
         elif op['type'] == OP_PLUS:
             a = stack.pop()
@@ -205,7 +219,7 @@ def simulate_program(program):
             else:
                 ip += 1
         elif op['type'] == OP_MEM:
-            stack.append(0)
+            stack.append(STR_CAPACITY)
             ip += 1
         elif op['type'] == OP_LOAD:
             addr = stack.pop()
@@ -262,6 +276,7 @@ def simulate_program(program):
 
 
 def compile_program(program, out_file_path):
+    strs = []
     with open(out_file_path, "w") as out:
         out.write("BITS 64\n")
         out.write("segment .text\n")
@@ -302,12 +317,18 @@ def compile_program(program, out_file_path):
         out.write("_start:\n")
         for ip in range(len(program)):
             op = program[ip]
-            assert COUNT_OPS == 35, "Exhaustive handling of operations in compilation!"
+            assert COUNT_OPS == 36, "Exhaustive handling of operations in compilation!"
             out.write("addr_%d:\n" % ip)
-            if op['type'] == OP_PUSH:
-                out.write("    ;; -- push %d --\n" % op['value'])
+            if op['type'] == OP_PUSH_INT:
+                out.write("    ;; -- push int %d --\n" % op['value'])
                 out.write("    mov rax, %d\n" % op['value'])
                 out.write("    push rax\n")
+            elif op['type'] == OP_PUSH_STR:
+                out.write("    ;; -- push str --\n")
+                out.write("    mov rax, %d\n" % len(op['value']))
+                out.write("    push rax\n")
+                out.write("    push str_%d\n" % len(strs))
+                strs.append(op['value'])
             elif op['type'] == OP_PLUS:
                 out.write("    ;; -- plus --\n")
                 out.write("    pop rax\n")
@@ -538,11 +559,14 @@ def compile_program(program, out_file_path):
         out.write("    mov rax, 60\n")
         out.write("    mov rdi, 0\n")
         out.write("    syscall\n")
+        out.write("segment .data\n")
+        for index, s in enumerate(strs):
+            out.write("str_%d: db %s\n" % (index, ','.join(map(hex, list(bytes(s, 'utf-8'))))))
         out.write("segment .bss\n")
         out.write("mem: resb %d\n" % MEM_CAPACITY)
 
 
-assert COUNT_OPS == 35, "Exhaustive BUILTIN_WORDS definition. Keep in mind that not all of the new ops need to be defined in here. Only those that introduce new builtin words."
+assert COUNT_OPS == 36, "Exhaustive BUILTIN_WORDS definition. Keep in mind that not all of the new ops need to be defined in here. Only those that introduce new builtin words."
 BUILTIN_WORDS = {
     '+': OP_PLUS,
     '-': OP_MINUS,
@@ -582,7 +606,7 @@ BUILTIN_WORDS = {
 
 
 def parse_token_as_op(token):
-    assert COUNT_TOKENS == 2, "Exhaustive token hanlding in parse_token_as_op"
+    assert COUNT_TOKENS == 3, "Exhaustive token hanlding in parse_token_as_op"
     if token['type'] == TOKEN_WORD:
         if token['value'] in BUILTIN_WORDS:
             return {'type': BUILTIN_WORDS[token['value']], 'loc': token['loc']}
@@ -590,7 +614,9 @@ def parse_token_as_op(token):
             print("%s:%d:%d: unknown word `%s`" % (token['loc'] + (token['value'], )))
             exit(1)
     elif token['type'] == TOKEN_INT:
-        return {'type': OP_PUSH, 'value': token['value'], 'loc': token['loc']}
+        return {'type': OP_PUSH_INT, 'value': token['value'], 'loc': token['loc']}
+    elif token['type'] == TOKEN_STR:
+        return {'type': OP_PUSH_STR, 'value': token['value'], 'loc': token['loc']}
     else:
         assert False, 'unreachable'
 
@@ -599,7 +625,7 @@ def crossreference_blocks(program):
     stack = []
     for ip in range(len(program)):
         op = program[ip]
-        assert COUNT_OPS == 35, "Exhaustive handling of ops in crossreference_program. Keep in mind that not all of the ops need to be handled in here. Only those that form blocks."
+        assert COUNT_OPS == 36, "Exhaustive handling of ops in crossreference_program. Keep in mind that not all of the ops need to be handled in here. Only those that form blocks."
         if op['type'] == OP_IF:
             stack.append(ip)
         elif op['type'] == OP_ELSE:
@@ -651,9 +677,21 @@ def lex_word(text_of_token):
 def lex_line(line):
     col = find_col(line, 0, lambda k: not k.isspace())
     while col < len(line):
-        col_end = find_col(line, col, lambda k: k.isspace())
-        yield (col, lex_word(line[col:col_end]))
-        col = find_col(line, col_end, lambda k: not k.isspace())
+        col_end = None
+        if line[col] == '"':
+            col_end = find_col(line, col+1, lambda x: x == '"')
+            assert line[col_end] == '"'
+            text_of_token = line[col+1:col_end]
+            yield (col, (TOKEN_STR, bytes(text_of_token, "utf-8").decode("unicode_escape")))
+            col = find_col(line, col_end+1, lambda x: not x.isspace())
+        else:
+            col_end = find_col(line, col, lambda x: x.isspace())
+            text_of_token = line[col:col_end]
+            try:
+                yield (col, (TOKEN_INT, int(text_of_token)))
+            except ValueError:
+                yield (col, (TOKEN_WORD, text_of_token))
+            col = find_col(line, col_end, lambda x: not x.isspace())
 
 
 def lex_file(file_path):
