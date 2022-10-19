@@ -220,6 +220,10 @@ This is what the language supports so far.
 ```
 a -- a
 ```
+- `<string>` - push size and address of the string literal onto the stack. A string literal is a sequence of character enclosed with `"`.
+```
+"a" -- "a"
+```
 - `cp` - duplicate an element on top of the stack.
 ```
 a -- a a
