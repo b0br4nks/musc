@@ -1,4 +1,12 @@
 -- "Hello, World\n"
+-- "===========================\n" 1 1 syscall3 is a separation line
+
+-- with str
+"Hello, World\n" 1 1 syscall3
+
+"===========================\n" 1 1 syscall3
+
+-- with int
 mem
 cp 72 &s 1 +
 cp 101 &s 1 +
