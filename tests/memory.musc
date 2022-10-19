@@ -1,5 +1,5 @@
 -- 05_memory.musc
--- "===========================\n" 1 1 syscall3 is a separation line
+-- "===========================\n" 1 1 sys3 is a separation line
 
 -- write 'MUSC' into the memory
 mem 0 + 77 &s
@@ -8,12 +8,12 @@ mem 2 + 83 &s
 mem 3 + 67 &s
 mem 4 + 10 &s
 
-"===========================\n" 1 1 syscall3
+"===========================\n" 1 1 sys3
 
 -- print 'MUSC' to stdout
-5 mem 1 1 syscall3 fmt
+5 mem 1 1 sys3 fmt
 
-"===========================\n" 1 1 syscall3
+"===========================\n" 1 1 sys3
 
 -- more dynamic way
 mem cp 77 &s
@@ -21,9 +21,9 @@ mem cp 77 &s
 1 + cp 83 &s
 1 + cp 67 &s
 1 + cp 10 &s
-mem - mem 1 1 syscall3 fmt
+mem - mem 1 1 sys3 fmt
 
-"===========================\n" 1 1 syscall3
+"===========================\n" 1 1 sys3
 
 -- increament each character by 1 making it 'NVTD'
 mem 0 + cp &l 1 + &s
@@ -31,7 +31,7 @@ mem 1 + cp &l 1 + &s
 mem 2 + cp &l 1 + &s
 mem 3 + cp &l 1 + &s
 
-"===========================\n" 1 1 syscall3
+"===========================\n" 1 1 sys3
 
 -- print 'NVTD' to stdout
-5 mem 1 1 syscall3 fmt
+5 mem 1 1 sys3 fmt

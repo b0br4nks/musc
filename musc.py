@@ -596,13 +596,13 @@ BUILTIN_WORDS = {
     'mem': OP_MEM,
     '&s': OP_STORE,
     '&l': OP_LOAD,
-    'syscall0': OP_SYSCALL0,
-    'syscall1': OP_SYSCALL1,
-    'syscall2': OP_SYSCALL2,
-    'syscall3': OP_SYSCALL3,
-    'syscall4': OP_SYSCALL4,
-    'syscall5': OP_SYSCALL5,
-    'syscall6': OP_SYSCALL6,
+    'sys0': OP_SYSCALL0,
+    'sys1': OP_SYSCALL1,
+    'sys2': OP_SYSCALL2,
+    'sys3': OP_SYSCALL3,
+    'sys4': OP_SYSCALL4,
+    'sys5': OP_SYSCALL5,
+    'sys6': OP_SYSCALL6,
 }
 
 

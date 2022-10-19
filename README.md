@@ -43,12 +43,17 @@ A [stack-oriented language](https://en.wikipedia.org/wiki/Stack-oriented_program
 <span style="color: red;">●</span> Self-hosted (Written in itself, no more Python. [Self-hosting](https://en.wikipedia.org/wiki/Self-hosting_(compilers)))
 
 ## Example
+"Hello, World!":
+```pascal
+"Hello, World!\n" 1 1 sys3
+```
+
 Two simple programs:
 - the first one prints numbers from 10 to 0 in descending order (multi-line example);
 - the second one prints numbers from 0 to 10 in ascending order (one line example);
 
 descending order
-```musc
+```pascal
 10 while cp -1 > do
 	cp fmt
 	1 -
@@ -56,7 +61,7 @@ end
 ```
 
 ascending order
-```
+```pascal
 0 while cp 11 < do cp fmt 1 + end
 ```
 
@@ -310,7 +315,7 @@ a b -- a b a
 
 #### if-else condition
 
-```
+```pascal
 <condition> if
     <body>
 else <condition> if
@@ -321,7 +326,7 @@ end
 ```
 #### while loop
 
-```
+```pascal
 while <condition> do
     <body>
 end
@@ -337,7 +342,7 @@ end
 
 ### System
 
-- `syscall<n>` - perform a syscall with n arguments where n is in range `[0..6]`. (`syscall0`, `syscall1`, ..., `syscall6`)
+- `sys<n>` - perform a syscall with n arguments where n is in range `[0..6]`. (`sys0`, `sys1`, ..., `sys6`)
 
 ## FAQ
 Why would you use a [stack-oriented language](https://en.wikipedia.org/wiki/Stack-oriented_programming), and is there any practical advantages of such a paradigm ?
