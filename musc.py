@@ -7,6 +7,11 @@
 # - 'value' - optional field. Exists only for OP_PUSH. Contains the value that needs to be pushed onto the stack.
 # - 'jmp' -- optional field. Exists only for block Ops like `if`, `else`, `while`, etc. Contains an index of an Op within the Program that the execution has to jump to depending on the circumstantces. In case of `if` it's the place of else branch, in case of `else` it's the end of the construction, etc. The field is created during crossreference_blocks() step.
 
+# Token is a dict with the following possible fields:
+# - `type` - type of the Token. One of TOKEN_WORD, TOKEN_INT, etc. defined bellow
+# - `loc` - location of the Token within a file. It's a tuple of 3 elements: `(file_path, row, col)`. `row` and `col` are 1-based indices.
+# - `value` - the value of the token depending on the type of the Token. For TOKEN_WORD it's `str`, for TOKEN_INT it's `int`.
+
 import os
 import sys
 import subprocess
@@ -15,54 +20,59 @@ from os import path
 
 debug=False
 
-subscript_counter=0
+register_counter=0
 
-def subscript(reset=False) -> int:
-    global subscript_counter
+def register(reset=False) -> int:
+    global register_counter
     if reset:
-        subscript_counter = 0
-    result = subscript_counter
-    subscript_counter += 1
+        register_counter = 0
+    result = register_counter
+    register_counter += 1
     return result
 
-OP_PUSH=subscript(True)
-OP_PLUS=subscript()
-OP_MINUS=subscript()
-OP_MOD=subscript()
-OP_EQ=subscript()
-OP_GT=subscript()
-OP_LT=subscript()
-OP_GE=subscript()
-OP_LE=subscript()
-OP_NE=subscript()
-OP_RSH=subscript()
-OP_LSH=subscript()
-OP_BOR=subscript()
-OP_BAND=subscript()
-OP_FMT=subscript()
-OP_IF=subscript()
-OP_END=subscript()
-OP_ELSE=subscript()
-OP_DUPL=subscript()
-OP_2DUPL=subscript()
-OP_SWAP=subscript()
-OP_DROP=subscript()
-OP_OVER=subscript()
-OP_WHILE=subscript()
-OP_DO=subscript()
-OP_MEM=subscript()
-OP_LOAD=subscript()
-OP_STORE=subscript()
-OP_SYSCALL0=subscript()
-OP_SYSCALL1=subscript()
-OP_SYSCALL2=subscript()
-OP_SYSCALL3=subscript()
-OP_SYSCALL4=subscript()
-OP_SYSCALL5=subscript()
-OP_SYSCALL6=subscript()
-COUNT_OPS=subscript()
+OP_PUSH=register(True)
+OP_PLUS=register()
+OP_MINUS=register()
+OP_MOD=register()
+OP_EQ=register()
+OP_GT=register()
+OP_LT=register()
+OP_GE=register()
+OP_LE=register()
+OP_NE=register()
+OP_RSH=register()
+OP_LSH=register()
+OP_BOR=register()
+OP_BAND=register()
+OP_FMT=register()
+OP_IF=register()
+OP_END=register()
+OP_ELSE=register()
+OP_DUPL=register()
+OP_2DUPL=register()
+OP_SWAP=register()
+OP_DROP=register()
+OP_OVER=register()
+OP_WHILE=register()
+OP_DO=register()
+OP_MEM=register()
+OP_LOAD=register()
+OP_STORE=register()
+OP_SYSCALL0=register()
+OP_SYSCALL1=register()
+OP_SYSCALL2=register()
+OP_SYSCALL3=register()
+OP_SYSCALL4=register()
+OP_SYSCALL5=register()
+OP_SYSCALL6=register()
+COUNT_OPS=register()
+
+TOKEN_WORD=register(True)
+TOKEN_INT=register()
+COUNT_TOKENS=register()
 
 MEM_CAPACITY = 640_000
+
 
 def simulate_program(program):
     stack = []
@@ -249,6 +259,7 @@ def simulate_program(program):
     if debug:
         print("[INFO] Memory dump")
         print(mem[:20])
+
 
 def compile_program(program, out_file_path):
     with open(out_file_path, "w") as out:
@@ -530,84 +541,59 @@ def compile_program(program, out_file_path):
         out.write("segment .bss\n")
         out.write("mem: resb %d\n" % MEM_CAPACITY)
 
+
+assert COUNT_OPS == 35, "Exhaustive BUILTIN_WORDS definition. Keep in mind that not all of the new ops need to be defined in here. Only those that introduce new builtin words."
+BUILTIN_WORDS = {
+    '+': OP_PLUS,
+    '-': OP_MINUS,
+    'mod': OP_MOD,
+    'fmt': OP_FMT,
+    '=': OP_EQ,
+    '>': OP_GT,
+    '<': OP_LT,
+    '>=': OP_GE,
+    '<=': OP_LE,
+    '!=': OP_NE,
+    '>>': OP_RSH,
+    '<<': OP_LSH,
+    '|': OP_BOR,
+    '&': OP_BAND,
+    'if': OP_IF,
+    'end': OP_END,
+    'else': OP_ELSE,
+    'cp': OP_DUPL,
+    'pcp': OP_2DUPL,
+    '~': OP_SWAP,
+    '#': OP_DROP,
+    'over': OP_OVER,
+    'while': OP_WHILE,
+    'do': OP_DO,
+    'mem': OP_MEM,
+    '&s': OP_STORE,
+    '&l': OP_LOAD,
+    'syscall0': OP_SYSCALL0,
+    'syscall1': OP_SYSCALL1,
+    'syscall2': OP_SYSCALL2,
+    'syscall3': OP_SYSCALL3,
+    'syscall4': OP_SYSCALL4,
+    'syscall5': OP_SYSCALL5,
+    'syscall6': OP_SYSCALL6,
+}
+
+
 def parse_token_as_op(token):
-    (file_path, row, col, word) = token
-    loc = (file_path, row + 1, col + 1)
-    assert COUNT_OPS == 35, "Exhaustive op handling in parse_token_as_op"
-    if word == '+':
-        return {'type': OP_PLUS, 'loc': loc}
-    elif word == '-':
-        return {'type': OP_MINUS, 'loc': loc} 
-    elif word == 'mod':
-        return {'type': OP_MOD, 'loc': loc}
-    elif word == 'fmt':
-        return {'type': OP_FMT, 'loc': loc}
-    elif word == '=':
-        return {'type': OP_EQ, 'loc': loc}
-    elif word == '>':
-        return {'type': OP_GT, 'loc': loc}
-    elif word == '<':
-        return {'type': OP_LT, 'loc': loc}
-    elif word == '>=':
-        return {'type': OP_GE, 'loc': loc}
-    elif word == '<=':
-        return {'type': OP_LE, 'loc': loc}
-    elif word == '!=':
-        return {'type': OP_NE, 'loc': loc}
-    elif word == '>>':
-        return {'type': OP_RSH, 'loc': loc}
-    elif word == '<<':
-        return {'type': OP_LSH, 'loc': loc}
-    elif word == '|':
-        return {'type': OP_BOR, 'loc': loc}
-    elif word == '&':
-        return {'type': OP_BAND, 'loc': loc}
-    elif word == 'if':
-        return {'type': OP_IF, 'loc': loc}
-    elif word == 'end':
-        return {'type': OP_END, 'loc': loc}
-    elif word == 'else':
-        return {'type': OP_ELSE, 'loc': loc}
-    elif word == 'cp':
-        return {'type': OP_DUPL, 'loc': loc}
-    elif word == 'pcp':
-        return {'type': OP_2DUPL, 'loc': loc}
-    elif word == '~':
-        return {'type': OP_SWAP, 'loc': loc}
-    elif word == '#':
-        return {'type': OP_DROP, 'loc': loc}
-    elif word == 'over':
-        return {'type': OP_OVER, 'loc': loc}
-    elif word == 'while':
-        return {'type': OP_WHILE, 'loc': loc}
-    elif word == 'do':
-        return {'type': OP_DO, 'loc': loc}
-    elif word == 'mem':
-        return {'type': OP_MEM, 'loc': loc}
-    elif word == '&s':
-        return {'type': OP_STORE, 'loc': loc}
-    elif word == '&l':
-        return {'type': OP_LOAD, 'loc': loc}
-    elif word == 'syscall0':
-        return {'type': OP_SYSCALL0, 'loc': loc}
-    elif word == 'syscall1':
-        return {'type': OP_SYSCALL1, 'loc': loc}
-    elif word == 'syscall2':
-        return {'type': OP_SYSCALL2, 'loc': loc}
-    elif word == 'syscall3':
-        return {'type': OP_SYSCALL3, 'loc': loc}
-    elif word == 'syscall4':
-        return {'type': OP_SYSCALL4, 'loc': loc}
-    elif word == 'syscall5':
-        return {'type': OP_SYSCALL5, 'loc': loc}
-    elif word == 'syscall6':
-        return {'type': OP_SYSCALL6, 'loc': loc}
-    else:
-        try:
-            return {'type': OP_PUSH, 'value': int(word), 'loc': loc}
-        except ValueError as err:
-            print("%s:%d:%d: unknown word `%s`" % (loc + (word, )))
+    assert COUNT_TOKENS == 2, "Exhaustive token hanlding in parse_token_as_op"
+    if token['type'] == TOKEN_WORD:
+        if token['value'] in BUILTIN_WORDS:
+            return {'type': BUILTIN_WORDS[token['value']], 'loc': token['loc']}
+        else:
+            print("%s:%d:%d: unknown word `%s`" % (token['loc'] + (token['value'], )))
             exit(1)
+    elif token['type'] == TOKEN_INT:
+        return {'type': OP_PUSH, 'value': token['value'], 'loc': token['loc']}
+    else:
+        assert False, 'unreachable'
+
 
 def crossreference_blocks(program):
     stack = []
@@ -648,30 +634,45 @@ def crossreference_blocks(program):
 
     return program
 
+
 def find_col(line, start, predicate) -> int:
     while start < len(line) and not predicate(line[start]):
         start += 1
     return start
 
+
+def lex_word(text_of_token):
+    try:
+        return (TOKEN_INT, int(text_of_token))
+    except ValueError:
+        return (TOKEN_WORD, text_of_token)
+
+
 def lex_line(line):
     col = find_col(line, 0, lambda k: not k.isspace())
     while col < len(line):
         col_end = find_col(line, col, lambda k: k.isspace())
-        yield (col, line[col:col_end])
+        yield (col, lex_word(line[col:col_end]))
         col = find_col(line, col_end, lambda k: not k.isspace())
+
 
 def lex_file(file_path):
     with open(file_path, "r") as f:
-        return [(file_path, row, col, token)
+        return [{'type': token_type,
+                 'loc': (file_path, row + 1, col + 1),
+                 'value': token_value}
                 for (row, line) in enumerate(f.readlines())
-                for (col, token) in lex_line(line.split("--")[0])]
+                for (col, (token_type, token_value)) in lex_line(line.split('--')[0])]
+
 
 def load_program_from_file(file_path):
     return crossreference_blocks([parse_token_as_op(token) for token in lex_file(file_path)])
 
+
 def cmd_call_echoed(cmd):
     print("[CMD] %s" % " ".join(map(shlex.quote, cmd)))
     return subprocess.call(cmd)
+
 
 def usage(compiler_name):
     print(f"Usage: {compiler_name} [OPTIONS] <SUBCOMMAND> [ARGS]\n")
@@ -685,6 +686,7 @@ def usage(compiler_name):
     print("     -r                       Run the program after successful compilation")
     print("     -o         <file|dir>    Customize the output path")
     
+
 if __name__ == "__main__" and "__file__" in globals():
     argv = sys.argv
     assert len(argv) >= 1
