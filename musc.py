@@ -681,7 +681,7 @@ def find_col(line: int, start: int, predicate: Callable[[str], bool]) -> int:
 #         return (TOKEN_WORD, text_of_token)
 
 
-def lex_line(line: str) -> Generator[Tuple[int, Tuple[int, str]], None, None]:
+def lex_line(line: str) -> Generator[Tuple[int, int, str], None, None]:
     col = find_col(line, 0, lambda k: not k.isspace())
     while col < len(line):
         col_end = None
@@ -689,15 +689,15 @@ def lex_line(line: str) -> Generator[Tuple[int, Tuple[int, str]], None, None]:
             col_end = find_col(line, col+1, lambda x: x == '"')
             assert line[col_end] == '"'
             text_of_token = line[col+1:col_end]
-            yield (col, (TOKEN_STR, bytes(text_of_token, "utf-8").decode("unicode_escape")))
+            yield (col, TOKEN_STR, bytes(text_of_token, "utf-8").decode("unicode_escape"))
             col = find_col(line, col_end+1, lambda x: not x.isspace())
         else:
             col_end = find_col(line, col, lambda x: x.isspace())
             text_of_token = line[col:col_end]
             try:
-                yield (col, (TOKEN_INT, int(text_of_token)))
+                yield (col, TOKEN_INT, int(text_of_token))
             except ValueError:
-                yield (col, (TOKEN_WORD, text_of_token))
+                yield (col, TOKEN_WORD, text_of_token)
             col = find_col(line, col_end, lambda x: not x.isspace())
 
 
@@ -707,7 +707,7 @@ def lex_file(file_path: str) -> List[Token]:
                  'loc': (file_path, row + 1, col + 1),
                  'value': token_value}
                 for (row, line) in enumerate(f.readlines())
-                for (col, (token_type, token_value)) in lex_line(line.split('--')[0])]
+                for (col, token_type, token_value) in lex_line(line.split('--')[0])]
 
 
 def compile_file_to_program(file_path: str) -> List[Op]:
