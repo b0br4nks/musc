@@ -92,9 +92,11 @@ def simulate_little_endian_linux(program: Program) -> None:
         assert len(OpType) == 36, "Exhaustive op handling in simulate_little_endian_linux"
         op = program[ip]
         if op.typ == OpType.PUSH_INT:
+            assert op.value is not None, "This could be a bug in the compilation step"
             stack.append(op.value)
             ip += 1
         elif op.typ == OpType.PUSH_STR:
+            assert op.value is not None, "This could be a bug in the compilation step"
             bs = bytes(op.value, 'utf-8')
             n = len(bs)
             stack.append(n)
@@ -173,15 +175,15 @@ def simulate_little_endian_linux(program: Program) -> None:
         elif op.typ == OpType.IF:
             a = stack.pop()
             if a == 0:
-                assert op.jmp is not None
+                assert op.jmp is not None, "This could be a bug in the compilation step"
                 ip = op.jmp
             else:
                 ip += 1
         elif op.typ == OpType.ELSE:
-            assert op.jmp is not None
+            assert op.jmp is not None, "This could be a bug in the compilation step"
             ip = op.jmp
         elif op.typ == OpType.END:
-            assert op.jmp is not None
+            assert op.jmp is not None, "This could be a bug in the compilation step"
             ip = op.jmp
         elif op.typ == OpType.FMT:
             a = stack.pop()
@@ -221,7 +223,7 @@ def simulate_little_endian_linux(program: Program) -> None:
         elif op.typ == OpType.DO:
             a = stack.pop()
             if a == 0:
-                assert op.jmp is not None
+                assert op.jmp is not None, "This could be a bug in the compilation step"
                 ip = op.jmp
             else:
                 ip += 1
@@ -441,14 +443,14 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str) -> None:
                 out.write("    ;; -- if --\n")
                 out.write("    pop rax\n")
                 out.write("    test rax, rax\n")
-                assert op.jmp is not None
+                assert op.jmp is not None, "This could be a bug in the compilation step"
                 out.write("    jz addr_%d\n" % op.jmp)
             elif op.typ == OpType.ELSE:
                 out.write("    ;; -- else --\n")
-                assert op.jmp is not None
+                assert op.jmp is not None, "This could be a bug in the compilation step"
                 out.write("    jmp addr_%d\n\n" % op.jmp)
             elif op.typ == OpType.END:
-                assert op.jmp is not None
+                assert op.jmp is not None, "This could be a bug in the compilation step"
                 out.write("    ;; -- end --\n")
                 if ip + 1 != op.jmp:
                     out.write("    jmp addr_%d\n" % op.jmp)
@@ -487,7 +489,7 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str) -> None:
                 out.write("    ;; -- do --\n")
                 out.write("    pop rax\n")
                 out.write("    test rax, rax\n")
-                assert op.jmp is not None
+                assert op.jmp is not None, "This could be a bug in the compilation step"
                 out.write("    jz addr_%d\n" % op.jmp)
             elif op.typ == OpType.MEM:
                 out.write("    ;; -- mem --\n")
@@ -713,7 +715,7 @@ def compile_file_to_program(file_path: str) -> Program:
     return compile_tokens_to_program(lex_file(file_path))
 
 
-def cmd_call_echoed(cmd: List[str]) -> None:
+def cmd_call_echoed(cmd: List[str]) -> int:
     print("[CMD] %s" % " ".join(map(shlex.quote, cmd)))
     return subprocess.call(cmd)
 
