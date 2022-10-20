@@ -83,7 +83,7 @@ MEM_CAPACITY = 640_000
 
 
 def simulate_little_endian_linux(program: Program) -> None:
-    stack = []
+    stack: List[int] = []
     mem = bytearray(STR_CAPACITY + MEM_CAPACITY)
     str_offsets = {}
     str_size = 0
@@ -92,11 +92,11 @@ def simulate_little_endian_linux(program: Program) -> None:
         assert len(OpType) == 36, "Exhaustive op handling in simulate_little_endian_linux"
         op = program[ip]
         if op.typ == OpType.PUSH_INT:
-            assert op.value is not None, "This could be a bug in the compilation step"
+            assert isinstance(op.value, int), "This could be a bug in the compilation step"
             stack.append(op.value)
             ip += 1
         elif op.typ == OpType.PUSH_STR:
-            assert op.value is not None, "This could be a bug in the compilation step"
+            assert isinstance(op.value, str), "This could be a bug in the compilation step"
             value = op.value.encode('utf-8')
             n = len(value)
             stack.append(n)
@@ -236,9 +236,9 @@ def simulate_little_endian_linux(program: Program) -> None:
             stack.append(byte)
             ip += 1
         elif op.typ == OpType.STORE:
-            value = stack.pop()
-            addr = stack.pop()
-            mem[addr] = value & 0xFF
+            store_value = stack.pop()
+            store_addr = stack.pop()
+            mem[store_addr] = store_value & 0xFF
             ip += 1
         elif op.typ == OpType.SYSCALL0:
             syscall_number = stack.pop()
@@ -285,7 +285,7 @@ def simulate_little_endian_linux(program: Program) -> None:
 
 
 def generate_nasm_linux_x86_64(program: Program, out_file_path: str) -> None:
-    strs = []
+    strs: List[bytes] = []
     with open(out_file_path, "w") as out:
         out.write("BITS 64\n")
         out.write("segment .text\n")
@@ -329,12 +329,12 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str) -> None:
             assert len(OpType) == 36, "Exhaustive ops handling in generate_nasm_linux_x86_64"
             out.write("addr_%d:\n" % ip)
             if op.typ == OpType.PUSH_INT:
-                assert op.value is not None, "This could be a bug in the compilation step"
+                assert isinstance(op.value, int), "This could be a bug in the compilation step"
                 out.write("    ;; -- push int %d --\n" % op.value)
                 out.write("    mov rax, %d\n" % op.value)
                 out.write("    push rax\n")
             elif op.typ == OpType.PUSH_STR:
-                assert op.value is not None, "This could be a bug in the compilation step"
+                assert isinstance(op.value, str), "This could be a bug in the compilation step"
                 value = op.value.encode('utf-8')
                 n = len(value)
                 out.write("    ;; -- push str --\n")
@@ -621,6 +621,7 @@ BUILTIN_WORDS = {
 def compile_token_to_op(token: Token) -> Op:
     assert len(TokenType) == 3, "Exhaustive token hanlding in compile_token_to_op"
     if token.typ == TokenType.WORD:
+        assert isinstance(token.value, str), "This could be a bug in the lexer"
         if token.value in BUILTIN_WORDS:
             return Op(typ=BUILTIN_WORDS[token.value], loc=token.loc)
         else:
@@ -675,7 +676,7 @@ def compile_tokens_to_program(tokens: List[Token]) -> Program:
     return program
 
 
-def find_col(line: int, start: int, predicate: Callable[[str], bool]) -> int:
+def find_col(line: str, start: int, predicate: Callable[[str], bool]) -> int:
     while start < len(line) and not predicate(line[start]):
         start += 1
     return start
@@ -691,7 +692,7 @@ def unescape_string(s: str) -> str:
     return s.encode('utf-8').decode('unicode_escape').encode('latin-1').decode('utf-8')
 
 
-def lex_line(line: str) -> Generator[Tuple[int, TokenType, str], None, None]:
+def lex_line(line: str) -> Generator[Tuple[int, TokenType, Union[str, int]], None, None]:
     col = find_col(line, 0, lambda k: not k.isspace())
     while col < len(line):
         col_end = None
@@ -761,6 +762,8 @@ if __name__ == "__main__" and "__file__" in globals():
         exit(1)
     subcommand, *argv = argv
 
+    program_path: Optional[str] = None
+
     if subcommand in ["simulate","-s"]:
         if len(argv) < 1:
             usage(compiler_name)
@@ -771,7 +774,6 @@ if __name__ == "__main__" and "__file__" in globals():
         simulate_little_endian_linux(program)
     elif subcommand in ["compile","-c"]:
         run = False
-        program_path = None
         output_path = None
         while len(argv) > 0:
             arg, *argv = argv
