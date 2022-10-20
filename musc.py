@@ -682,41 +682,38 @@ def find_col(line: str, start: int, predicate: Callable[[str], bool]) -> int:
     return start
 
 
-# def lex_word(text_of_token):
-#     try:
-#         return (TOKEN_INT, int(text_of_token))
-#     except ValueError:
-#         return (TOKEN_WORD, text_of_token)
-
 def unescape_string(s: str) -> str:
     return s.encode('utf-8').decode('unicode_escape').encode('latin-1').decode('utf-8')
 
 
-def lex_line(line: str) -> Generator[Tuple[int, TokenType, Union[str, int]], None, None]:
+def lex_line(file_path: str, row: int, line: str) -> Generator[Token, None, None]:
     col = find_col(line, 0, lambda k: not k.isspace())
     while col < len(line):
+        loc = (file_path, row, col)
         col_end = None
         if line[col] == '"':
             col_end = find_col(line, col+1, lambda x: x == '"')
-            assert line[col_end] == '"'
+            if col_end >= len(line) or line[col_end] != '"':
+                print("%s:%d:%d: [ERROR] Unclosed string literal" % loc)
+                exit(1)
             text_of_token = line[col+1:col_end]
-            yield (col, TokenType.STR, unescape_string(text_of_token))
+            yield Token(TokenType.STR, loc, unescape_string(text_of_token))
             col = find_col(line, col_end+1, lambda x: not x.isspace())
         else:
             col_end = find_col(line, col, lambda x: x.isspace())
             text_of_token = line[col:col_end]
             try:
-                yield (col, TokenType.INT, int(text_of_token))
+                yield Token(TokenType.INT, loc, int(text_of_token))
             except ValueError:
-                yield (col, TokenType.WORD, text_of_token)
+                yield Token(TokenType.WORD, loc, text_of_token)
             col = find_col(line, col_end, lambda x: not x.isspace())
 
 
 def lex_file(file_path: str) -> List[Token]:
     with open(file_path, "r", encoding='utf-8') as f:
-        return [Token(token_type, (file_path, row + 1, col + 1), token_value)
+        return [token
                 for (row, line) in enumerate(f.readlines())
-                for (col, token_type, token_value) in lex_line(line.split('--')[0])]
+                for token in lex_line(file_path, row, line.split('--')[0])]
 
 
 def compile_file_to_program(file_path: str) -> Program:
