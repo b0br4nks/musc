@@ -1,4 +1,4 @@
--- rule 110 (https://en.swikipedia.org/wiki/Rule_110)
+-- rule 110 (https://en.wikipedia.org/wiki/Rule_110)
 mem 98 + 1 &s
 
 0 while cp 98 < do
