@@ -13,6 +13,11 @@ jobs:
         with:
           python-version: '3.7'
           architecture: x64
+      - name: install dependencies
+        run: |
+          pip install mypy
       - name: run tests
         run: |
+          mypy ./musc.py
           python ./test.py -t
+          python ./test.py -f ./examples/
