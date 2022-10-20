@@ -80,6 +80,7 @@ MEM_CAPACITY = 640_000
 def simulate_program(program):
     stack = []
     mem = bytearray(STR_CAPACITY + MEM_CAPACITY)
+    str_offsets = {}
     str_size = 0
     ip = 0
     while ip < len(program):
@@ -92,12 +93,12 @@ def simulate_program(program):
             bs = bytes(op['value'], 'utf-8')
             n = len(bs)
             stack.append(n)
-            if 'addr' not in op:
-                op['addr'] = str_size
+            if ip not in str_offsets:
+                str_offsets[ip] = str_size
                 mem[str_size:str_size+n] = bs
                 str_size += n
                 assert str_size <= STR_CAPACITY, "String buffer overflow"
-            stack.append(op['addr'])
+            stack.append(str_offsets[ip])
             ip += 1
         elif op['type'] == OP_PLUS:
             a = stack.pop()

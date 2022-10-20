@@ -1,6 +1,6 @@
 <div align="center">
 <p>
- <img width="200" src="dist/musc_logo.svg">
+ <img width="200" src="assets/musc_logo.svg">
 </p>
 <h1>The Musc Programming Language</h1>
 
@@ -151,7 +151,7 @@ $ ./musc.py -c -o ./output ./tests/03_arithmetics.musc
 [CMD] ld -o ./output ./output.o
 [CMD] ./output
 $ ls
-output*  output.asm  output.o  dist/  LICENCE  musc.py*  README.md  test.py*  tests/
+output*  output.asm  output.o  assets/  LICENCE  musc.py*  README.md  test.py*  tests/
 ```
 
 You can chain the `-r` and `-o` subcommands:
