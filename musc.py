@@ -97,12 +97,12 @@ def simulate_little_endian_linux(program: Program) -> None:
             ip += 1
         elif op.typ == OpType.PUSH_STR:
             assert op.value is not None, "This could be a bug in the compilation step"
-            bs = bytes(op.value, 'utf-8')
-            n = len(bs)
+            value = op.value.encode('utf-8')
+            n = len(value)
             stack.append(n)
             if ip not in str_offsets:
                 str_offsets[ip] = str_size
-                mem[str_size:str_size+n] = bs
+                mem[str_size:str_size+n] = value
                 str_size += n
                 assert str_size <= STR_CAPACITY, "String buffer overflow"
             stack.append(str_offsets[ip])
@@ -329,15 +329,19 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str) -> None:
             assert len(OpType) == 36, "Exhaustive ops handling in generate_nasm_linux_x86_64"
             out.write("addr_%d:\n" % ip)
             if op.typ == OpType.PUSH_INT:
+                assert op.value is not None, "This could be a bug in the compilation step"
                 out.write("    ;; -- push int %d --\n" % op.value)
                 out.write("    mov rax, %d\n" % op.value)
                 out.write("    push rax\n")
             elif op.typ == OpType.PUSH_STR:
+                assert op.value is not None, "This could be a bug in the compilation step"
+                value = op.value.encode('utf-8')
+                n = len(value)
                 out.write("    ;; -- push str --\n")
-                out.write("    mov rax, %d\n" % len(op.value))
+                out.write("    mov rax, %d\n" % n)
                 out.write("    push rax\n")
                 out.write("    push str_%d\n" % len(strs))
-                strs.append(op.value)
+                strs.append(value)
             elif op.typ == OpType.PLUS:
                 out.write("    ;; -- plus --\n")
                 out.write("    pop rax\n")
@@ -383,21 +387,21 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str) -> None:
                 out.write("    push rcx\n")
             elif op.typ == OpType.GE:
                 out.write("    ;; -- gt --\n")
-                out.write("    mov rcx, 0\n");
-                out.write("    mov rdx, 1\n");
-                out.write("    pop rbx\n");
-                out.write("    pop rax\n");
-                out.write("    cmp rax, rbx\n");
-                out.write("    cmovge rcx, rdx\n");
+                out.write("    mov rcx, 0\n")
+                out.write("    mov rdx, 1\n")
+                out.write("    pop rbx\n")
+                out.write("    pop rax\n")
+                out.write("    cmp rax, rbx\n")
+                out.write("    cmovge rcx, rdx\n")
                 out.write("    push rcx\n")
             elif op.typ == OpType.LE:
                 out.write("    ;; -- gt --\n")
-                out.write("    mov rcx, 0\n");
-                out.write("    mov rdx, 1\n");
-                out.write("    pop rbx\n");
-                out.write("    pop rax\n");
-                out.write("    cmp rax, rbx\n");
-                out.write("    cmovle rcx, rdx\n");
+                out.write("    mov rcx, 0\n")
+                out.write("    mov rdx, 1\n")
+                out.write("    pop rbx\n")
+                out.write("    pop rax\n")
+                out.write("    cmp rax, rbx\n")
+                out.write("    cmovle rcx, rdx\n")
                 out.write("    push rcx\n")
             elif op.typ == OpType.MOD:
                 out.write("    ;; -- mod --\n")
@@ -570,7 +574,7 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str) -> None:
         out.write("    syscall\n")
         out.write("segment .data\n")
         for index, s in enumerate(strs):
-            out.write("str_%d: db %s\n" % (index, ','.join(map(hex, list(bytes(s, 'utf-8'))))))
+            out.write("str_%d: db %s\n" % (index, ','.join(map(hex, list(s)))))
         out.write("segment .bss\n")
         out.write("mem: resb %d\n" % MEM_CAPACITY)
 
@@ -683,6 +687,9 @@ def find_col(line: int, start: int, predicate: Callable[[str], bool]) -> int:
 #     except ValueError:
 #         return (TOKEN_WORD, text_of_token)
 
+def unescape_string(s: str) -> str:
+    return s.encode('utf-8').decode('unicode_escape').encode('latin-1').decode('utf-8')
+
 
 def lex_line(line: str) -> Generator[Tuple[int, TokenType, str], None, None]:
     col = find_col(line, 0, lambda k: not k.isspace())
@@ -692,7 +699,7 @@ def lex_line(line: str) -> Generator[Tuple[int, TokenType, str], None, None]:
             col_end = find_col(line, col+1, lambda x: x == '"')
             assert line[col_end] == '"'
             text_of_token = line[col+1:col_end]
-            yield (col, TokenType.STR, bytes(text_of_token, "utf-8").decode("unicode_escape"))
+            yield (col, TokenType.STR, unescape_string(text_of_token))
             col = find_col(line, col_end+1, lambda x: not x.isspace())
         else:
             col_end = find_col(line, col, lambda x: x.isspace())
@@ -705,7 +712,7 @@ def lex_line(line: str) -> Generator[Tuple[int, TokenType, str], None, None]:
 
 
 def lex_file(file_path: str) -> List[Token]:
-    with open(file_path, "r") as f:
+    with open(file_path, "r", encoding='utf-8') as f:
         return [Token(token_type, (file_path, row + 1, col + 1), token_value)
                 for (row, line) in enumerate(f.readlines())
                 for (col, token_type, token_value) in lex_line(line.split('--')[0])]
