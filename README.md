@@ -214,7 +214,7 @@ $ ./test.py -f ./examples/ -c
 
 This is what the language supports so far.
 
-### Stack Manipulation
+### Data Types
 
 - `<integer>` - push the integer onto the stack. Right now the integer is anything that is parsable by [int](https://docs.python.org/3/library/functions.html#int) function.
 ```
@@ -224,6 +224,11 @@ a -- a
 ```
 "a" -- "a"
 ```
+
+### Built-in Words
+
+#### Stack Manipulation
+
 - `cp` - duplicate an element on top of the stack.
 ```
 a -- a a
@@ -254,7 +259,7 @@ a b -- a
 a b -- a b a
 ```
 
-### Comparison
+#### Comparison
 
 - `=` - checks if two elements on top of the stack are equal. Removes the elements from the stack and pushes `1` if they are equal and `0` if they are not.
 ```
@@ -281,7 +286,7 @@ a b -- a b a
 [a: int] [b: int] -- [a <= b : bool]
 ```
 
-### Arithmetic
+#### Arithmetic
 
 - `+` - sums up two elements on the top of the stack.
 ```
@@ -296,7 +301,7 @@ a b -- a b a
 [a: int] [b: int] -- [a / b: int] [a % b: int]
 ```
 
-### Bitwise
+#### Bitwise
 
 - `>>` - right bit shift. 
 ```
@@ -315,7 +320,7 @@ a b -- a b a
 [a: int] [b: int] -- [a | b: int]
 ```
 
-### Control Flow
+#### Control Flow
 
 #### if-else condition
 
@@ -336,7 +341,7 @@ while <condition> do
 end
 ```
 
-### Memory
+#### Memory
 
 - `mem` - pushes the address of the beginning of the memory where the stack can be read and written.
 
@@ -344,9 +349,24 @@ end
 
 - `&l` - load a byte from the given address.
 
-### System
+#### System
 
 - `sys<n>` - perform a syscall with n arguments where n is in range `[0..6]`. (`sys0`, `sys1`, ..., `sys6`)
+
+### Macros
+
+Define a new `<keyword>` that expands into a sequence of `<tokens>` during the compilation.
+
+An example with the keyword `print` and as tokens `1 1 sys3`:
+```
+macro print
+	1 1 sys3
+end
+
+"Hello, World!\n" print
+
+-- returns "Hello, World!"
+```
 
 ## FAQ
 Why would you use a [stack-oriented language](https://en.wikipedia.org/wiki/Stack-oriented_programming), and is there any practical advantages of such a paradigm ?
