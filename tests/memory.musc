@@ -11,7 +11,7 @@ mem 4 + 10 &s
 "===========================\n" 1 1 sys3
 
 -- print 'MUSC' to stdout
-5 mem 1 1 sys3 fmt
+5 mem 1 1 sys3 =>
 
 "===========================\n" 1 1 sys3
 
@@ -21,7 +21,7 @@ mem cp 77 &s
 1 + cp 83 &s
 1 + cp 67 &s
 1 + cp 10 &s
-mem - mem 1 1 sys3 fmt
+mem - mem 1 1 sys3 =>
 
 "===========================\n" 1 1 sys3
 
@@ -34,4 +34,4 @@ mem 3 + cp &l 1 + &s
 "===========================\n" 1 1 sys3
 
 -- print 'NVTD' to stdout
-5 mem 1 1 sys3 fmt
+5 mem 1 1 sys3 =>

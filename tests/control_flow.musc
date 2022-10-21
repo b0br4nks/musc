@@ -3,26 +3,26 @@
 
 -- if-else multi-line
 32 32 + 65 = if
-	64 fmt
+	64 =>
 else
-	128 fmt
+	128 =>
 end
 
 "===========================\n" 1 1 sys3
 
 -- if-else oneline
-32 32 + 64 = if 64 fmt else 128 fmt end
+32 32 + 64 = if 64 => else 128 => end
 
 "===========================\n" 1 1 sys3
 
 -- while multi-line
 10 while cp -1 > do
-	cp fmt
+	cp =>
 	1 -
 end
 
 "===========================\n" 1 1 sys3
 
 -- while oneline
-0 while cp 11 < do cp fmt 1 + end
+0 while cp 11 < do cp => 1 + end
 
