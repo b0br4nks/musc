@@ -6,6 +6,12 @@
 
 "===========================\n" 1 1 sys3
 
+-- with macro
+macro print 1 1 sys3 end
+"Hello, World\n" print
+
+"===========================\n" 1 1 sys3
+
 -- with int
 mem
 cp 72 &s 1 +

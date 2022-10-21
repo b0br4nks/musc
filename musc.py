@@ -30,16 +30,19 @@ class OpType(Enum):
     BOR=auto()
     BAND=auto()
     FMT=auto()
+
     IF=auto()
     END=auto()
     ELSE=auto()
+    WHILE=auto()
+    DO=auto()
+    MACRO=auto()
+
     DUPL=auto()
     DUPL2=auto()
     SWAP=auto()
     DROP=auto()
     OVER=auto()
-    WHILE=auto()
-    DO=auto()
     MEM=auto()
     LOAD=auto()
     STORE=auto()
@@ -89,7 +92,7 @@ def simulate_little_endian_linux(program: Program) -> None:
     str_size = 0
     ip = 0
     while ip < len(program):
-        assert len(OpType) == 36, "Exhaustive op handling in simulate_little_endian_linux"
+        assert len(OpType) == 37, "Exhaustive op handling in simulate_little_endian_linux"
         op = program[ip]
         if op.typ == OpType.PUSH_INT:
             assert isinstance(op.value, int), "This could be a bug in the compilation step"
@@ -185,6 +188,8 @@ def simulate_little_endian_linux(program: Program) -> None:
         elif op.typ == OpType.END:
             assert op.jmp is not None, "This could be a bug in the compilation step"
             ip = op.jmp
+        elif op.typ == OpType.MACRO:
+            assert False, "Unreachable. All of the macro definition should've been eliminated at the compilation step"
         elif op.typ == OpType.FMT:
             a = stack.pop()
             print(a)
@@ -326,7 +331,7 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str) -> None:
         out.write("_start:\n")
         for ip in range(len(program)):
             op = program[ip]
-            assert len(OpType) == 36, "Exhaustive ops handling in generate_nasm_linux_x86_64"
+            assert len(OpType) == 37, "Exhaustive ops handling in generate_nasm_linux_x86_64"
             out.write("addr_%d:\n" % ip)
             if op.typ == OpType.PUSH_INT:
                 assert isinstance(op.value, int), "This could be a bug in the compilation step"
@@ -458,6 +463,8 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str) -> None:
                 out.write("    ;; -- end --\n")
                 if ip + 1 != op.jmp:
                     out.write("    jmp addr_%d\n" % op.jmp)
+            elif op.typ == OpType.MACRO:
+                assert False, "Unreachable. All of the macro definition should've been eliminated at the compilation step."
             elif op.typ == OpType.DUPL:
                 out.write("    ;; -- dupl --\n")
                 out.write("    pop rax\n")
@@ -579,7 +586,7 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str) -> None:
         out.write("mem: resb %d\n" % MEM_CAPACITY)
 
 
-assert len(OpType) == 36, "Exhaustive BUILTIN_WORDS definition. Keep in mind that not all of the new ops need to be defined in here. Only those that introduce new builtin words."
+assert len(OpType) == 37, "Exhaustive BUILTIN_WORDS definition. Keep in mind that not all of the new ops need to be defined in here. Only those that introduce new builtin words."
 BUILTIN_WORDS = {
     '+': OpType.PLUS,
     '-': OpType.MINUS,
@@ -595,16 +602,19 @@ BUILTIN_WORDS = {
     '<<': OpType.LSH,
     '|': OpType.BOR,
     '&': OpType.BAND,
+
     'if': OpType.IF,
     'end': OpType.END,
     'else': OpType.ELSE,
+    'while': OpType.WHILE,
+    'do': OpType.DO,
+    'macro': OpType.MACRO,
+
     'cp': OpType.DUPL,
     'pcp': OpType.DUPL2,
     '~': OpType.SWAP,
     '#': OpType.DROP,
     'over': OpType.OVER,
-    'while': OpType.WHILE,
-    'do': OpType.DO,
     'mem': OpType.MEM,
     '&s': OpType.STORE,
     '&l': OpType.LOAD,
@@ -618,32 +628,57 @@ BUILTIN_WORDS = {
 }
 
 
-def compile_token_to_op(token: Token) -> Op:
-    assert len(TokenType) == 3, "Exhaustive token hanlding in compile_token_to_op"
-    if token.typ == TokenType.WORD:
-        assert isinstance(token.value, str), "This could be a bug in the lexer"
-        if token.value in BUILTIN_WORDS:
-            return Op(typ=BUILTIN_WORDS[token.value], loc=token.loc)
-        else:
-            print("%s:%d:%d: unknown word `%s`" % (token.loc + (token.value, )))
-            exit(1)
-    elif token.typ == TokenType.INT:
-        return Op(typ=OpType.PUSH_INT, value=token.value, loc=token.loc)
-    elif token.typ == TokenType.STR:
-        return Op(typ=OpType.PUSH_STR, value=token.value, loc=token.loc)
+@dataclass
+class Macro:
+    loc: Loc
+    tokens: List[Token]
+
+def tokentype_human_readable_name(typ: TokenType) -> str:
+    assert len(TokenType) == 3, "Exhaustive handling of token typs in tokentype_human_readable_name()"
+    if typ == TokenType.WORD:
+        return "word"
+    elif typ == TokenType.INT:
+        return "integer"
+    elif typ == TokenType.STR:
+        return "string"
     else:
-        assert False, 'unreachable'
+        assert False, "unreachable"
 
 
 def compile_tokens_to_program(tokens: List[Token]) -> Program:
     stack = []
-    program = [compile_token_to_op(token) for token in tokens]
-    for ip in range(len(program)):
-        op = program[ip]
-        assert len(OpType) == 36, "Exhaustive ops handling in compile_tokens_to_program. Keep in mind that not all of the ops need to be handled in here. Only those that form blocks."
+    program = []
+    rtokens = list(reversed(tokens))
+    macros: Dict[str, Macro] = {}
+    ip = 0;
+    while len(rtokens) > 0:
+        # TODO: some sort of safety mechanism for recursive macros
+        token = rtokens.pop()
+        op = None
+        assert len(TokenType) == 3, "Exhaustive token handling in compile_tokens_to_program"
+        if token.typ == TokenType.WORD:
+            assert isinstance(token.value, str), "This could be a bug in the lexer"
+            if token.value in BUILTIN_WORDS:
+                op = Op(typ=BUILTIN_WORDS[token.value], loc=token.loc)
+            elif token.value in macros:
+                rtokens += reversed(macros[token.value].tokens)
+                continue
+            else:
+                print("%s:%d:%d: unknown word `%s`" % (token.loc + (token.value, )))
+                exit(1)
+        elif token.typ == TokenType.INT:
+            op = Op(typ=OpType.PUSH_INT, value=token.value, loc=token.loc)
+        elif token.typ == TokenType.STR:
+            op = Op(typ=OpType.PUSH_STR, value=token.value, loc=token.loc)
+        else:
+            assert False, 'unreachable'
+
+        assert len(OpType) == 37, "Exhaustive ops handling in compile_tokens_to_program. Keep in mind that not all of the ops need to be handled in here. Only those that form blocks."
         if op.typ == OpType.IF:
+            program.append(op)
             stack.append(ip)
         elif op.typ == OpType.ELSE:
+            program.append(op)
             if_ip = stack.pop()
             if program[if_ip].typ != OpType.IF:
                 print(f"{program[if_ip].loc}: [ERROR] 'else' can only be used in 'if'-blocks")
@@ -651,6 +686,7 @@ def compile_tokens_to_program(tokens: List[Token]) -> Program:
             program[if_ip].jmp = ip + 1
             stack.append(ip)
         elif op.typ == OpType.END:
+            program.append(op)
             block_ip = stack.pop()
             if program[block_ip].typ == OpType.IF or program[block_ip].typ == OpType.ELSE:
                 program[block_ip].jmp = ip
@@ -663,11 +699,44 @@ def compile_tokens_to_program(tokens: List[Token]) -> Program:
                 print(f"{program[block_ip].loc}: [ERROR] 'end' can only close 'if', 'else' or 'do' blocks for now")
                 exit(1)
         elif op.typ == OpType.WHILE:
+            program.append(op)
             stack.append(ip)
         elif op.typ == OpType.DO:
+            program.append(op)
             while_ip = stack.pop()
             program[ip].jmp = while_ip
             stack.append(ip)
+        elif op.typ == OpType.MACRO:
+            if len(rtokens) == 0:
+                print("%s:%d:%d: [ERROR] expected macro name but found nothing" % op.loc)
+                exit(1)
+            token = rtokens.pop()
+            if token.typ != TokenType.WORD:
+                print("%s:%d:%d: [ERROR] expected macro name to be %s but found %s" % (token.loc + (tokentype_human_readable_name(TokenType.WORD), tokentype_human_readable_name(token.typ))))
+                exit(1)
+            if token.value in macros:
+                print("%s:%d:%d: [ERROR] redefinition of already existing macro `%s`" % (token.loc + (token.value, )))
+                print("%s:%d:%d: [NOTE] the first definition is located here" % macros[token.value].loc)
+                exit(1)
+            if token.value in BUILTIN_WORDS:
+                print("%s:%d:%d: [ERROR] redefinition of a builtin word `%s`" % (token.loc + (token.value, )))
+                exit(1)
+            macro = Macro(op.loc, [])
+            macros[token.value] = macro
+
+            while len(rtokens) > 0:
+                token = rtokens.pop()
+                if token.typ == TokenType.WORD and token.value == "end":
+                    break
+                else:
+                    macro.tokens.append(token)
+            if token.typ != TokenType.WORD or token.value != "end":
+                print("%s:%d:%d: [ERROR] expected `end` at the end of the macro definition but got `%s`" % (token.loc + (token.value, )))
+                exit(1)
+        else:
+            program.append(op)
+
+        ip += 1
 
     if len(stack) > 0:
         print(f"{program[stack.pop()].loc}: [ERROR] unclosed block")
@@ -689,7 +758,7 @@ def unescape_string(s: str) -> str:
 def lex_line(file_path: str, row: int, line: str) -> Generator[Token, None, None]:
     col = find_col(line, 0, lambda k: not k.isspace())
     while col < len(line):
-        loc = (file_path, row, col)
+        loc = (file_path, row + 1, col + 1)
         col_end = None
         if line[col] == '"':
             col_end = find_col(line, col+1, lambda x: x == '"')
