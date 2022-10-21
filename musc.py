@@ -76,6 +76,9 @@ class TokenType(Enum):
     WORD=auto()
     INT=auto()
     STR=auto()
+    CHAR=auto()
+
+assert len(TokenType) == 4, "Exhaustive Token type definition. The `value` field of the Token dataclass may require an update"
 
 @dataclass
 class Token:
@@ -653,13 +656,15 @@ class Macro:
     tokens: List[Token]
 
 def tokentype_human_readable_name(typ: TokenType) -> str:
-    assert len(TokenType) == 3, "Exhaustive handling of token typs in tokentype_human_readable_name()"
+    assert len(TokenType) == 4, "Exhaustive handling of token typs in tokentype_human_readable_name()"
     if typ == TokenType.WORD:
         return "word"
     elif typ == TokenType.INT:
         return "integer"
     elif typ == TokenType.STR:
         return "string"
+    elif typ == TokenType.CHAR:
+        return "character"
     else:
         assert False, "unreachable"
 
@@ -674,7 +679,7 @@ def compile_tokens_to_program(tokens: List[Token]) -> Program:
         # TODO: some sort of safety mechanism for recursive macros
         token = rtokens.pop()
         op = None
-        assert len(TokenType) == 3, "Exhaustive token handling in compile_tokens_to_program"
+        assert len(TokenType) == 4, "Exhaustive token handling in compile_tokens_to_program"
         if token.typ == TokenType.WORD:
             assert isinstance(token.value, str), "This could be a bug in the lexer"
             if token.value in BUILTIN_WORDS:
@@ -689,6 +694,8 @@ def compile_tokens_to_program(tokens: List[Token]) -> Program:
             op = Op(typ=OpType.PUSH_INT, value=token.value, loc=token.loc)
         elif token.typ == TokenType.STR:
             op = Op(typ=OpType.PUSH_STR, value=token.value, loc=token.loc)
+        elif token.typ == TokenType.CHAR:
+            op = Op(typ=OpType.PUSH_INT, value=ord(token.value), loc=token.loc)
         else:
             assert False, 'unreachable'
 
@@ -732,33 +739,33 @@ def compile_tokens_to_program(tokens: List[Token]) -> Program:
             ip += 1
         elif op.typ == OpType.USE:
             if len(rtokens) == 0:
-                print("%s:%d:%d: [ERROR] expected path to the include file but found nothing" % op.loc)
+                print("%s:%d:%d: [ERROR] Expected path to the include file but found nothing" % op.loc)
                 exit(1)
             token = rtokens.pop()
             if token.typ != TokenType.STR:
-                print("%s:%d:%d: [ERROR] expected path to the include file to be %s but found %s" % (token.loc + (tokentype_human_readable_name(TokenType.STR), tokentype_human_readable_name(token.typ))))
+                print("%s:%d:%d: [ERROR] Expected path to the include file to be %s but found %s" % (token.loc + (tokentype_human_readable_name(TokenType.STR), tokentype_human_readable_name(token.typ))))
                 exit(1)
             try:
                 assert isinstance(token.value, str), "This is probably a bug in the lexer"
                 rtokens += reversed(lex_file(token.value))
             except FileNotFoundError:
-                print("%s:%d:%d: [ERROR] file `%s` not found" % (token.loc + (token.value, )))
+                print("%s:%d:%d: [ERROR] File `%s` not found" % (token.loc + (token.value, )))
                 exit(1)
         elif op.typ == OpType.MACRO:
             if len(rtokens) == 0:
-                print("%s:%d:%d: [ERROR] expected macro name but found nothing" % op.loc)
+                print("%s:%d:%d: [ERROR] Expected macro name but found nothing" % op.loc)
                 exit(1)
             token = rtokens.pop()
             if token.typ != TokenType.WORD:
-                print("%s:%d:%d: [ERROR] expected macro name to be %s but found %s" % (token.loc + (tokentype_human_readable_name(TokenType.WORD), tokentype_human_readable_name(token.typ))))
+                print("%s:%d:%d: [ERROR] Expected macro name to be %s but found %s" % (token.loc + (tokentype_human_readable_name(TokenType.WORD), tokentype_human_readable_name(token.typ))))
                 exit(1)
             assert isinstance(token.value, str), "This is probably a bug in the lexer"
             if token.value in macros:
-                print("%s:%d:%d: [ERROR] redefinition of already existing macro `%s`" % (token.loc + (token.value, )))
+                print("%s:%d:%d: [ERROR] Redefinition of already existing macro `%s`" % (token.loc + (token.value, )))
                 print("%s:%d:%d: [NOTE] the first definition is located here" % macros[token.value].loc)
                 exit(1)
             if token.value in BUILTIN_WORDS:
-                print("%s:%d:%d: [ERROR] redefinition of a builtin word `%s`" % (token.loc + (token.value, )))
+                print("%s:%d:%d: [ERROR] Redefinition of a builtin word `%s`" % (token.loc + (token.value, )))
                 exit(1)
             macro = Macro(op.loc, [])
             macros[token.value] = macro
@@ -770,7 +777,7 @@ def compile_tokens_to_program(tokens: List[Token]) -> Program:
                 else:
                     macro.tokens.append(token)
             if token.typ != TokenType.WORD or token.value != "end":
-                print("%s:%d:%d: [ERROR] expected `end` at the end of the macro definition but got `%s`" % (token.loc + (token.value, )))
+                print("%s:%d:%d: [ERROR] Expected `end` at the end of the macro definition but got `%s`" % (token.loc + (token.value, )))
                 exit(1)
         else:
             program.append(op)
@@ -778,7 +785,7 @@ def compile_tokens_to_program(tokens: List[Token]) -> Program:
             ip += 1
 
     if len(stack) > 0:
-        print(f"{program[stack.pop()].loc}: [ERROR] unclosed block")
+        print(f"{program[stack.pop()].loc}: [ERROR] Unclosed block")
         exit(1)
 
     return program
@@ -806,6 +813,14 @@ def lex_line(file_path: str, row: int, line: str) -> Generator[Token, None, None
                 exit(1)
             text_of_token = line[col+1:col_end]
             yield Token(TokenType.STR, loc, unescape_string(text_of_token))
+            col = find_col(line, col_end+1, lambda x: not x.isspace())
+        elif line[col] == "'":
+            col_end = find_col(line, col+1, lambda x: x == "'")
+            if col_end >= len(line) or line[col_end] != "'":
+                print("%s:%d:%d: [ERROR] Unclosed character literal" % loc)
+                exit(1)
+            text_of_token = line[col+1:col_end]
+            yield Token(TokenType.CHAR, loc, unescape_string(text_of_token))
             col = find_col(line, col_end+1, lambda x: not x.isspace())
         else:
             col_end = find_col(line, col, lambda x: x.isspace())

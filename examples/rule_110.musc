@@ -7,9 +7,9 @@ mem N 2 - + 1 &s
 0 while cp N 2 - < do
    0 while cp N < do
         cp mem + &l if
-            cp mem + N + 42 &s
+            cp mem + N + '$' &s
         else
-            cp mem + N + 32 &s
+            cp mem + N + ' ' &s
         end
         1 +
     end
