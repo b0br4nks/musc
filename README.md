@@ -44,8 +44,10 @@ A [stack-oriented language](https://en.wikipedia.org/wiki/Stack-oriented_program
 
 ## Example
 "Hello, World!":
-```pascal
-"Hello, World!\n" 1 1 sys3
+```v
+use "io.musc"
+
+"Hello, World!\n" fmt
 ```
 
 Two simple programs:
@@ -53,7 +55,7 @@ Two simple programs:
 - the second one prints numbers from 0 to 10 in ascending order (one line example);
 
 descending order
-```pascal
+```v
 10 while cp -1 > do
 	cp =>
 	1 -
@@ -61,7 +63,7 @@ end
 ```
 
 ascending order
-```pascal
+```v
 0 while cp 11 < do cp => 1 + end
 ```
 
@@ -262,61 +264,61 @@ a b -- a b a
 #### Comparison
 
 - `=` - checks if two elements on top of the stack are equal. Removes the elements from the stack and pushes `1` if they are equal and `0` if they are not.
-```
+```c
 [a: int] [b: int] -- [a == b : bool]
 ```
 - `!=` - checks if two elements on top of the stack are not equal.
-```
+```c
 [a: int] [b: int] -- [a != b : bool]
 ```
 - `>` - applies the greater comparison on top two elements.
-```
+```c
 [a: int] [b: int] -- [a > b  : bool]
 ```
 - `<` - applies the less comparison on top two elements.
-```
+```c
 [a: int] [b: int] -- [a < b  : bool]
 ```
 - `>=` - applies the greater or equal comparison on top two elements.
-```
+```c
 [a: int] [b: int] -- [a >= b : bool]
 ```
 - `<=` - applies the greater or equal comparison on top two elements.
-```
+```c
 [a: int] [b: int] -- [a <= b : bool]
 ```
 
 #### Arithmetic
 
 - `+` - sums up two elements on the top of the stack.
-```
+```c
 [a: int] [b: int] -- [a + b: int]
 ```
 - `-` - subtracts the top of the stack from the element below.
-```
+```c
 [a: int] [b: int] -- [a - b: int]
 ```
 - `mod` - perform [Euclidean division](https://en.wikipedia.org/wiki/Euclidean_division) between two elements on top of the stack.
-```
+```c
 [a: int] [b: int] -- [a / b: int] [a % b: int]
 ```
 
 #### Bitwise
 
 - `>>` - right bit shift. 
-```
+```c
 [a: int] [b: int] -- [a >> b: int]
 ```
 - `<<` - left bit shift.
-```
+```c
 [a: int] [b: int] -- [a << b: int]
 ```
 - `|` - bit `or`.
-```
+```c
 [a: int] [b: int] -- [a | b: int]
 ```
 - `&` - bit `and`. 
-```
+```c
 [a: int] [b: int] -- [a | b: int]
 ```
 
@@ -324,7 +326,7 @@ a b -- a b a
 
 #### if-else condition
 
-```pascal
+```c
 <condition> if
     <body>
 else <condition> if
@@ -335,7 +337,7 @@ end
 ```
 #### while loop
 
-```pascal
+```v
 while <condition> do
     <body>
 end
@@ -357,15 +359,22 @@ end
 
 Define a new `<keyword>` that expands into a sequence of `<tokens>` during the compilation.
 
-An example with the keyword `print` and as tokens `1 1 sys3`:
-```
-macro print
+An example with the keyword `fmt` and as tokens `1 1 sys3`:
+```v
+macro fmt
 	1 1 sys3
 end
 
-"Hello, World!\n" print
+"Hello, World!\n" fmt
 
 -- returns "Hello, World!"
+```
+
+### Include
+
+Include tokens of file `file.musc`
+```v
+use "file.musc"
 ```
 
 ## FAQ

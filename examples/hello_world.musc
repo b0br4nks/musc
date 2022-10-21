@@ -1,6 +1,10 @@
 -- "Hello, World\n"
 -- "===========================\n" 1 1 sys3 is a separation line
 
+-- with include
+use "io.musc"
+"Hello, World\n" fmt
+
 -- with str
 "Hello, World\n" 1 1 sys3
 

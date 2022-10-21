@@ -468,6 +468,8 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str) -> None:
                     out.write("    jmp addr_%d\n" % op.jmp)
             elif op.typ == OpType.MACRO:
                 assert False, "Unreachable. All of the macro definition should've been eliminated at the compilation step."
+            elif op.typ == OpType.USE:
+                assert False, "Unreachable. All of the file includes should've been eliminated at the compilation step."
             elif op.typ == OpType.DUPL:
                 out.write("    ;; -- dupl --\n")
                 out.write("    pop rax\n")
@@ -612,6 +614,7 @@ BUILTIN_WORDS = {
     'while': OpType.WHILE,
     'do': OpType.DO,
     'macro': OpType.MACRO,
+    'use': OpType.USE,
 
     'cp': OpType.DUPL,
     'pcp': OpType.DUPL2,
@@ -714,6 +717,19 @@ def compile_tokens_to_program(tokens: List[Token]) -> Program:
             program[ip].jmp = while_ip
             stack.append(ip)
             ip += 1
+        elif op.typ == OpType.USE:
+            if len(rtokens) == 0:
+                print("%s:%d:%d: [ERROR] expected path to the include file but found nothing" % op.loc)
+                exit(1)
+            token = rtokens.pop()
+            if token.typ != TokenType.STR:
+                print("%s:%d:%d: [ERROR] expected path to the include file to be %s but found %s" % (token.loc + (tokentype_human_readable_name(TokenType.STR), tokentype_human_readable_name(token.typ))))
+                exit(1)
+            try:
+                rtokens += reversed(lex_file(token.value))
+            except FileNotFoundError:
+                print("%s:%d:%d: [ERROR] file `%s` not found" % (token.loc + (token.value, )))
+                exit(1)
         elif op.typ == OpType.MACRO:
             if len(rtokens) == 0:
                 print("%s:%d:%d: [ERROR] expected macro name but found nothing" % op.loc)

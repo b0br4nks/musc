@@ -1,5 +1,5 @@
 -- rule 110 (https://en.wikipedia.org/wiki/Rule_110)
-macro print 1 1 sys3 # end
+macro fmt 1 1 sys3 # end
 macro N 100 end
 
 mem N 2 - + 1 &s
@@ -14,7 +14,7 @@ mem N 2 - + 1 &s
         1 +
     end
     mem + N + 10 &s
-    N 1 + mem N + print
+    N 1 + mem N + fmt
 
     -- pattern
     mem     &l 1 <<
