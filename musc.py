@@ -739,6 +739,7 @@ def compile_tokens_to_program(tokens: List[Token]) -> Program:
                 print("%s:%d:%d: [ERROR] expected path to the include file to be %s but found %s" % (token.loc + (tokentype_human_readable_name(TokenType.STR), tokentype_human_readable_name(token.typ))))
                 exit(1)
             try:
+                assert isinstance(token.value, str), "This is probably a bug in the lexer"
                 rtokens += reversed(lex_file(token.value))
             except FileNotFoundError:
                 print("%s:%d:%d: [ERROR] file `%s` not found" % (token.loc + (token.value, )))
@@ -751,6 +752,7 @@ def compile_tokens_to_program(tokens: List[Token]) -> Program:
             if token.typ != TokenType.WORD:
                 print("%s:%d:%d: [ERROR] expected macro name to be %s but found %s" % (token.loc + (tokentype_human_readable_name(TokenType.WORD), tokentype_human_readable_name(token.typ))))
                 exit(1)
+            assert isinstance(token.value, str), "This is probably a bug in the lexer"
             if token.value in macros:
                 print("%s:%d:%d: [ERROR] redefinition of already existing macro `%s`" % (token.loc + (token.value, )))
                 print("%s:%d:%d: [NOTE] the first definition is located here" % macros[token.value].loc)
