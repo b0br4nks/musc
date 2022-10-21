@@ -1,24 +1,27 @@
 -- rule 110 (https://en.wikipedia.org/wiki/Rule_110)
-mem 98 + 1 &s
+macro print 1 1 sys3 # end
+macro N 100 end
 
-0 while cp 98 < do
-    0 while cp 100 < do
+mem N 2 - + 1 &s
+
+0 while cp N 2 - < do
+   0 while cp N < do
         cp mem + &l if
-            cp mem + 100 + 42 &s
+            cp mem + N + 42 &s
         else
-            cp mem + 100 + 32 &s
+            cp mem + N + 32 &s
         end
         1 +
     end
-    mem + 100 + 10 &s
-    101 mem 100 + 1 1 sys3 #
+    mem + N + 10 &s
+    N 1 + mem N + print
 
     -- pattern
     mem     &l 1 <<
     mem 1 + &l
     |
 
-    1 while cp 98 < do
+    1 while cp N 2 - < do
         ~ 1 << 7 &
         over mem + 1 + &l |
         pcp 110 ~ >> 1 &
@@ -32,4 +35,3 @@ mem 98 + 1 &s
     1 +
 end
 #
-

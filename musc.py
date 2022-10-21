@@ -677,6 +677,7 @@ def compile_tokens_to_program(tokens: List[Token]) -> Program:
         if op.typ == OpType.IF:
             program.append(op)
             stack.append(ip)
+            ip += 1
         elif op.typ == OpType.ELSE:
             program.append(op)
             if_ip = stack.pop()
@@ -685,6 +686,7 @@ def compile_tokens_to_program(tokens: List[Token]) -> Program:
                 exit(1)
             program[if_ip].jmp = ip + 1
             stack.append(ip)
+            ip += 1
         elif op.typ == OpType.END:
             program.append(op)
             block_ip = stack.pop()
@@ -698,14 +700,17 @@ def compile_tokens_to_program(tokens: List[Token]) -> Program:
             else:
                 print(f"{program[block_ip].loc}: [ERROR] 'end' can only close 'if', 'else' or 'do' blocks for now")
                 exit(1)
+            ip += 1
         elif op.typ == OpType.WHILE:
             program.append(op)
             stack.append(ip)
+            ip += 1
         elif op.typ == OpType.DO:
             program.append(op)
             while_ip = stack.pop()
             program[ip].jmp = while_ip
             stack.append(ip)
+            ip += 1
         elif op.typ == OpType.MACRO:
             if len(rtokens) == 0:
                 print("%s:%d:%d: [ERROR] expected macro name but found nothing" % op.loc)
@@ -736,7 +741,7 @@ def compile_tokens_to_program(tokens: List[Token]) -> Program:
         else:
             program.append(op)
 
-        ip += 1
+            ip += 1
 
     if len(stack) > 0:
         print(f"{program[stack.pop()].loc}: [ERROR] unclosed block")
