@@ -1,7 +1,7 @@
 -- rule 110 (https://en.wikipedia.org/wiki/Rule_110)
-macro fmt 1 1 sys3 # end
-macro N 100 end
+use "io.musc"
 
+macro N 100 end
 mem N 2 - + 1 &s
 
 0 while cp N 2 - < do
@@ -14,7 +14,7 @@ mem N 2 - + 1 &s
         1 +
     end
     mem + N + 10 &s
-    N 1 + mem N + fmt
+    N 1 + mem N + fmt #
 
     -- pattern
     mem     &l 1 <<

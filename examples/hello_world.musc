@@ -1,20 +1,20 @@
 -- "Hello, World\n"
--- "===========================\n" 1 1 sys3 is a separation line
-
--- with include
 use "io.musc"
+
 "Hello, World\n" fmt
 
--- with str
-"Hello, World\n" 1 1 sys3
+"===========================\n" fmt
 
-"===========================\n" 1 1 sys3
+-- with str
+"Hello, World\n" fmt
+
+"===========================\n" fmt
 
 -- with macro
-macro print 1 1 sys3 end
+macro print fmt end
 "Hello, World\n" print
 
-"===========================\n" 1 1 sys3
+"===========================\n" fmt
 
 -- with int
 mem
@@ -31,4 +31,4 @@ cp 114 &s 1 +
 cp 108 &s 1 +
 cp 100 &s 1 +
 cp 10 &s 1 +
-mem - mem 1 1 sys3
+mem - mem fmt
