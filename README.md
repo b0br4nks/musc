@@ -8,24 +8,30 @@
 **The development of this language is in progress!<br>
 </div>
 
-- [Roadmap](#roadmap)
-- [Example](#example)
-- [Usage](#usage)
-	- [Help](#help)
-	- [Simulation](#simulation)
-	- [Compilation](#compilation)
-	- [Testing](#testing)
-- [Language Reference](#language-reference)
-	- [Stack Manipulation](#stack-manipulation)
-	- [Comparison](#comparison)
-	- [Arithmetic](#arithmetic)
-	- [Bitwise](#bitwise)
-	- [Control Flow](#control-flow)
-		- [if-else condition](#if-else-condition)
-		- [while loop](#while-loop)
-	- [Memory](#memory)
-	- [System](#system)
-- [FAQ](#faq)
+* [Stack-Oriented](#stack-oriented)
+* [Roadmap](#roadmap)
+* [Examples](#examples)
+* [Quick Start](#quick-start)
+	* [Help](#help)
+	* [Simulation](#simulation)
+	* [Compilation](#compilation)
+	* [Testing](#testing)
+	* [Usage](#usage)
+* [Language Reference](#language-reference)
+	* [Data Types](#data-types)
+	* [Built-in Words](#built-in-words)
+		* [Stack Manipulation](#stack-manipulation)
+		* [Comparison](#comparison)
+		* [Arithmetic](#arithmetic)
+		* [Bitwise](#bitwise)
+		* [Control Flow](#control-flow)
+		* [if-else condition](#if-else-condition)
+		* [while loop](#while-loop)
+		* [Memory](#memory)
+		* [System](#system)
+	* [Macros](#macros)
+	* [Include](#include)
+* [FAQ](#faq)
 
 ## Stack-Oriented
 
@@ -42,7 +48,7 @@ A [stack-oriented language](https://en.wikipedia.org/wiki/Stack-oriented_program
 
 <span style="color: red;">●</span> Self-hosted (Written in itself, no more Python. [Self-hosting](https://en.wikipedia.org/wiki/Self-hosting_(compilers)))
 
-## Example
+## Examples
 "Hello, World!":
 ```v
 use "io.musc"
@@ -67,7 +73,7 @@ ascending order
 0 while cp 11 < do cp => 1 + end
 ```
 
-## Usage
+## Quick Start
 ### Help
 ```console
 $ ./musc.py -h
@@ -210,6 +216,15 @@ To clean the folder from the `*.asm` `*.o` and `binary* (ELF 64-bit LSB executab
 $ ./test.py -c
 $ ./test.py -f ./examples/ -c
 ```
+
+### Usage
+
+If you wanna use the Musc compiler separately from its code base you only need two things:
+- [./musc.py](./musc.py) - the compiler itself,
+- [./std/](./std/) - the standard library.
+
+By default the compiler searches files to include in `./` and `./std/`. You can add more search paths via the `-I` flag before the subcommand: `./musc.py -I <custom-path> -r ...`. See `./musc.py help` for more info.
+
 
 
 ## Language Reference
