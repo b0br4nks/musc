@@ -1,1 +1,3 @@
-macro fmt 1 1 sys3 end
+use "linux.musc"
+
+macro fmt STDOUT SYS_write sys3 end
