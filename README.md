@@ -78,7 +78,11 @@ ascending order
 ```console
 $ ./musc.py -h
 
-Usage: ./musc.py <SUBCOMMAND> [ARGS]
+Usage: ./musc.py [OPTIONS] <SUBCOMMAND> [ARGS]
+
+OPTIONS
+     -dbg                     Enable debug mode
+     -I           <path>      Add the path to the include search list
 
 SUBCOMMANDS
      -s           <file>      Simulate the program
@@ -332,13 +336,13 @@ a b -- a b a
 ```c
 [a: int] [b: int] -- [a << b: int]
 ```
-- `|` - bit `or`.
+- `or` - bit `or`.
 ```c
 [a: int] [b: int] -- [a | b: int]
 ```
 - `&` - bit `and`. 
 ```c
-[a: int] [b: int] -- [a | b: int]
+[a: int] [b: int] -- [a & b: int]
 ```
 
 #### Control Flow

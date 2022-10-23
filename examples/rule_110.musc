@@ -19,11 +19,11 @@ mem N 2 - + 1 &s
     -- pattern
     mem     &l 1 <<
     mem 1 + &l
-    |
+    or
 
     1 while cp N 2 - < do
         ~ 1 << 7 &
-        over mem + 1 + &l |
+        over mem + 1 + &l or
         pcp 110 ~ >> 1 &
         ~ mem + ~ &s
         ~

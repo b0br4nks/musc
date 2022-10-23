@@ -621,7 +621,7 @@ BUILTIN_WORDS = {
     '!=': OpType.NE,
     '>>': OpType.RSH,
     '<<': OpType.LSH,
-    '|': OpType.BOR,
+    'or': OpType.BOR,
     '&': OpType.BAND,
 
     'if': OpType.IF,
