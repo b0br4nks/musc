@@ -1,5 +1,5 @@
 -- 01_stack.musc
-use "io.musc"
+use "std.musc"
 
 -- push int
 1 2 3 => => =>

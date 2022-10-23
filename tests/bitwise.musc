@@ -1,5 +1,5 @@
 -- 06_bitwise.musc
-use "io.musc"
+use "std.musc"
 
 -- left shift
 2 4 << =>

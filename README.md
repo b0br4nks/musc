@@ -51,7 +51,7 @@ A [stack-oriented language](https://en.wikipedia.org/wiki/Stack-oriented_program
 ## Examples
 "Hello, World!":
 ```v
-use "io.musc"
+use "std.musc"
 
 "Hello, World!\n" fmt
 ```

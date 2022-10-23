@@ -1,5 +1,5 @@
 -- rule 110 (https://en.wikipedia.org/wiki/Rule_110)
-use "io.musc"
+use "std.musc"
 
 macro N 100 end
 mem N 2 - + 1 &s

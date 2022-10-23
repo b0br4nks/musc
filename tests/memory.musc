@@ -1,5 +1,5 @@
 -- 05_memory.musc
-use "io.musc"
+use "std.musc"
 
 -- write 'MUSC' into the memory
 mem 0 + 77 &s

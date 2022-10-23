@@ -1,5 +1,5 @@
 -- "Hello, World\n"
-use "io.musc"
+use "std.musc"
 
 "Hello, World\n" fmt
 

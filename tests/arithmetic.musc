@@ -1,5 +1,5 @@
 -- 03_arithmetic.musc
-use "io.musc"
+use "std.musc"
 
 -- add
 1 2 + =>

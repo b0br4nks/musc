@@ -1,5 +1,5 @@
 -- 02_comparison.musc
-use "io.musc"
+use "std.musc"
 
 -- equal
 1 3 = =>

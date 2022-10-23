@@ -1,5 +1,5 @@
 -- 04_control_flow.musc
-use "io.musc"
+use "std.musc"
 
 -- if-else multi-line
 32 32 + 65 = if
