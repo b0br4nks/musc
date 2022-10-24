@@ -325,5 +325,9 @@ macro SYS_finit_module 313 end
 macro fmt STDOUT SYS_write sys3 end
 
 macro pcp over over end
-
 macro !! ! ! end
+
+macro / divmod ! end
+macro % divmod ~ ! end
+macro mod % end
+macro div / end

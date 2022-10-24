@@ -360,7 +360,7 @@ a b -- a b a
 ```c
 [a: int] [b: int] -- [a * b: int]
 ```
-- `mod` - perform [Euclidean division](https://en.wikipedia.org/wiki/Euclidean_division) between two elements on top of the stack.
+- `divmod` - perform [Euclidean division](https://en.wikipedia.org/wiki/Euclidean_division) between two elements on top of the stack.
 ```c
 [a: int] [b: int] -- [a / b: int] [a % b: int]
 ```

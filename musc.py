@@ -19,7 +19,7 @@ class OpType(Enum):
     PLUS=auto()
     MINUS=auto()
     MUL=auto()
-    MOD=auto()
+    DIVMOD=auto()
     EQ=auto()
     GT=auto()
     LT=auto()
@@ -129,9 +129,10 @@ def simulate_little_endian_linux(program: Program) -> None:
             b = stack.pop()
             stack.append(b * a)
             ip += 1
-        elif op.typ == OpType.MOD:
+        elif op.typ == OpType.DIVMOD:
             a = stack.pop()
             b = stack.pop()
+            stack.append(b // a)
             stack.append(b % a)
             ip += 1
         elif op.typ == OpType.EQ:
@@ -417,13 +418,14 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str) -> None:
                 out.write("    pop rbx\n")
                 out.write("    mul rbx\n")
                 out.write("    push rax\n")
-            elif op.typ == OpType.MOD:
-                out.write("    ;; -- mod --\n")
+            elif op.typ == OpType.DIVMOD:
+                out.write("    ;; -- divmod --\n")
                 out.write("    xor rdx, rdx\n")
                 out.write("    pop rbx\n")
                 out.write("    pop rax\n")
                 out.write("    div rbx\n")
-                out.write("    push rdx\n")
+                out.write("    push rax\n");
+                out.write("    push rdx\n");
             elif op.typ == OpType.NE:
                 out.write("    ;; -- ne --\n")
                 out.write("    mov rcx, 0\n")
@@ -594,7 +596,7 @@ BUILTIN_WORDS = {
     '+': OpType.PLUS,
     '-': OpType.MINUS,
     '*': OpType.MUL,
-    'mod': OpType.MOD,
+    'divmod': OpType.DIVMOD,
     '=>': OpType.PRINT,
     '=': OpType.EQ,
     '>': OpType.GT,
@@ -844,7 +846,7 @@ def cmd_call_echoed(cmd: List[str]) -> int:
 def usage(compiler_name: str) -> None:
     print(f"Usage: {compiler_name} [OPTIONS] <SUBCOMMAND> [ARGS]\n")
     print("OPTIONS")
-    print("     -dbg                     Enable debug mode")
+    print("     -dbg                     Enable debug DIVMODe")
     print("     -I           <path>      Add the path to the include search list\n")
     print("SUBCOMMANDS")
     print("     -s           <file>      Simulate the program")
@@ -878,7 +880,7 @@ if __name__ == "__main__" and "__file__" in globals():
             break
 
     if debug:
-        print("[INFO] Debug mode is enabled")
+        print("[INFO] Debug DIVMODe is enabled")
 
     if len(argv) < 1:
         usage(compiler_name)
