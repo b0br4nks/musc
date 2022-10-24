@@ -23,7 +23,7 @@ use "std.musc"
 
 "===========================\n" fmt
 
--- pairduplicate
+-- pair duplicate
 1 2 pcp => => => =>
 
 "===========================\n" fmt

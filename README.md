@@ -295,11 +295,6 @@ This program pushes integer `88` onto the stack (since the ASCII code of letter 
 a -- a a
 ```
 
-- `pcp` - duplicate pair.
-```
-a b -- a b a b
-```
-
 - `=>` - print the element on top of the stack to stdout and remove it from the stack.
 ```
 a b -- a
