@@ -617,7 +617,7 @@ BUILTIN_WORDS = {
 
     'cp': OpType.DUPL,
     '~': OpType.SWAP,
-    '#': OpType.DROP,
+    '!': OpType.DROP,
     'over': OpType.OVER,
     'mem': OpType.MEM,
     '&s': OpType.STORE,
