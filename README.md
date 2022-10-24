@@ -65,6 +65,8 @@ Two simple programs:
 
 descending order
 ```v
+use "std.musc"
+
 10 while cp -1 > do
 	cp =>
 	1 -
@@ -73,6 +75,8 @@ end
 
 ascending order
 ```v
+use "std.musc"
+
 0 while cp 11 < do cp => 1 + end
 ```
 
