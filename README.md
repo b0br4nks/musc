@@ -9,7 +9,7 @@
 </div>
 
 * [Stack-Oriented](#stack-oriented)
-* [Roadmap](#roadmap)
+* [Milestones](#milestones)
 * [Examples](#examples)
 * [Quick Start](#quick-start)
 	* [Help](#help)
@@ -19,6 +19,9 @@
 	* [Usage](#usage)
 * [Language Reference](#language-reference)
 	* [Data Types](#data-types)
+		* [Integer](#integer)
+		* [String](#string)
+		* [Character](#character)
 	* [Built-in Words](#built-in-words)
 		* [Stack Manipulation](#stack-manipulation)
 		* [Comparison](#comparison)
@@ -37,7 +40,7 @@
 
 A [stack-oriented language](https://en.wikipedia.org/wiki/Stack-oriented_programming) is one which primarily uses a stack, instead of (or in addition to) named variables, to manage data flow. This concept is closely related to that of [concatenative languages](https://en.wikipedia.org/wiki/Concatenative_programming_language), most of which are stack-based.
 
-## Roadmap
+## Milestones
 <span style="color: green;">●</span> Compiled ([Compiled language](https://en.wikipedia.org/wiki/Compiled_language))
 
 <span style="color: green;">●</span> Native ([Native](https://en.wikipedia.org/wiki/Native_%28computing%29))
@@ -257,7 +260,7 @@ When the compiler encounters a string:
 2. the bytes of the string are copied somewhere into the memory (the exact location is implementation specific),
 3. the pointer to the beginning of the string is pushed onto the data stack.
 
-Those, a single string pushes two values onto the data stack: the size and the pointer.
+Thus, a single string pushes two values onto the data stack: the size and the pointer.
 
 Example:
 ```
@@ -339,7 +342,7 @@ a b -- a b a
 ```c
 [a: int] [b: int] -- [a >= b : bool]
 ```
-- `<=` - applies the greater or equal comparison on top two elements.
+- `<=` - applies the less or equal comparison on top two elements.
 ```c
 [a: int] [b: int] -- [a <= b : bool]
 ```
