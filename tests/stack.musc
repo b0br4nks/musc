@@ -8,7 +8,9 @@ use "std.musc"
 "===========================\n" fmt
 
 -- push str
-"Hello, World\n" fmt
+"Hello, World\n" fmt -- ascii
+"Привет, Мир\n" fmt -- utf-8
+"Hello, \"World\"\n" fmt -- double quotes
 
 "===========================\n" fmt
 
