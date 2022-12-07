@@ -56,7 +56,7 @@ A [stack-oriented language](https://en.wikipedia.org/wiki/Stack-oriented_program
 ```v
 use "std.musc"
 
-"Hello, World!\n" fmt
+"Hello, World!\n" stdout fmt
 ```
 
 Two simple programs:
@@ -270,10 +270,15 @@ Example:
 ```
 use "std.musc"
 
-"Hello, World!\n" fmt
+"Hello, World!\n" stdout fmt
 ```
 
-The `fmt` macro from `std.musc` module expects two values on the data stack: the size of the buffer it needs to print to stdout and the pointer to the beginning of the buffer. Both of the values are provided by the string `"Hello, World!\n"`.
+The `fmt` macro from `std.musc` module expects two values on the data stack:
+1. the size of the buffer it needs to print,
+2. the pointer to the beginning of the buffer,
+3. and the output file descriptor where it needs to print to.
+
+The size and the pointer are provided by the string `"Hello, World!"`. The file descriptor is `stdout` macro from `std.musc`.
 
 #### Character
 
