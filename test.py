@@ -49,7 +49,7 @@ def test(folder):
                 # exit(1)
 
     print()
-    print("Simulation failed: %d, Compilation failed: %d" % (s_failed, c_failed))
+    print("     Simulation failed: %d, Compilation failed: %d\n" % (s_failed, c_failed))
     if s_failed != 0 or c_failed != 0:
         exit(1)
 
