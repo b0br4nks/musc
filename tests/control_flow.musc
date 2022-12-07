@@ -8,12 +8,12 @@ else
 	128 =>
 end
 
-"===========================\n" fmt
+"===========================\n" stdout fmt
 
 -- if-else oneline
 32 32 + 64 = if 64 => else 128 => end
 
-"===========================\n" fmt
+"===========================\n" stdout fmt
 
 -- while multi-line
 10 while cp -1 > do
@@ -21,7 +21,7 @@ end
 	1 -
 end
 
-"===========================\n" fmt
+"===========================\n" stdout fmt
 
 -- while oneline
 0 while cp 11 < do cp => 1 + end

@@ -1,20 +1,20 @@
 -- "Hello, World\n"
 use "std.musc"
 
-"Hello, World\n" fmt
+"Hello, World\n" stdout fmt
 
-"===========================\n" fmt
+"===========================\n" stdout fmt
 
 -- with str
-"Hello, World\n" fmt
+"Hello, World\n" stdout fmt
 
-"===========================\n" fmt
+"===========================\n" stdout fmt
 
 -- with macro
 macro print fmt end
-"Hello, World\n" print
+"Hello, World\n" stdout print
 
-"===========================\n" fmt
+"===========================\n" stdout fmt
 
 -- with int
 mem
@@ -31,4 +31,4 @@ cp 114 &s 1 +
 cp 108 &s 1 +
 cp 100 &s 1 +
 cp 10 &s 1 +
-mem - mem fmt
+mem - mem stdout fmt

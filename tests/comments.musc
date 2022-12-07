@@ -8,4 +8,4 @@ use "std.musc"
 
 -- string literal with `--` should be printed
 
-"Hello, -- World\n" fmt -- this comment should be allowed
+"Hello, -- World\n" stdout fmt -- this comment should be allowed

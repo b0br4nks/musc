@@ -5,45 +5,45 @@ use "std.musc"
 1 2 3 => => =>
 1 => 2 => 3 =>
 
-"===========================\n" fmt
+"===========================\n" stdout fmt
 
 -- push str
-"Hello, World\n" fmt -- ascii
-"Привет, Мир\n" fmt -- utf-8
-"Hello, \"World\"\n" fmt -- double quotes
+"Hello, World\n" stdout fmt -- ascii
+"Привет, Мир\n" stdout fmt -- utf-8
+"Hello, \"World\"\n" stdout fmt -- double quotes
 
-"===========================\n" fmt
+"===========================\n" stdout fmt
 
 -- character
 'X' =>
 
-"===========================\n" fmt
+"===========================\n" stdout fmt
 
 -- duplicate
 1 cp => =>
 2 cp => cp => =>
 
-"===========================\n" fmt
+"===========================\n" stdout fmt
 
 -- pair duplicate
 1 2 pcp => => => =>
 
-"===========================\n" fmt
+"===========================\n" stdout fmt
 
 -- swap
 1 2 ~ => =>
 
-"===========================\n" fmt
+"===========================\n" stdout fmt
 
 -- drop
 1 2 ! =>
 
-"===========================\n" fmt
+"===========================\n" stdout fmt
 
 -- over
 1 2 over =>
 
-"===========================\n" fmt
+"===========================\n" stdout fmt
 
 -- bigint
 9999999999999999999 =>

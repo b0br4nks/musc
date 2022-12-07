@@ -8,12 +8,12 @@ mem 2 + 83 &s
 mem 3 + 67 &s
 mem 4 + 10 &s
 
-"===========================\n" fmt
+"===========================\n" stdout fmt
 
 -- print 'MUSC' to stdout
-5 mem fmt =>
+5 mem stdout fmt =>
 
-"===========================\n" fmt
+"===========================\n" stdout fmt
 
 -- more dynamic way
 mem cp 77 &s
@@ -21,9 +21,9 @@ mem cp 77 &s
 1 + cp 83 &s
 1 + cp 67 &s
 1 + cp 10 &s
-mem - mem fmt =>
+mem - mem stdout fmt =>
 
-"===========================\n" fmt
+"===========================\n" stdout fmt
 
 -- increament each character by 1 making it 'NVTD'
 mem 0 + cp &l 1 + &s
@@ -31,7 +31,7 @@ mem 1 + cp &l 1 + &s
 mem 2 + cp &l 1 + &s
 mem 3 + cp &l 1 + &s
 
-"===========================\n" fmt
+"===========================\n" stdout fmt
 
 -- print 'NVTD' to stdout
-5 mem fmt =>
+5 mem stdout fmt =>
