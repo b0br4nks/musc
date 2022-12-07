@@ -1,0 +1,11 @@
+use "std.musc"
+
+--comment one
+
+-- comment two
+
+------weird comment
+
+-- string literal with `--` should be printed
+
+"Hello, -- World\n" fmt -- this comment should be allowed
