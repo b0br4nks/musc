@@ -853,8 +853,9 @@ def compile_file_to_program(file_path: str, include_paths: List[str]) -> Program
     return compile_tokens_to_program(lex_file(file_path), include_paths)
 
 
-def cmd_call_echoed(cmd: List[str]) -> int:
-    print("[CMD] %s" % " ".join(map(shlex.quote, cmd)))
+def cmd_call_echoed(cmd: List[str], silent: bool=False) -> int:
+    if not silent:
+        print("[CMD] %s" % " ".join(map(shlex.quote, cmd)))
     return subprocess.call(cmd)
 
 
@@ -870,6 +871,7 @@ def usage(compiler_name: str) -> None:
     print("OPTIONS")
     print("     -r                       Run the program after successful compilation")
     print("     -o         <file|dir>    Customize the output path")
+    print("     --silent                 Silent mode. Hide infos about compilation phases")
     
 
 if __name__ == "__main__" and "__file__" in globals():
@@ -914,12 +916,15 @@ if __name__ == "__main__" and "__file__" in globals():
         program = compile_file_to_program(program_path, include_paths)
         simulate_little_endian_linux(program)
     elif subcommand in ["compile","-c"]:
+        silent = False
         run = False
         output_path = None
         while len(argv) > 0:
             arg, *argv = argv
             if arg == "-r":
                 run = True
+            elif arg == "--silent":
+                silent = True
             elif arg == "-o":
                 if len(argv) == 0:
                     usage(compiler_name)
@@ -954,13 +959,14 @@ if __name__ == "__main__" and "__file__" in globals():
             basedir = path.dirname(program_path)
         basepath = path.join(basedir, basename)
 
-        print(f"[INFO] Generating {basename}.asm")
+        if not silent:
+            print(f"[INFO] Generating {basename}.asm")
         program = compile_file_to_program(program_path, include_paths)
         generate_nasm_linux_x86_64(program, basepath + ".asm")
-        cmd_call_echoed(["nasm", "-felf64", basepath + ".asm"])
-        cmd_call_echoed(["ld", "-o", basepath, basepath + ".o"])
+        cmd_call_echoed(["nasm", "-felf64", basepath + ".asm"], silent)
+        cmd_call_echoed(["ld", "-o", basepath, basepath + ".o"], silent)
         if run:
-            exit(cmd_call_echoed([basepath] + argv))
+            exit(cmd_call_echoed([basepath] + argv, silent))
     elif subcommand in ["help","-h"]:
         usage(compiler_name)
         exit(0)

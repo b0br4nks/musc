@@ -37,8 +37,7 @@ def test(folder):
                 print("    %s" % sim_output)
                 # exit(1)
 
-            cmd_run_echoed(["./musc.py", "-c", entry.path])
-            com_output = cmd_run_echoed([entry.path[:-len(musc_ext)]], capture_output=True).stdout
+            com_output = cmd_run_echoed(["./musc.py", "-c", "-r", "--silent", entry.path], capture_output=True).stdout
             if com_output != expected_output:
                 c_failed += 1
                 print("[ERROR] Unexpected compilation output")
