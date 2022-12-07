@@ -861,7 +861,7 @@ def cmd_call_echoed(cmd: List[str]) -> int:
 def usage(compiler_name: str) -> None:
     print(f"Usage: {compiler_name} [OPTIONS] <SUBCOMMAND> [ARGS]\n")
     print("OPTIONS")
-    print("     -dbg                     Enable debug DIVMODe")
+    print("     -dbg                     Enable debug mode")
     print("     -I           <path>      Add the path to the include search list\n")
     print("SUBCOMMANDS")
     print("     -s           <file>      Simulate the program")
