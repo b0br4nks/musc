@@ -1,5 +1,5 @@
--- 02_comparison.musc
-use "std.musc"
+-- 02_comparison.sko
+use "std.sko"
 
 -- equal
 1 3 = =>

@@ -1,5 +1,5 @@
--- 05_memory.musc
-use "std.musc"
+-- 05_memory.sko
+use "std.sko"
 
 -- write 'MUSC' into the memory
 mem 0 + 77 &s

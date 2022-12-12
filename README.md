@@ -1,8 +1,8 @@
 <div align="center">
 <p>
- <img width="200" src="assets/musc_logo.svg">
+ <img width="300" src="assets/skorpio_logo_bw.png">
 </p>
-<h1>The Musc Programming Language</h1>
+<h1>The Skorpio Programming Language</h1>
 
 
 **The development of this language is in progress!<br>
@@ -45,7 +45,7 @@ A [stack-oriented language](https://en.wikipedia.org/wiki/Stack-oriented_program
 
 <span style="color: green;">●</span> Native ([Native](https://en.wikipedia.org/wiki/Native_%28computing%29))
 
-<span style="color: green;">●</span> [Turing-complete](./examples/rule_110.musc) ([Turing completeness](https://en.wikipedia.org/wiki/Turing_completeness))
+<span style="color: green;">●</span> [Turing-complete](./examples/rule_110.sko) ([Turing completeness](https://en.wikipedia.org/wiki/Turing_completeness))
 
 <span style="color: red;">●</span> Statically typed ([Static type checking](https://en.wikipedia.org/wiki/Type_system#Static_type_checking))
 
@@ -54,7 +54,7 @@ A [stack-oriented language](https://en.wikipedia.org/wiki/Stack-oriented_program
 ## Examples
 "Hello, World!":
 ```v
-use "std.musc"
+use "std.sko"
 
 "Hello, World!\n" stdout fmt
 ```
@@ -65,7 +65,7 @@ Two simple programs:
 
 descending order
 ```v
-use "std.musc"
+use "std.sko"
 
 10 while cp -1 > do
 	cp =>
@@ -75,7 +75,7 @@ end
 
 ascending order
 ```v
-use "std.musc"
+use "std.sko"
 
 0 while cp 11 < do cp => 1 + end
 ```
@@ -83,9 +83,9 @@ use "std.musc"
 ## Quick Start
 ### Help
 ```console
-$ ./musc.py -h
+$ ./skorpio.py -h
 
-Usage: ./musc.py [OPTIONS] <SUBCOMMAND> [ARGS]
+Usage: ./skorpio.py [OPTIONS] <SUBCOMMAND> [ARGS]
 
 OPTIONS
      -dbg                     Enable debug mode
@@ -104,15 +104,15 @@ OPTIONS
 ### Simulation
 The simulation is an interpretation of the program
 ```console
-$ cat ./tests/03_arithmetics.musc
--- 03_arithmetics.musc
+$ cat ./tests/03_arithmetics.sko
+-- 03_arithmetics.sko
 
 -- add
 1 2 + =>
 
 -- substract
 3 2 - =>
-$ ./musc.py -s ./tests/03_arithmetics.musc
+$ ./skorpio.py -s ./tests/03_arithmetics.sko
 3
 1
 ```
@@ -121,15 +121,15 @@ $ ./musc.py -s ./tests/03_arithmetics.musc
 The compilation generates assembly code, compiles it with [nasm](https://www.nasm.us/), and then links it with [GNU ld](https://www.gnu.org/software/outpututils/). Both should be available in your `$PATH`.
 
 ```console
-$ cat ./tests/03_arithmetics.musc
--- 03_arithmetics.musc
+$ cat ./tests/03_arithmetics.sko
+-- 03_arithmetics.sko
 
 -- add
 1 2 + =>
 
 -- substract
 3 2 - =>
-$ ./musc.py -c ./tests/03_arithmetics.musc
+$ ./skorpio.py -c ./tests/03_arithmetics.sko
 [INFO] Generating 03_arithmetics.asm
 [CMD] nasm -felf64 tests/03_arithmetics.asm
 [CMD] ld -o tests/03_arithmetics tests/03_arithmetics.o
@@ -141,7 +141,7 @@ $ ./tests/03_arithmetics
 The `-r` subcommand allows you to run the program after successful compilation:
 
 ```console
-$ ./musc.py -c -r ./tests/03_arithmetics.musc
+$ ./skorpio.py -c -r ./tests/03_arithmetics.sko
 [INFO] Generating 03_arithmetics.asm
 [CMD] nasm -felf64 tests/03_arithmetics.asm
 [CMD] ld -o tests/03_arithmetics tests/03_arithmetics.o
@@ -153,7 +153,7 @@ $ ./musc.py -c -r ./tests/03_arithmetics.musc
 The `-o` subcommand allows you to customize the output path:
 
 ```console
-$ mkdir output && ./musc.py -c -o output/ ./tests/03_arithmetics.musc
+$ mkdir output && ./skorpio.py -c -o output/ ./tests/03_arithmetics.sko
 [INFO] Generating 03_arithmetics.asm
 [CMD] nasm -felf64 output/03_arithmetics.asm
 [CMD] ld -o output/03_arithmetics output/03_arithmetics.o
@@ -164,19 +164,19 @@ $ ls output/
 Or as a file:
 
 ```console
-$ ./musc.py -c -o ./output ./tests/03_arithmetics.musc
+$ ./skorpio.py -c -o ./output ./tests/03_arithmetics.sko
 [INFO] Generating output.asm
 [CMD] nasm -felf64 ./output.asm
 [CMD] ld -o ./output ./output.o
 [CMD] ./output
 $ ls
-output*  output.asm  output.o  assets/  LICENCE  musc.py*  README.md  test.py*  tests/
+output*  output.asm  output.o  assets/  LICENCE  skorpio.py*  README.md  test.py*  tests/
 ```
 
 You can chain the `-r` and `-o` subcommands:
 
 ```console
-$ mkdir output && ./musc.py -c -r -o output/ ./tests/03_arithmetics.musc
+$ mkdir output && ./skorpio.py -c -r -o output/ ./tests/03_arithmetics.sko
 [INFO] Generating 03_arithmetics.asm
 [CMD] nasm -felf64 output/03_arithmetics.asm
 [CMD] ld -o output/03_arithmetics output/03_arithmetics.o
@@ -230,11 +230,11 @@ $ ./test.py -f ./examples/ -c
 
 ### Usage
 
-If you wanna use the Musc compiler separately from its codebase you only need two things:
-- [./musc.py](./musc.py) - the compiler itself,
+If you wanna use the Skorpio compiler separately from its codebase you only need two things:
+- [./skorpio.py](./skorpio.py) - the compiler itself,
 - [./std/](./std/) - the standard library.
 
-By default the compiler searches files to include in `./` and `./std/`. You can add more search paths via the `-I` flag before the subcommand: `./musc.py -I <custom-path> -r ...`. See `./musc.py help` for more info.
+By default the compiler searches files to include in `./` and `./std/`. You can add more search paths via the `-I` flag before the subcommand: `./skorpio.py -I <custom-path> -r ...`. See `./skorpio.py help` for more info.
 
 
 
@@ -268,17 +268,17 @@ Thus, a single string pushes two values onto the data stack: the size and the po
 
 Example:
 ```
-use "std.musc"
+use "std.sko"
 
 "Hello, World!\n" stdout fmt
 ```
 
-The `fmt` macro from `std.musc` module expects two values on the data stack:
+The `fmt` macro from `std.sko` module expects two values on the data stack:
 1. the size of the buffer it needs to print,
 2. the pointer to the beginning of the buffer,
 3. and the output file descriptor where it needs to print to.
 
-The size and the pointer are provided by the string `"Hello, World!"`. The file descriptor is `stdout` macro from `std.musc`.
+The size and the pointer are provided by the string `"Hello, World!"`. The file descriptor is `stdout` macro from `std.sko`.
 
 #### Character
 
@@ -439,9 +439,9 @@ end
 
 ### Include
 
-Include tokens of file `file.musc`
+Include tokens of file `file.sko`
 ```v
-use "file.musc"
+use "file.sko"
 ```
 
 ## FAQ

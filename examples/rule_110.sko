@@ -1,5 +1,5 @@
 -- rule 110 (https://en.wikipedia.org/wiki/Rule_110)
-use "std.musc"
+use "std.sko"
 
 -- max width of the row
 macro N 100 end

@@ -1,5 +1,5 @@
--- 03_arithmetic.musc
-use "std.musc"
+-- 03_arithmetic.sko
+use "std.sko"
 
 -- add
 1 2 + =>

@@ -18,16 +18,16 @@ def test(folder):
     s_failed = 0
     c_failed = 0
     for entry in os.scandir(folder):
-        musc_ext = '.musc'
-        if entry.is_file() and entry.path.endswith(musc_ext):
+        skorpio_ext = '.sko'
+        if entry.is_file() and entry.path.endswith(skorpio_ext):
             print('[INFO] Testing %s' % entry.path)
 
-            txt_path = entry.path[:-len(musc_ext)] + ".txt"
+            txt_path = entry.path[:-len(skorpio_ext)] + ".txt"
             expected_output = None
             with open(txt_path, "rb") as f:
                 expected_output = f.read()
 
-            sim_output = cmd_run_echoed(["./musc.py", "-s", entry.path], capture_output=True).stdout
+            sim_output = cmd_run_echoed(["./skorpio.py", "-s", entry.path], capture_output=True).stdout
             if sim_output != expected_output:
                 s_failed += 1
                 print("[ERROR] Unexpected simulation output")
@@ -37,7 +37,7 @@ def test(folder):
                 print("    %s" % sim_output)
                 # exit(1)
 
-            com_output = cmd_run_echoed(["./musc.py", "-c", "-r", "--silent", entry.path], capture_output=True).stdout
+            com_output = cmd_run_echoed(["./skorpio.py", "-c", "-r", "--silent", entry.path], capture_output=True).stdout
             if com_output != expected_output:
                 c_failed += 1
                 print("[ERROR] Unexpected compilation output")
@@ -54,10 +54,10 @@ def test(folder):
 
 def record(folder):
     for entry in os.scandir(folder):
-        musc_ext = '.musc'
-        if entry.is_file() and entry.path.endswith(musc_ext):
-            sim_output = cmd_run_echoed(["./musc.py", "-s", entry.path], capture_output=True).stdout
-            txt_path = entry.path[:-len(musc_ext)] + ".txt"
+        skorpio_ext = '.sko'
+        if entry.is_file() and entry.path.endswith(skorpio_ext):
+            sim_output = cmd_run_echoed(["./skorpio.py", "-s", entry.path], capture_output=True).stdout
+            txt_path = entry.path[:-len(skorpio_ext)] + ".txt"
             print("[INFO] Saving output to %s" % txt_path)
             with open(txt_path, "wb") as txt_file:
                 txt_file.write(sim_output)
@@ -75,7 +75,7 @@ def usage(exe_name):
 # NOTE: temporary
 def clean(folder):
     for entry in os.scandir(folder):
-        if entry.is_file() and not entry.path.endswith('.musc') and not entry.path.endswith('.txt'):
+        if entry.is_file() and not entry.path.endswith('.sko') and not entry.path.endswith('.txt'):
             os.remove(entry.path)
 
 if __name__ == '__main__':
