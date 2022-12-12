@@ -1,5 +1,5 @@
 -- sequence 100
-use "std.musc"
+use "std.sko"
 
 100 0 while pcp > do
     cp => 1 +

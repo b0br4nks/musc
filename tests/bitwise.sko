@@ -1,5 +1,5 @@
--- 06_bitwise.musc
-use "std.musc"
+-- 06_bitwise.sko
+use "std.sko"
 
 -- left shift
 2 4 << =>

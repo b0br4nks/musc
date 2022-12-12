@@ -957,18 +957,18 @@ if __name__ == "__main__" and "__file__" in globals():
         if output_path is not None:
             if path.isdir(output_path):
                 basename = path.basename(program_path)
-                musc_ext = '.musc'
-                if basename.endswith(musc_ext):
-                    basename = basename[:-len(musc_ext)]
+                skorpio_ext = '.sko'
+                if basename.endswith(skorpio_ext):
+                    basename = basename[:-len(skorpio_ext)]
                 basedir = path.dirname(output_path)
             else:
                 basename = path.basename(output_path)
                 basedir = path.dirname(output_path)
         else:
             basename = path.basename(program_path)
-            musc_ext = '.musc'
-            if basename.endswith(musc_ext):
-                basename = basename[:-len(musc_ext)]
+            skorpio_ext = '.sko'
+            if basename.endswith(skorpio_ext):
+                basename = basename[:-len(skorpio_ext)]
             basedir = path.dirname(program_path)
         basepath = path.join(basedir, basename)
 

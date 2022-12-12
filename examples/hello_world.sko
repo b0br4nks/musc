@@ -1,5 +1,5 @@
 -- "Hello, World\n"
-use "std.musc"
+use "std.sko"
 
 "Hello, World\n" stdout fmt
 

@@ -18,6 +18,6 @@ jobs:
           pip install mypy
       - name: run tests
         run: |
-          mypy ./musc.py
+          mypy ./skorpio.py
           python ./test.py -t
           python ./test.py -f ./examples/ -t

@@ -1,5 +1,5 @@
--- 01_stack.musc
-use "std.musc"
+-- 01_stack.sko
+use "std.sko"
 
 -- push int
 1 2 3 => => =>
