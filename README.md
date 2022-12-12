@@ -1,6 +1,6 @@
 <div align="center">
 <p>
- <img width="300" src="assets/skorpio_logo_bw.png">
+ <img width="200" src="assets/skorpio_logo_bw.png">
 </p>
 <h1>The Skorpio Programming Language</h1>
 
