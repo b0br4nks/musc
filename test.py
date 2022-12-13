@@ -59,9 +59,9 @@ def record(folder, mode='-s'):
             # sim_output = cmd_run_echoed(["./skorpio.py", "-s", entry.path], capture_output=True).stdout
             output = ""
             if mode == '-s':
-                output == cmd_run_echoed(["./skorpio.py", "-s", entry.path], capture_output=True).stdout
+                output = cmd_run_echoed(["./skorpio.py", "-s", entry.path], capture_output=True).stdout
             elif mode == '-c':
-                output == cmd_run_echoed(["./skorpio.py", "-c", "-r", "-s", entry.path], capture_output=True).stdout
+                output = cmd_run_echoed(["./skorpio.py", "-c", "-r", "-s", entry.path], capture_output=True).stdout
             else:
                 print("[ERROR] Unknown record mode `%s`" % mode)
                 exit(1)
