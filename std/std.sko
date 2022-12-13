@@ -173,8 +173,8 @@ fn SYS_acct 163 end
 fn SYS_settimeofday 164 end
 fn SYS_mount 165 end
 fn SYS_umount2 166 end
-fn SYS_swapon 167 end
-fn SYS_swapoff 168 end
+fn SYS_~on 167 end
+fn SYS_~off 168 end
 fn SYS_reboot 169 end
 fn SYS_sethostname 170 end
 fn SYS_setdomainname 171 end
@@ -333,3 +333,30 @@ fn / divmod ! end
 fn % divmod ~ ! end
 fn mod % end
 fn div / end
+
+fn &64
+  7 + 0
+  8 << over &l + ~ 1 - ~
+  8 << over &l + ~ 1 - ~
+  8 << over &l + ~ 1 - ~
+  8 << over &l + ~ 1 - ~
+  8 << over &l + ~ 1 - ~
+  8 << over &l + ~ 1 - ~
+  8 << over &l + ~ 1 - ~
+  8 << over &l + ~ !
+end
+
+fn *64
+  pcp 255 & *s 8 >> ~ 1 + ~
+  pcp 255 & *s 8 >> ~ 1 + ~
+  pcp 255 & *s 8 >> ~ 1 + ~
+  pcp 255 & *s 8 >> ~ 1 + ~
+  pcp 255 & *s 8 >> ~ 1 + ~
+  pcp 255 & *s 8 >> ~ 1 + ~
+  pcp 255 & *s 8 >> ~ 1 + ~
+  pcp 255 & *s 8 >> !!
+end
+
+fn i64
+  dup *64 1 + &64
+end

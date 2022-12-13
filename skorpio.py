@@ -627,7 +627,7 @@ INTRINSIC_NAMES = {
     '!': Intrinsic.DROP,
     'over': Intrinsic.OVER,
     'mem': Intrinsic.MEM,
-    '&s': Intrinsic.STORE,
+    '*s': Intrinsic.STORE,
     '&l': Intrinsic.LOAD,
     'sys0': Intrinsic.SYSCALL0,
     'sys1': Intrinsic.SYSCALL1,

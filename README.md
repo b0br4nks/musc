@@ -414,7 +414,7 @@ end
 
 - `mem` - pushes the address of the beginning of the memory where the stack can be read and written.
 
-- `&s` - store a given byte at the given address.
+- `*s` - store a given byte at the given address.
 
 - `&l` - load a byte from the given address.
 
