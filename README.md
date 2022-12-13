@@ -104,15 +104,15 @@ OPTIONS
 ### Simulation
 The simulation is an interpretation of the program
 ```console
-$ cat ./tests/03_arithmetics.sko
--- 03_arithmetics.sko
+$ cat ./tests/arithmetic.sko
+-- arithmetic.sko
 
 -- add
 1 2 + =>
 
 -- substract
 3 2 - =>
-$ ./skorpio.py -s ./tests/03_arithmetics.sko
+$ ./skorpio.py -s ./tests/arithmetic.sko
 3
 1
 ```
@@ -121,19 +121,19 @@ $ ./skorpio.py -s ./tests/03_arithmetics.sko
 The compilation generates assembly code, compiles it with [nasm](https://www.nasm.us/), and then links it with [GNU ld](https://www.gnu.org/software/outpututils/). Both should be available in your `$PATH`.
 
 ```console
-$ cat ./tests/03_arithmetics.sko
--- 03_arithmetics.sko
+$ cat ./tests/arithmetic.sko
+-- arithmetic.sko
 
 -- add
 1 2 + =>
 
 -- substract
 3 2 - =>
-$ ./skorpio.py -c ./tests/03_arithmetics.sko
-[INFO] Generating 03_arithmetics.asm
-[CMD] nasm -felf64 tests/03_arithmetics.asm
-[CMD] ld -o tests/03_arithmetics tests/03_arithmetics.o
-$ ./tests/03_arithmetics
+$ ./skorpio.py -c ./tests/arithmetic.sko
+[INFO] Generating arithmetic.asm
+[CMD] nasm -felf64 tests/arithmetic.asm
+[CMD] ld -o tests/arithmetic tests/arithmetic.o
+$ ./tests/arithmetic
 3
 1
 ```
@@ -141,11 +141,11 @@ $ ./tests/03_arithmetics
 The `-r` subcommand allows you to run the program after successful compilation:
 
 ```console
-$ ./skorpio.py -c -r ./tests/03_arithmetics.sko
-[INFO] Generating 03_arithmetics.asm
-[CMD] nasm -felf64 tests/03_arithmetics.asm
-[CMD] ld -o tests/03_arithmetics tests/03_arithmetics.o
-[CMD] tests/03_arithmetics
+$ ./skorpio.py -c -r ./tests/arithmetic.sko
+[INFO] Generating arithmetic.asm
+[CMD] nasm -felf64 tests/arithmetic.asm
+[CMD] ld -o tests/arithmetic tests/arithmetic.o
+[CMD] tests/arithmetic
 3
 1
 ```
@@ -153,18 +153,18 @@ $ ./skorpio.py -c -r ./tests/03_arithmetics.sko
 The `-o` subcommand allows you to customize the output path:
 
 ```console
-$ mkdir output && ./skorpio.py -c -o output/ ./tests/03_arithmetics.sko
-[INFO] Generating 03_arithmetics.asm
-[CMD] nasm -felf64 output/03_arithmetics.asm
-[CMD] ld -o output/03_arithmetics output/03_arithmetics.o
+$ mkdir output && ./skorpio.py -c -o output/ ./tests/arithmetic.sko
+[INFO] Generating arithmetic.asm
+[CMD] nasm -felf64 output/arithmetic.asm
+[CMD] ld -o output/arithmetic output/arithmetic.o
 $ ls output/
-03_arithmetics*  03_arithmetics.asm  03_arithmetics.o
+arithmetic*  arithmetic.asm  arithmetic.o
 ```
 
 Or as a file:
 
 ```console
-$ ./skorpio.py -c -o ./output ./tests/03_arithmetics.sko
+$ ./skorpio.py -c -o ./output ./tests/arithmetic.sko
 [INFO] Generating output.asm
 [CMD] nasm -felf64 ./output.asm
 [CMD] ld -o ./output ./output.o
@@ -176,11 +176,11 @@ output*  output.asm  output.o  assets/  LICENCE  skorpio.py*  README.md  test.py
 You can chain the `-r` and `-o` subcommands:
 
 ```console
-$ mkdir output && ./skorpio.py -c -r -o output/ ./tests/03_arithmetics.sko
-[INFO] Generating 03_arithmetics.asm
-[CMD] nasm -felf64 output/03_arithmetics.asm
-[CMD] ld -o output/03_arithmetics output/03_arithmetics.o
-[CMD] output/03_arithmetics
+$ mkdir output && ./skorpio.py -c -r -o output/ ./tests/arithmetic.sko
+[INFO] Generating arithmetic.asm
+[CMD] nasm -felf64 output/arithmetic.asm
+[CMD] ld -o output/arithmetic output/arithmetic.o
+[CMD] output/arithmetic
 3
 1
 ```
