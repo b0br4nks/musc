@@ -32,7 +32,7 @@
 		* [while loop](#while-loop)
 		* [Memory](#memory)
 		* [System](#system)
-	* [Macros](#macros)
+	* [Functions](#functions)
 	* [Include](#include)
 * [FAQ](#faq)
 
@@ -273,12 +273,12 @@ use "std.sko"
 "Hello, World!\n" stdout fmt
 ```
 
-The `fmt` macro from `std.sko` module expects two values on the data stack:
+The `fmt` function from `std.sko` module expects two values on the data stack:
 1. the size of the buffer it needs to print,
 2. the pointer to the beginning of the buffer,
 3. and the output file descriptor where it needs to print to.
 
-The size and the pointer are provided by the string `"Hello, World!"`. The file descriptor is `stdout` macro from `std.sko`.
+The size and the pointer are provided by the string `"Hello, World!"`. The file descriptor is `stdout` function from `std.sko`.
 
 #### Character
 
@@ -422,13 +422,13 @@ end
 
 - `sys<n>` - perform a syscall with n arguments where n is in range `[0..6]`. (`sys0`, `sys1`, ..., `sys6`)
 
-### Macros
+### Functions
 
 Define a new `<keyword>` that expands into a sequence of `<tokens>` during the compilation.
 
 An example with the keyword `fmt` and as tokens `1 1 sys3`:
 ```v
-macro fmt
+fn fmt
 	1 1 sys3
 end
 

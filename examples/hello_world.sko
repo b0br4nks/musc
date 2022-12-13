@@ -10,8 +10,8 @@ use "std.sko"
 
 "===========================\n" stdout fmt
 
--- with macro
-macro print fmt end
+-- with fn
+fn print fmt end
 "Hello, World\n" stdout print
 
 "===========================\n" stdout fmt

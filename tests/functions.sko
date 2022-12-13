@@ -1,0 +1,12 @@
+use "std.sko"
+
+fn is_less
+    < if
+        "yes\n" stdout fmt
+    else
+        "no\n" stdout fmt
+    end
+end
+
+1 2 is_less
+2 1 is_less

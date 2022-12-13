@@ -14,6 +14,13 @@ use "std.sko"
 
 "===========================\n" stdout fmt
 
+-- multiline str
+"Hello,
+World
+" stdout fmt
+
+"===========================\n" stdout fmt
+
 -- character
 'X' =>
 
