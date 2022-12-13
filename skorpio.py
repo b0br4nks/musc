@@ -992,6 +992,8 @@ if __name__ == "__main__" and "__file__" in globals():
             if basename.endswith(skorpio_ext):
                 basename = basename[:-len(skorpio_ext)]
             basedir = path.dirname(program_path)
+        if basedir == "":
+            basedir = os.getcwd()
         basepath = path.join(basedir, basename)
 
         if not silent:
