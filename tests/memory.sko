@@ -2,11 +2,11 @@
 use "std.sko"
 
 -- write 'MUSC' into the memory
-mem 0 + 77 &s
-mem 1 + 85 &s
-mem 2 + 83 &s
-mem 3 + 67 &s
-mem 4 + 10 &s
+mem 0 + 77 *s
+mem 1 + 85 *s
+mem 2 + 83 *s
+mem 3 + 67 *s
+mem 4 + 10 *s
 
 "===========================\n" stdout fmt
 
@@ -16,20 +16,20 @@ mem 4 + 10 &s
 "===========================\n" stdout fmt
 
 -- more dynamic way
-mem cp 77 &s
-1 + cp 85 &s
-1 + cp 83 &s
-1 + cp 67 &s
-1 + cp 10 &s
+mem cp 77 *s
+1 + cp 85 *s
+1 + cp 83 *s
+1 + cp 67 *s
+1 + cp 10 *s
 mem - mem stdout fmt =>
 
 "===========================\n" stdout fmt
 
 -- increament each character by 1 making it 'NVTD'
-mem 0 + cp &l 1 + &s
-mem 1 + cp &l 1 + &s
-mem 2 + cp &l 1 + &s
-mem 3 + cp &l 1 + &s
+mem 0 + cp &l 1 + *s
+mem 1 + cp &l 1 + *s
+mem 2 + cp &l 1 + *s
+mem 3 + cp &l 1 + *s
 
 "===========================\n" stdout fmt
 

@@ -1,0 +1,12 @@
+use "std.sko"
+
+0 3 while cp 1000 < do
+    cp   3 mod 0 =
+    over 5 mod 0 =
+    or if
+        ~ over + ~
+    end
+
+    1 +
+end !
+=>

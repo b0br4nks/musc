@@ -1,5 +1,6 @@
 use "std.sko"
 
+-- check if a number is less than another
 fn is_less
     < if
         "yes\n" stdout fmt
@@ -10,3 +11,17 @@ end
 
 1 2 is_less
 2 1 is_less
+
+"===========================\n" stdout fmt
+
+-- even fibonacci numbers under 1,000,000
+fn even_fibs
+  0 1 while over 1000000 < do
+    over 2 mod 0 = if
+      over =>
+    end
+    ~ over +
+  end
+end
+
+even_fibs

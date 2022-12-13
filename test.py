@@ -52,15 +52,23 @@ def test(folder):
     if s_failed != 0 or c_failed != 0:
         exit(1)
 
-def record(folder):
+def record(folder, mode='-s'):
     for entry in os.scandir(folder):
         skorpio_ext = '.sko'
         if entry.is_file() and entry.path.endswith(skorpio_ext):
-            sim_output = cmd_run_echoed(["./skorpio.py", "-s", entry.path], capture_output=True).stdout
+            # sim_output = cmd_run_echoed(["./skorpio.py", "-s", entry.path], capture_output=True).stdout
+            output = ""
+            if mode == '-s':
+                output = cmd_run_echoed(["./skorpio.py", "-s", entry.path], capture_output=True).stdout
+            elif mode == '-c':
+                output = cmd_run_echoed(["./skorpio.py", "-c", "-r", "-s", entry.path], capture_output=True).stdout
+            else:
+                print("[ERROR] Unknown record mode `%s`" % mode)
+                exit(1)
             txt_path = entry.path[:-len(skorpio_ext)] + ".txt"
             print("[INFO] Saving output to %s" % txt_path)
             with open(txt_path, "wb") as txt_file:
-                txt_file.write(sim_output)
+                txt_file.write(output)
 
 def usage(exe_name):
     print("Usage: ./test.py [OPTIONS] [SUBCOMMAND]")
@@ -68,7 +76,7 @@ def usage(exe_name):
     print("    -f <folder> Folder with the tests. (Default: ./tests/)")
     print("SUBCOMMANDS:")
     print("    -t          Run the tests. ")
-    print("    -r          Record expected output of the tests.")
+    print("    -r  [-com]  Record expected output of the tests.")
     print("    -c          Clean the directory.")
     print("    -h          Print this message to stdout and exit with 0 code.(Default when no subcommand is provided)")
 
@@ -96,7 +104,15 @@ if __name__ == '__main__':
             break
 
     if subcmd == '-r':
-        record(folder)
+        mode = '-s'
+        while len(argv) > 0:
+            arg, *argv = argv
+            if arg == '-c':
+                mode  = 'c'
+            else:
+                print("[ERROR] Unknown flag `%s`" % arg)
+                exit(1)
+        record(folder, mode)
     elif subcmd == '-t':
         test(folder)
     elif subcmd == '-c':
@@ -107,4 +123,3 @@ if __name__ == '__main__':
         usage(exe_name)
         print("[ERROR] unknown subcommand `%s`" % subcmd, file=sys.stderr)
         exit(1)
-
