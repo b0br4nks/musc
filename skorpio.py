@@ -19,7 +19,7 @@ class Keyword(Enum):
     ELSE=auto()
     WHILE=auto()
     DO=auto()
-    MACRO=auto()
+    FUNC=auto()
     USE=auto()
 
 class Intrinsic(Enum):
@@ -601,7 +601,7 @@ KEYWORD_NAMES = {
     'else': Keyword.ELSE,
     'while': Keyword.WHILE,
     'do': Keyword.DO,
-    'macro': Keyword.MACRO,
+    'fn': Keyword.FUNC,
     'use': Keyword.USE
 }
 
@@ -640,7 +640,7 @@ INTRINSIC_NAMES = {
 
 
 @dataclass
-class Macro:
+class Func:
     loc: Loc
     tokens: List[Token]
 
@@ -664,10 +664,10 @@ def compile_tokens_to_program(tokens: List[Token], include_paths: List[str]) -> 
     stack: List[OpAddr] = []
     program: List[Op] = []
     rtokens: List[Token] = list(reversed(tokens))
-    macros: Dict[str, Macro] = {}
+    funcs: Dict[str, Func] = {}
     ip: OpAddr = 0
     while len(rtokens) > 0:
-        # TODO: some sort of safety mechanism for recursive macros
+        # TODO: some sort of safety mechanism for recursive funcs
         token = rtokens.pop()
         assert len(TokenType) == 5, "Exhaustive token handling in compile_tokens_to_program"
         if token.typ == TokenType.WORD:
@@ -675,8 +675,8 @@ def compile_tokens_to_program(tokens: List[Token], include_paths: List[str]) -> 
             if token.value in INTRINSIC_NAMES:
                 program.append(Op(typ=OpType.INTRINSIC, loc=token.loc, operand=INTRINSIC_NAMES[token.value]))
                 ip += 1
-            elif token.value in macros:
-                rtokens += reversed(macros[token.value].tokens)
+            elif token.value in funcs:
+                rtokens += reversed(funcs[token.value].tokens)
             else:
                 print("%s:%d:%d: unknown word `%s`" % (token.loc + (token.value, )))
                 exit(1)
@@ -752,35 +752,39 @@ def compile_tokens_to_program(tokens: List[Token], include_paths: List[str]) -> 
                 if not file_included:
                     print("%s:%d:%d: ERROR: file `%s` not found" % (token.loc + (token.value, )))
                     exit(1)
-            # TODO: capability to define macros from command line
-            elif token.value == Keyword.MACRO:
+            # TODO: capability to define funcs from command line
+            elif token.value == Keyword.FUNC:
                 if len(rtokens) == 0:
-                    print("%s:%d:%d: ERROR: expected macro name but found nothing" % token.loc)
+                    print("%s:%d:%d: ERROR: expected func name but found nothing" % token.loc)
                     exit(1)
                 token = rtokens.pop()
                 if token.typ != TokenType.WORD:
-                    print("%s:%d:%d: ERROR: expected macro name to be %s but found %s" % (token.loc + (human(TokenType.WORD), human(token.typ))))
+                    print("%s:%d:%d: ERROR: expected func name to be %s but found %s" % (token.loc + (human(TokenType.WORD), human(token.typ))))
                     exit(1)
                 assert isinstance(token.value, str), "This is probably a bug in the lexer"
-                if token.value in macros:
-                    print("%s:%d:%d: ERROR: redefinition of already existing macro `%s`" % (token.loc + (token.value, )))
-                    print("%s:%d:%d: NOTE: the first definition is located here" % macros[token.value].loc)
+                if token.value in funcs:
+                    print("%s:%d:%d: ERROR: redefinition of already existing func `%s`" % (token.loc + (token.value, )))
+                    print("%s:%d:%d: NOTE: the first definition is located here" % funcs[token.value].loc)
                     exit(1)
                 if token.value in INTRINSIC_NAMES:
-                    print("%s:%d:%d: ERROR: redefinition of an intrinsic word `%s`. Please choose a different name for your macro." % (token.loc + (token.value, )))
+                    print("%s:%d:%d: ERROR: redefinition of an intrinsic word `%s`. Please choose a different name for your func." % (token.loc + (token.value, )))
                     exit(1)
-                macro = Macro(token.loc, [])
-                macros[token.value] = macro
-
-                # TODO: support for nested blocks within the macro definition
+                func = Func(token.loc, [])
+                funcs[token.value] = func
+                nesting_depth = 0
                 while len(rtokens) > 0:
                     token = rtokens.pop()
-                    if token.typ == TokenType.KEYWORD and token.value == Keyword.END:
+                    if token.typ == TokenType.KEYWORD and token.value == Keyword.END and nesting_depth == 0:
                         break
                     else:
-                        macro.tokens.append(token)
+                        func.tokens.append(token)
+                        if token.typ == TokenType.KEYWORD:
+                            if token.value in [Keyword.IF, Keyword.WHILE, Keyword.FUNC]:
+                                nesting_depth += 1
+                            elif token.value == Keyword.END:
+                                nesting_depth -= 1
                 if token.typ != TokenType.KEYWORD or token.value != Keyword.END:
-                    print("%s:%d:%d: ERROR: expected `end` at the end of the macro definition but got `%s`" % (token.loc + (token.value, )))
+                    print("%s:%d:%d: ERROR: expected `end` at the end of the func definition but got `%s`" % (token.loc + (token.value, )))
                     exit(1)
             else:
                 assert False, 'unreachable';

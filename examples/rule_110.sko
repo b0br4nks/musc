@@ -2,11 +2,11 @@
 use "std.sko"
 
 -- max width of the row
-macro N 100 end
+fn N 100 end
 
 -- memory layout
-macro row mem end
-macro out row N + end
+fn row mem end
+fn out row N + end
 
 row N 2 - + 1 &s
 out N + 10 &s
