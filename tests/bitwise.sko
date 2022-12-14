@@ -1,4 +1,4 @@
--- 06_bitwise.sko
+-- bitwise.sko
 use "std.sko"
 
 -- left shift

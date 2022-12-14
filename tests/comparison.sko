@@ -1,4 +1,4 @@
--- 02_comparison.sko
+-- comparison.sko
 use "std.sko"
 
 -- equal

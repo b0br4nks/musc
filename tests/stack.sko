@@ -1,4 +1,4 @@
--- 01_stack.sko
+-- stack.sko
 use "std.sko"
 
 -- push int
