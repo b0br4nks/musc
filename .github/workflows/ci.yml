@@ -19,5 +19,6 @@ jobs:
       - name: run tests
         run: |
           mypy ./skorpio.py
+          mypy ./test.py
           python ./test.py -t
           python ./test.py -f ./examples/ -t
