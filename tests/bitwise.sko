@@ -18,5 +18,3 @@ use "std.sko"
 
 -- bit and
 1 2 & =>
-
-"===========================\n" stdout fmt
