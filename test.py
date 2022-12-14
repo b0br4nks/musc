@@ -54,7 +54,7 @@ def test(folder: str):
             sim_output = sim_cmd.stdout
             sim_error = sim_cmd.stderr
             if sim_returncode != expected_returncode or sim_output != expected_output or sim_error != expected_error:
-                sim_failed += 1
+                s_failed += 1
                 print("[ERROR] Unexpected simulation output")
                 print("  Expected:")
                 print("    return code: %s" % expected_returncode)
