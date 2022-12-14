@@ -187,7 +187,7 @@ $ mkdir output && ./skorpio.py -c -r -o output/ ./tests/arithmetic.sko
 
 ### Testing
 
-Test cases are located in [./tests/](./tests/) folder. The `*.txt` files are the expected outputs of the corresponding programs.
+Test cases are located in [./tests/](./tests/) folder. The `*.txt` files contain expected outcomes of the corresponding programs (exit code, stdout, stderr).
 
 However, you can choose in which folder the tests should be executed with the `-f` subcommand:
 ```console
