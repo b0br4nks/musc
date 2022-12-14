@@ -1,4 +1,4 @@
--- 06_bitwise.sko
+-- bitwise.sko
 use "std.sko"
 
 -- left shift
@@ -18,5 +18,3 @@ use "std.sko"
 
 -- bit and
 1 2 & =>
-
-"===========================\n" stdout fmt

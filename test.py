@@ -4,17 +4,41 @@ import sys
 import os
 import subprocess
 import shlex
+from typing import BinaryIO, Tuple
 
 def cmd_run_echoed(cmd, **kwargs):
     print("[CMD] %s" % " ".join(map(shlex.quote, cmd)))
-    cmd = subprocess.run(cmd, **kwargs)
-    if cmd.returncode != 0:
-        print(cmd.stdout.decode('utf-8'), file=sys.stdout)
-        print(cmd.stderr.decode('utf-8'), file=sys.stderr)
-        exit(cmd.returncode)
-    return cmd
+    return subprocess.run(cmd, **kwargs)
 
-def test(folder):
+def read_field(f: BinaryIO, name: bytes) -> bytes:
+    line = f.readline()
+    field = b': ' + name + b' '
+    assert line.startswith(field)
+    assert line.endswith(b'\n')
+    return line[len(field):-1]
+
+def load_test_case(file_path: str) -> Tuple[int, bytes, bytes]:
+    with open(file_path, "rb") as f:
+        returncode = int(read_field(f, b'returncode'))
+        stdout_len = int(read_field(f, b'stdout'))
+        stdout = f.read(stdout_len)
+        assert f.read(1) == b'\n'
+        stderr_len = int(read_field(f, b'stderr'))
+        stderr = f.read(stderr_len)
+        assert f.read(1) == b'\n'
+        return (returncode, stdout, stderr)
+
+def save_test_case(file_path: str, returncode: int, stdout: bytes, stderr: bytes):
+    with open(file_path, "wb") as f:
+        f.write(b": returncode %d\n" % returncode)
+        f.write(b": stdout %d\n" % len(stdout))
+        f.write(stdout)
+        f.write(b"\n")
+        f.write(b": stderr %d\n" % len(stderr))
+        f.write(stderr)
+        f.write(b"\n")
+
+def test(folder: str):
     s_failed = 0
     c_failed = 0
     for entry in os.scandir(folder):
@@ -23,54 +47,60 @@ def test(folder):
             print('[INFO] Testing %s' % entry.path)
 
             txt_path = entry.path[:-len(skorpio_ext)] + ".txt"
-            expected_output = None
-            with open(txt_path, "rb") as f:
-                expected_output = f.read()
+            (expected_returncode, expected_output, expected_error) = load_test_case(txt_path)
 
-            sim_output = cmd_run_echoed(["./skorpio.py", "-s", entry.path], capture_output=True).stdout
-            if sim_output != expected_output:
+            sim_cmd = cmd_run_echoed([sys.executable, "./skorpio.py", "-s", entry.path], capture_output=True)
+            sim_returncode = sim_cmd.returncode
+            sim_output = sim_cmd.stdout
+            sim_error = sim_cmd.stderr
+            if sim_returncode != expected_returncode or sim_output != expected_output or sim_error != expected_error:
                 s_failed += 1
                 print("[ERROR] Unexpected simulation output")
                 print("  Expected:")
-                print("    %s" % expected_output)
+                print("    return code: %s" % expected_returncode)
+                print("    stdout: %s" % expected_output.decode("utf-8"))
+                print("    stderr: %s" % expected_error.decode("utf-8"))
                 print("  Actual:")
-                print("    %s" % sim_output)
-                # exit(1)
+                print("    return code: %s" % sim_returncode)
+                print("    stdout: %s" % sim_output.decode("utf-8"))
+                print("    stderr: %s" % sim_error.decode("utf-8"))
 
-            com_output = cmd_run_echoed(["./skorpio.py", "-c", "-r", "--silent", entry.path], capture_output=True).stdout
-            if com_output != expected_output:
+            com_cmd = cmd_run_echoed([sys.executable, "./skorpio.py", "-c", "-r", "--silent", entry.path], capture_output=True)
+            com_returncode = com_cmd.returncode
+            com_output = com_cmd.stdout
+            com_error = com_cmd.stderr
+            if com_returncode != expected_returncode or com_output != expected_output or com_error != expected_error:
                 c_failed += 1
                 print("[ERROR] Unexpected compilation output")
                 print("  Expected:")
-                print("    %s" % expected_output)
+                print("    return code: %s" % expected_returncode)
+                print("    stdout: %s" % expected_output.decode("utf-8"))
+                print("    stderr: %s" % expected_error.decode("utf-8"))
                 print("  Actual:")
-                print("    %s" % com_output)
-                # exit(1)
-
+                print("    return code: %s" % com_returncode)
+                print("    stdout: %s" % com_output.decode("utf-8"))
+                print("    stderr: %s" % com_error.decode("utf-8"))
     print()
     print("     Simulation failed: %d, Compilation failed: %d\n" % (s_failed, c_failed))
     if s_failed != 0 or c_failed != 0:
         exit(1)
 
-def record(folder, mode='-s'):
+def record(folder: str, mode: str='-s'):
     for entry in os.scandir(folder):
         skorpio_ext = '.sko'
         if entry.is_file() and entry.path.endswith(skorpio_ext):
-            # sim_output = cmd_run_echoed(["./skorpio.py", "-s", entry.path], capture_output=True).stdout
-            output = ""
             if mode == '-s':
-                output = cmd_run_echoed(["./skorpio.py", "-s", entry.path], capture_output=True).stdout
+                output = cmd_run_echoed([sys.executable, "./skorpio.py", "-s", entry.path], capture_output=True)
             elif mode == '-c':
-                output = cmd_run_echoed(["./skorpio.py", "-c", "-r", "-s", entry.path], capture_output=True).stdout
+                output = cmd_run_echoed([sys.executable, "./skorpio.py", "-c", "-r", "-s", entry.path], capture_output=True)
             else:
                 print("[ERROR] Unknown record mode `%s`" % mode)
                 exit(1)
             txt_path = entry.path[:-len(skorpio_ext)] + ".txt"
             print("[INFO] Saving output to %s" % txt_path)
-            with open(txt_path, "wb") as txt_file:
-                txt_file.write(output)
+            save_test_case(txt_path, output.returncode, output.stdout, output.stderr)
 
-def usage(exe_name):
+def usage(exe_name: str):
     print("Usage: ./test.py [OPTIONS] [SUBCOMMAND]")
     print("OPTIONS:")
     print("    -f <folder> Folder with the tests. (Default: ./tests/)")
@@ -83,7 +113,7 @@ def usage(exe_name):
 # NOTE: temporary
 def clean(folder):
     for entry in os.scandir(folder):
-        if entry.is_file() and not entry.path.endswith('.sko') and not entry.path.endswith('.txt'):
+        if entry.is_file() and not entry.path.endswith('.sko') and not entry.path.endswith('.txt') and not entry.path.endswith('.md'):
             os.remove(entry.path)
 
 if __name__ == '__main__':

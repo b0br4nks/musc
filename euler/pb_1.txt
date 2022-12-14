@@ -1,6 +1,6 @@
 : returncode 0
-: stdout 16
-Hello, -- World
+: stdout 7
+233168
 
 : stderr 0
 

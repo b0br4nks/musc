@@ -1,4 +1,4 @@
--- 04_control_flow.sko
+-- control_flow.sko
 use "std.sko"
 
 -- if-else multi-line

@@ -187,7 +187,7 @@ $ mkdir output && ./skorpio.py -c -r -o output/ ./tests/arithmetic.sko
 
 ### Testing
 
-Test cases are located in [./tests/](./tests/) folder. The `*.txt` files are the expected outputs of the corresponding programs.
+Test cases are located in [./tests/](./tests/) folder. The `*.txt` files contain expected outcomes of the corresponding programs (exit code, stdout, stderr).
 
 However, you can choose in which folder the tests should be executed with the `-f` subcommand:
 ```console
@@ -414,9 +414,22 @@ end
 
 - `mem` - pushes the address of the beginning of the memory where the stack can be read and written.
 
-- `*s` - store a given byte at the given address.
-
-- `&l` - load a byte from the given address.
+- `*s` - store a given byte at the address on the stack.
+```c
+[byte: int] [place: ptr] --
+```
+- `&l` - load a byte from the address on the stack.
+```c
+[place: ptr] -- [byte: int]
+```
+- `*64` - store an 8-byte word at the address on the stack.
+```c
+[byte: int] [place: ptr] --
+```
+- `&64` - load an 8-byte word from the address on the stack.
+```c
+[place: ptr] -- [byte: int]
+```
 
 #### System
 

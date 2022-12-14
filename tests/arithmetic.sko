@@ -1,4 +1,4 @@
--- 03_arithmetic.sko
+-- arithmetic.sko
 use "std.sko"
 
 -- add
