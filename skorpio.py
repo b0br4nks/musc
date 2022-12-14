@@ -45,6 +45,8 @@ class Intrinsic(Enum):
     MEM=auto()
     LOAD=auto()
     STORE=auto()
+    LOAD64=auto()
+    STORE64=auto()
     SYSCALL0=auto()
     SYSCALL1=auto()
     SYSCALL2=auto()
@@ -250,6 +252,16 @@ def simulate_little_endian_linux(program: Program):
                 store_addr = stack.pop()
                 mem[store_addr] = store_value & 0xFF
                 ip += 1
+            elif op.operand == Intrinsic.LOAD64:
+                addr = stack.pop()
+                byte = mem[addr]
+                stack.append(byte)
+                ip += 1
+            elif op.operand == Intrinsic.STORE64:
+                store_value = stack.pop()
+                store_addr = stack.pop()
+                mem[store_addr] = store_value & 0xFFFFFFFF
+                ip += 1
             elif op.operand == Intrinsic.SYSCALL0:
                 syscall_number = stack.pop()
                 if syscall_number == 39:
@@ -378,7 +390,7 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str) -> None:
                 assert isinstance(op.operand, int), "This could be a bug in the compilation step"
                 out.write("    jz addr_%d\n" % op.operand)
             elif op.typ == OpType.INTRINSIC:
-                assert len(Intrinsic) == 29, "Exhaustive intrinsic handling in generate_nasm_linux_x86_64()"
+                assert len(Intrinsic) == 31, "Exhaustive intrinsic handling in generate_nasm_linux_x86_64()"
                 if op.operand == Intrinsic.PLUS:
                     out.write("    ;; -- plus --\n")
                     out.write("    pop rax\n")
@@ -522,6 +534,17 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str) -> None:
                     out.write("    pop rbx\n")
                     out.write("    pop rax\n")
                     out.write("    mov [rax], bl\n")
+                elif op.operand == Intrinsic.LOAD64:
+                    out.write("    ;; -- load64 --\n")
+                    out.write("    pop rax\n")
+                    out.write("    xor rbx, rbx\n")
+                    out.write("    mov rbx, [rax]\n")
+                    out.write("    push rbx\n")
+                elif op.operand == Intrinsic.STORE64:
+                    out.write("    ;; -- store64 --\n")
+                    out.write("    pop rbx\n");
+                    out.write("    pop rax\n");
+                    out.write("    mov [rax], rbx\n");
                 elif op.operand == Intrinsic.SYSCALL0:
                     out.write("    ;; -- syscall0 --\n")
                     out.write("    pop rax\n")
@@ -605,7 +628,7 @@ KEYWORD_NAMES = {
     'use': Keyword.USE
 }
 
-assert len(Intrinsic) == 29, "Exhaustive INTRINSIC_NAMES definition"
+assert len(Intrinsic) == 31, "Exhaustive INTRINSIC_NAMES definition"
 INTRINSIC_NAMES = {
     '+': Intrinsic.PLUS,
     '-': Intrinsic.MINUS,
@@ -629,6 +652,8 @@ INTRINSIC_NAMES = {
     'mem': Intrinsic.MEM,
     '*s': Intrinsic.STORE,
     '&l': Intrinsic.LOAD,
+    '*64': Intrinsic.STORE64,
+    '&64l': Intrinsic.LOAD64,
     'sys0': Intrinsic.SYSCALL0,
     'sys1': Intrinsic.SYSCALL1,
     'sys2': Intrinsic.SYSCALL2,
