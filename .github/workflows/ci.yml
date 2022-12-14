@@ -33,3 +33,4 @@ jobs:
           mypy ./test.py
           ./pypy3.7-v7.3.5-linux64/bin/pypy3 ./test.py -t
           ./pypy3.7-v7.3.5-linux64/bin/pypy3 ./test.py -f ./examples/ -t
+          ./pypy3.7-v7.3.5-linux64/bin/pypy3 ./test.py -f ./euler/ -t
