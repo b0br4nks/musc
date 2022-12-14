@@ -8,7 +8,7 @@ jobs:
       - name: install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -qq nasm pypy3
+          sudo apt-get install -qq nasm
       - uses: actions/setup-python@v2
         with:
           python-version: 'pypy-3.7'
@@ -16,9 +16,17 @@ jobs:
       - name: install python dependencies
         run: |
           pip3 install mypy
+      - name: install pypy from the official website
+        run: |
+          wget https://downloads.python.org/pypy/pypy3.7-v7.3.5-linux64.tar.bz2
+          tar fvx pypy3.7-v7.3.5-linux64.tar.bz2
+      - name: print version of pythons
+        run: |
+          python3 --version
+          ./pypy3.7-v7.3.5-linux64/bin/pypy3 --version
       - name: run tests
         run: |
           mypy ./skorpio.py
           mypy ./test.py
-          pypy3 ./test.py -t
-          pypy3 ./test.py -f ./examples/ -t
+          ./pypy3.7-v7.3.5-linux64/bin/pypy3 ./test.py -t
+          ./pypy3.7-v7.3.5-linux64/bin/pypy3 ./test.py -f ./examples/ -t
