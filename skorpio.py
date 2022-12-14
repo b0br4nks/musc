@@ -678,7 +678,7 @@ def compile_tokens_to_program(tokens: List[Token], include_paths: List[str]) -> 
             elif token.value in funcs:
                 rtokens += reversed(funcs[token.value].tokens)
             else:
-                print("%s:%d:%d: unknown word `%s`" % (token.loc + (token.value, )))
+                print("%s:%d:%d: [ERROR] Unknown word `%s`" % (token.loc + (token.value, )), file=sys.stderr)
                 exit(1)
         elif token.typ == TokenType.INT:
             assert isinstance(token.value, int), "This could be a bug in the lexer"
@@ -702,7 +702,7 @@ def compile_tokens_to_program(tokens: List[Token], include_paths: List[str]) -> 
                 program.append(Op(typ=OpType.ELSE, loc=token.loc))
                 if_ip = stack.pop()
                 if program[if_ip].typ != OpType.IF:
-                    print('%s:%d:%d: [ERROR] `else` can only be used in `if`-blocks' % program[if_ip].loc)
+                    print('%s:%d:%d: [ERROR] `else` can only be used in `if`-blocks' % program[if_ip].loc, file=sys.stderr)
                     exit(1)
                 program[if_ip].operand = ip + 1
                 stack.append(ip)
@@ -718,7 +718,7 @@ def compile_tokens_to_program(tokens: List[Token], include_paths: List[str]) -> 
                     program[ip].operand = program[block_ip].operand
                     program[block_ip].operand = ip + 1
                 else:
-                    print('%s:%d:%d: ERROR: `end` can only close `if`, `else` or `do` blocks for now' % program[block_ip].loc)
+                    print('%s:%d:%d: [ERROR] `end` can only close `if`, `else` or `do` blocks for now' % program[block_ip].loc, file=sys.stderr)
                     exit(1)
                 ip += 1
             elif token.value == Keyword.WHILE:
@@ -733,11 +733,11 @@ def compile_tokens_to_program(tokens: List[Token], include_paths: List[str]) -> 
                 ip += 1
             elif token.value == Keyword.USE:
                 if len(rtokens) == 0:
-                    print("%s:%d:%d: ERROR: expected path to the include file but found nothing" % token.loc)
+                    print("%s:%d:%d: [ERROR] Expected path to the use file but found nothing" % token.loc, file=sys.stderr)
                     exit(1)
                 token = rtokens.pop()
                 if token.typ != TokenType.STR:
-                    print("%s:%d:%d: ERROR: expected path to the include file to be %s but found %s" % (token.loc + (human(TokenType.STR), human(token.typ))))
+                    print("%s:%d:%d: [ERROR] Expected path to the use file to be %s but found %s" % (token.loc + (human(TokenType.STR), human(token.typ))), file=sys.stderr)
                     exit(1)
                 assert isinstance(token.value, str), "This is probably a bug in the lexer"
                 # TODO: safety mechanism for recursive includes
@@ -750,24 +750,24 @@ def compile_tokens_to_program(tokens: List[Token], include_paths: List[str]) -> 
                     except FileNotFoundError:
                         continue
                 if not file_included:
-                    print("%s:%d:%d: ERROR: file `%s` not found" % (token.loc + (token.value, )))
+                    print("%s:%d:%d: [ERROR] File `%s` not found" % (token.loc + (token.value, )), file=sys.stderr)
                     exit(1)
             # TODO: capability to define funcs from command line
             elif token.value == Keyword.FUNC:
                 if len(rtokens) == 0:
-                    print("%s:%d:%d: ERROR: expected func name but found nothing" % token.loc)
+                    print("%s:%d:%d: [ERROR] Expected function name but found nothing" % token.loc, file=sys.stderr)
                     exit(1)
                 token = rtokens.pop()
                 if token.typ != TokenType.WORD:
-                    print("%s:%d:%d: ERROR: expected func name to be %s but found %s" % (token.loc + (human(TokenType.WORD), human(token.typ))))
+                    print("%s:%d:%d: [ERROR] Expected function name to be %s but found %s" % (token.loc + (human(TokenType.WORD), human(token.typ))), file=sys.stderr)
                     exit(1)
                 assert isinstance(token.value, str), "This is probably a bug in the lexer"
                 if token.value in funcs:
-                    print("%s:%d:%d: ERROR: redefinition of already existing func `%s`" % (token.loc + (token.value, )))
-                    print("%s:%d:%d: NOTE: the first definition is located here" % funcs[token.value].loc)
+                    print("%s:%d:%d: [ERROR] Redefinition of already existing function `%s`" % (token.loc + (token.value, )), file=sys.stderr)
+                    print("%s:%d:%d: [NOTE] The first definition is located here" % funcs[token.value].loc, file=sys.stderr)
                     exit(1)
                 if token.value in INTRINSIC_NAMES:
-                    print("%s:%d:%d: ERROR: redefinition of an intrinsic word `%s`. Please choose a different name for your func." % (token.loc + (token.value, )))
+                    print("%s:%d:%d: [ERROR] Redefinition of an intrinsic word `%s`. Please choose a different name for your function." % (token.loc + (token.value, )), file=sys.stderr)
                     exit(1)
                 func = Func(token.loc, [])
                 funcs[token.value] = func
@@ -784,7 +784,7 @@ def compile_tokens_to_program(tokens: List[Token], include_paths: List[str]) -> 
                             elif token.value == Keyword.END:
                                 nesting_depth -= 1
                 if token.typ != TokenType.KEYWORD or token.value != Keyword.END:
-                    print("%s:%d:%d: ERROR: expected `end` at the end of the func definition but got `%s`" % (token.loc + (token.value, )))
+                    print("%s:%d:%d: [ERROR] Expected `end` at the end of the function definition but got `%s`" % (token.loc + (token.value, )), file=sys.stderr)
                     exit(1)
             else:
                 assert False, 'unreachable';
@@ -792,7 +792,7 @@ def compile_tokens_to_program(tokens: List[Token], include_paths: List[str]) -> 
             assert False, 'unreachable'
 
     if len(stack) > 0:
-        print(f"{program[stack.pop()].loc}: [ERROR] Unclosed block")
+        print('%s:%d:%d: [ERROR] Unclosed block' % program[stack.pop()].loc, file=sys.stderr)
         exit(1)
 
     return program
@@ -845,7 +845,7 @@ def lex_lines(file_path: str, lines: List[str]) -> Generator[Token, None, None]:
                         str_literal_buf += line[start:col_end]
                         break
                 if row >= len(lines): 
-                    print("%s:%d:%d: ERROR: unclosed string literal" % loc)
+                    print("%s:%d:%d: [ERROR] Unclosed string literal" % loc, file=sys.stderr)
                     exit(1)
                 text_of_token = str_literal_buf
                 str_literal_buf = ""
@@ -854,11 +854,11 @@ def lex_lines(file_path: str, lines: List[str]) -> Generator[Token, None, None]:
             elif line[col] == "'":
                 col_end = find_col(line, col+1, lambda k: k == "'")
                 if col_end >= len(line) or line[col_end] != "'":
-                    print("%s:%d:%d: ERROR: unclosed character literal" % loc)
+                    print("%s:%d:%d: [ERROR] Unclosed character literal" % loc, file=sys.stderr)
                     exit(1)
                 char_bytes = unescape_string(line[col+1:col_end]).encode('utf-8')
                 if len(char_bytes) != 1:
-                    print("%s:%d:%d: ERROR: only a single byte is allowed inside of a character literal" % loc)
+                    print("%s:%d:%d: [ERROR] Only a single byte is allowed inside of a character literal" % loc, file=sys.stderr)
                     exit(1)
                 yield Token(TokenType.CHAR, loc, char_bytes[0])
                 col = find_col(line, col_end+1, lambda k: not k.isspace())
@@ -924,7 +924,7 @@ if __name__ == "__main__" and "__file__" in globals():
             argv = argv[1:]
             if len(argv) == 0:
                 usage(compiler_name)
-                print("[ERROR] no path is provided for `-I` flag")
+                print("[ERROR] No path is provided for `-I` flag", file=sys.stderr)
                 exit(1)
             include_path, *argv = argv
             include_paths.append(include_path)
@@ -936,7 +936,7 @@ if __name__ == "__main__" and "__file__" in globals():
 
     if len(argv) < 1:
         usage(compiler_name)
-        print("[ERROR] No subcommand is provided")
+        print("[ERROR] No subcommand is provided", file=sys.stderr)
         exit(1)
     subcommand, *argv = argv
 
@@ -945,7 +945,7 @@ if __name__ == "__main__" and "__file__" in globals():
     if subcommand in ["simulate","-s"]:
         if len(argv) < 1:
             usage(compiler_name)
-            print("[ERROR] No input file is provided")
+            print("[ERROR] No input file is provided for the simulation", file=sys.stderr)
             exit(1)
         program_path, *argv = argv
         program = compile_file_to_program(program_path, include_paths)
@@ -963,7 +963,7 @@ if __name__ == "__main__" and "__file__" in globals():
             elif arg == "-o":
                 if len(argv) == 0:
                     usage(compiler_name)
-                    print("[ERROR] No argument is provided for parameter -o")
+                    print("[ERROR] No argument is provided for parameter -o", file=sys.stderr)
                     exit(1)
                 output_path, *argv = argv
             else:
@@ -971,7 +971,7 @@ if __name__ == "__main__" and "__file__" in globals():
                 break
         if program_path is None:
             usage(compiler_name)
-            print("[ERROR] No input file is provided")
+            print("[ERROR] No input file is provided", file=sys.stderr)
             exit(1)
             
         basename = None
@@ -1009,5 +1009,5 @@ if __name__ == "__main__" and "__file__" in globals():
         exit(0)
     else:
         usage(compiler_name)
-        print(f"[ERROR] Unkown subcommand '{subcommand}'")
+        print("[ERROR] unknown subcommand %s" % (subcommand), file=sys.stderr)
         exit(1)
