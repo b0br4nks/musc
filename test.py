@@ -113,7 +113,7 @@ def usage(exe_name: str):
 # NOTE: temporary
 def clean(folder):
     for entry in os.scandir(folder):
-        if entry.is_file() and not entry.path.endswith('.sko') and not entry.path.endswith('.txt'):
+        if entry.is_file() and not entry.path.endswith('.sko') and not entry.path.endswith('.txt') and not entry.path.endswith('.md'):
             os.remove(entry.path)
 
 if __name__ == '__main__':
