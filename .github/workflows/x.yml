@@ -1,5 +1,8 @@
 name: CI
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches: [ master ]
 jobs:
   builds:
     runs-on: ubuntu-20.04
@@ -29,7 +32,9 @@ jobs:
           ./pypy3.7-v7.3.5-linux64/bin/pypy3 --version
       - name: run tests
         run: |
-          mypy ./skorpio.py
+          mypy ./porth.py
           mypy ./test.py
-          ./pypy3.7-v7.3.5-linux64/bin/pypy3 ./test.py -t
-          ./pypy3.7-v7.3.5-linux64/bin/pypy3 ./test.py -f ./examples/ -t
+          ./pypy3.7-v7.3.5-linux64/bin/pypy3 ./porth.py com ./porth.porth
+          ./pypy3.7-v7.3.5-linux64/bin/pypy3 ./test.py run ./tests/
+          ./pypy3.7-v7.3.5-linux64/bin/pypy3 ./test.py run ./examples/
+          ./pypy3.7-v7.3.5-linux64/bin/pypy3 ./test.py run ./euler/
