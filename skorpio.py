@@ -726,7 +726,6 @@ def compile_tokens_to_program(tokens: List[Token], include_paths: List[str], exp
     funcs: Dict[str, Func] = {}
     ip: OpAddr = 0
     while len(rtokens) > 0:
-        # TODO: some sort of safety mechanism for recursive funcs
         token = rtokens.pop()
         assert len(TokenType) == 5, "Exhaustive token handling in compile_tokens_to_program"
         if token.typ == TokenType.WORD:
