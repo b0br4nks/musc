@@ -337,3 +337,9 @@ fn div / end
 fn i64
   dup *64 1 + &64
 end
+
+fn len
+  0 ~ while cp &l 0 != do
+    1 + ~ 1 + ~
+  end !
+end

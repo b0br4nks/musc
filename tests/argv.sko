@@ -1,0 +1,8 @@
+use "std.sko"
+
+! !
+while cp 0 > do
+    cp len ~
+    stdout fmt !
+    "\n" stdout fmt !
+end
