@@ -8,10 +8,13 @@ from os import path
 from typing import *
 from enum import Enum, auto
 from dataclasses import dataclass
+from copy import copy
 
 debug=False
 
 Loc=Tuple[str, int, int]
+
+EXPANDED_THRESHOLD=1000
 
 class Keyword(Enum):
     IF=auto()
@@ -89,6 +92,7 @@ class Token:
     typ: TokenType
     loc: Loc
     value: Union[int, str, Keyword]
+    expanded: int = 0
 
 STR_CAPACITY = 640_000
 MEM_CAPACITY = 640_000
@@ -689,6 +693,14 @@ def human(typ: TokenType) -> str:
     else:
         assert False, "unreachable"
 
+
+def expand_func(func: Func, expanded: int) -> List[Token]:
+    result = list(map(copy, func.tokens))
+    for token in result:
+        token.expanded = expanded
+    return result
+
+
 def compile_tokens_to_program(tokens: List[Token], include_paths: List[str]) -> Program:
     stack: List[OpAddr] = []
     program: List[Op] = []
@@ -705,7 +717,10 @@ def compile_tokens_to_program(tokens: List[Token], include_paths: List[str]) -> 
                 program.append(Op(typ=OpType.INTRINSIC, loc=token.loc, operand=INTRINSIC_NAMES[token.value]))
                 ip += 1
             elif token.value in funcs:
-                rtokens += reversed(funcs[token.value].tokens)
+                if token.expanded >= EXPANDED_THRESHOLD:
+                    print("%s:%d:%d: [ERROR] The function exceeded the expansion threshold" % token.loc, file=sys.stderr)
+                    exit(1)
+                rtokens += reversed(expand_func(funcs[token.value], token.expanded + 1))
             else:
                 print("%s:%d:%d: [ERROR] Unknown word `%s`" % (token.loc + (token.value, )), file=sys.stderr)
                 exit(1)
@@ -769,11 +784,13 @@ def compile_tokens_to_program(tokens: List[Token], include_paths: List[str]) -> 
                     print("%s:%d:%d: [ERROR] Expected path to the use file to be %s but found %s" % (token.loc + (human(TokenType.STR), human(token.typ))), file=sys.stderr)
                     exit(1)
                 assert isinstance(token.value, str), "This is probably a bug in the lexer"
-                # TODO: safety mechanism for recursive includes
                 file_included = False
                 for include_path in include_paths:
                     try:
-                        rtokens += reversed(lex_file(path.join(include_path, token.value)))
+                        if token.expanded >= EXPANDED_THRESHOLD:
+                            print("%s:%d:%d: [ERROR] The include exceeded the expansion threshold" % token.loc, file=sys.stderr)
+                            exit(1)
+                        rtokens += reversed(lex_file(path.join(include_path, token.value), token.expanded + 1))
                         file_included = True
                         break
                     except FileNotFoundError:
@@ -781,7 +798,6 @@ def compile_tokens_to_program(tokens: List[Token], include_paths: List[str]) -> 
                 if not file_included:
                     print("%s:%d:%d: [ERROR] File `%s` not found" % (token.loc + (token.value, )), file=sys.stderr)
                     exit(1)
-            # TODO: capability to define funcs from command line
             elif token.value == Keyword.FUNC:
                 if len(rtokens) == 0:
                     print("%s:%d:%d: [ERROR] Expected function name but found nothing" % token.loc, file=sys.stderr)
@@ -908,9 +924,12 @@ def lex_lines(file_path: str, lines: List[str]) -> Generator[Token, None, None]:
         row += 1
 
 
-def lex_file(file_path: str) -> List[Token]:
+def lex_file(file_path: str, expanded: int = 0) -> List[Token]:
     with open(file_path, "r", encoding='utf-8') as f:
-        return [token for token in lex_lines(file_path, f.readlines())]
+        result = [token for token in lex_lines(file_path, f.readlines())]
+        for token in result:
+            token.expanded = expanded
+        return result
 
 
 def compile_file_to_program(file_path: str, include_paths: List[str]) -> Program:

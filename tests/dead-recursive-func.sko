@@ -1,0 +1,8 @@
+use "std.sko"
+
+fn dead-recursive-func
+    dead-recursive-func
+end
+
+"Dead recursive functions should not cause any problems. Because they are never expanded\n" stdout fmt
+

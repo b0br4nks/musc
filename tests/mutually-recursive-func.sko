@@ -1,0 +1,9 @@
+fn y
+    x
+end
+
+fn x
+    y
+end
+
+x

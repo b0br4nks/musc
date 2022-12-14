@@ -1,0 +1,6 @@
+: returncode 0
+: stdout 88
+Dead recursive functions should not cause any problems. Because they are never expanded
+
+: stderr 0
+

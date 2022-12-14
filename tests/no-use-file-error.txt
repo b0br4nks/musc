@@ -1,0 +1,6 @@
+: returncode 1
+: stdout 0
+
+: stderr 91
+./tests/no-use-file-error.sko:1:1: [ERROR] Expected path to the use file but found nothing
+

@@ -1,0 +1,7 @@
+: returncode 1
+: stdout 0
+
+: stderr 183
+./tests/func-redefinition-error.sko:2:4: [ERROR] Redefinition of already existing function `test`
+./tests/func-redefinition-error.sko:1:4: [NOTE] The first definition is located here
+
