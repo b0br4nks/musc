@@ -1,0 +1,6 @@
+: returncode 1
+: stdout 0
+
+: stderr 117
+./tests/wrong-use-path-type-error.sko:1:5: [ERROR] Expected path to the use file to be a string but found an integer
+

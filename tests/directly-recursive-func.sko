@@ -1,0 +1,6 @@
+fn directly-recursive-func
+  directly-recursive-func
+end
+
+directly-recursive-func
+

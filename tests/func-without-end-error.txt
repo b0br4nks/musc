@@ -1,0 +1,6 @@
+: returncode 1
+: stdout 0
+
+: stderr 124
+./tests/func-without-end-error.sko:2:1: [ERROR] Expected `end` at the end of the function definition but got `Keyword.FUNC`
+

@@ -1,0 +1,6 @@
+: returncode 1
+: stdout 0
+
+: stderr 116
+./tests/mutually-recursive-func.sko:2:5: [ERROR] The function exceeded the expansion limit (it expanded 1000 times)
+
