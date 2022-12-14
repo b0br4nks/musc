@@ -142,7 +142,7 @@ def simulate_little_endian_linux(program: Program):
             else:
                 ip += 1
         elif op.typ == OpType.INTRINSIC:
-            assert len(Intrinsic) == 29, "Exhaustive handling of intrinsic in simulate_little_endian_linux()"
+            assert len(Intrinsic) == 31, "Exhaustive handling of intrinsic in simulate_little_endian_linux()"
             if op.operand == Intrinsic.PLUS:
                 a = stack.pop()
                 b = stack.pop()
