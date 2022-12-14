@@ -254,13 +254,18 @@ def simulate_little_endian_linux(program: Program):
                 ip += 1
             elif op.operand == Intrinsic.LOAD64:
                 addr = stack.pop()
-                byte = mem[addr]
-                stack.append(byte)
+                _bytes: bytearray = []
+                for offset in range(0,8):
+                    byte = mem[addr + offset]
+                    _bytes.append(byte)
+                stack.append(int.from_bytes(_bytes, byteorder="little"))
                 ip += 1
             elif op.operand == Intrinsic.STORE64:
                 store_value = stack.pop()
+                store_value = store_value.to_bytes(length=8, byteorder="little")
                 store_addr = stack.pop()
-                mem[store_addr] = store_value & 0xFFFFFFFF
+                for offset in range(0,8):
+                    mem[store_addr + offset] = store_value[offset]
                 ip += 1
             elif op.operand == Intrinsic.SYSCALL0:
                 syscall_number = stack.pop()
@@ -653,7 +658,7 @@ INTRINSIC_NAMES = {
     '*s': Intrinsic.STORE,
     '&l': Intrinsic.LOAD,
     '*64': Intrinsic.STORE64,
-    '&64l': Intrinsic.LOAD64,
+    '&64': Intrinsic.LOAD64,
     'sys0': Intrinsic.SYSCALL0,
     'sys1': Intrinsic.SYSCALL1,
     'sys2': Intrinsic.SYSCALL2,

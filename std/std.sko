@@ -334,29 +334,6 @@ fn % divmod ~ ! end
 fn mod % end
 fn div / end
 
-fn &64
-  7 + 0
-  8 << over &l + ~ 1 - ~
-  8 << over &l + ~ 1 - ~
-  8 << over &l + ~ 1 - ~
-  8 << over &l + ~ 1 - ~
-  8 << over &l + ~ 1 - ~
-  8 << over &l + ~ 1 - ~
-  8 << over &l + ~ 1 - ~
-  8 << over &l + ~ !
-end
-
-fn *64
-  pcp 255 & *s 8 >> ~ 1 + ~
-  pcp 255 & *s 8 >> ~ 1 + ~
-  pcp 255 & *s 8 >> ~ 1 + ~
-  pcp 255 & *s 8 >> ~ 1 + ~
-  pcp 255 & *s 8 >> ~ 1 + ~
-  pcp 255 & *s 8 >> ~ 1 + ~
-  pcp 255 & *s 8 >> ~ 1 + ~
-  pcp 255 & *s 8 >> !!
-end
-
 fn i64
   dup *64 1 + &64
 end
