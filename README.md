@@ -117,6 +117,8 @@ $ ./skorpio.py -s ./tests/arithmetic.sko
 1
 ```
 
+**It is strongly recommended to use [PyPy](https://www.pypy.org/) for the simulation mode since CPython is too slow for that.**
+
 ### Compilation
 The compilation generates assembly code, compiles it with [nasm](https://www.nasm.us/), and then links it with [GNU ld](https://www.gnu.org/software/outpututils/). Both should be available in your `$PATH`.
 
