@@ -1,5 +1,8 @@
-: returncode 0
-: stdout 177
+:i argc 0
+:b stdin 0
+
+:i returncode 0
+:b stdout 177
 SKORPIO
 ===========================
 SKORPIO
@@ -10,5 +13,5 @@ TLPSQJP
 ===========================
 18446744073709551615
 
-: stderr 0
+:b stderr 0
 

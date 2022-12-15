@@ -1,5 +1,8 @@
-: returncode 0
-: stdout 137
+:i argc 0
+:b stdin 0
+
+:i returncode 0
+:b stdout 137
 128
 ===========================
 64
@@ -28,5 +31,5 @@
 9
 10
 
-: stderr 0
+:b stderr 0
 

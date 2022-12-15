@@ -1,6 +1,9 @@
-: returncode 1
-: stdout 0
+:i argc 0
+:b stdin 0
 
-: stderr 75
+:i returncode 1
+:b stdout 0
+
+:b stderr 75
 ./tests/use-file-not-found-error.sko:1:5: [ERROR] File `404.sko` not found
 

@@ -1,6 +1,9 @@
-: returncode 1
-: stdout 0
+:i argc 0
+:b stdin 0
 
-: stderr 66
+:i returncode 1
+:b stdout 0
+
+:b stderr 66
 ./tests/unknown-word-error.sko:1:1: [ERROR] Unknown word `xxyyzz`
 

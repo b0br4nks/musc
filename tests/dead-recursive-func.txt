@@ -1,6 +1,9 @@
-: returncode 0
-: stdout 88
+:i argc 0
+:b stdin 0
+
+:i returncode 0
+:b stdout 88
 Dead recursive functions should not cause any problems. Because they are never expanded
 
-: stderr 0
+:b stderr 0
 
