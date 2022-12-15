@@ -102,8 +102,14 @@ MEM_CAPACITY = 640_000
 def simulate_little_endian_linux(program: Program, argv: List[str]):
     stack: List[int] = []
     mem = bytearray(NULL_POINTER_PADDING + STR_CAPACITY + MEM_CAPACITY)
-    str_offsets = {}
+    str_offsets: Dict[int, int] = {}
     str_size = NULL_POINTER_PADDING
+
+    fds: Dict[int, BinaryIO] = {
+        0: sys.stdin.buffer,
+        1: sys.stdout.buffer,
+        2: sys.stderr.buffer,
+    }
 
     stack.append(0)
     for arg in reversed(argv):
@@ -233,7 +239,8 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
                 ip += 1
             elif op.operand == Intrinsic.PRINT:
                 a = stack.pop()
-                print(a)
+                fds[1].write(b"%d\n" % a)
+                fds[1].flush()
                 ip += 1
             elif op.operand == Intrinsic.DUPL:
                 a = stack.pop()
@@ -304,17 +311,19 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
                 arg1 = stack.pop()
                 arg2 = stack.pop()
                 arg3 = stack.pop()
-                if syscall_number == 1:
+                if syscall_number == 0:
                     fd = arg1
                     buf = arg2
                     count = arg3
-                    s = mem[buf:buf+count].decode('utf-8')
-                    if fd == 1:
-                        print(s, end='')
-                    elif fd == 2:
-                        print(s, end='', file=sys.stderr)
-                    else:
-                        assert False, "unknown file descriptor %d" % fd
+                    data = fds[fd].readline(count)
+                    mem[buf:buf+len(data)] = data
+                    stack.append(len(data))
+                elif syscall_number == 1: # SYS_write
+                    fd = arg1
+                    buf = arg2
+                    count = arg3
+                    fds[fd].write(mem[buf:buf+count])
+                    fds[fd].flush()
                     stack.append(count)
                 else:
                     assert False, "unknown syscall number %d" % syscall_number
