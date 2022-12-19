@@ -123,7 +123,7 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
         2: sys.stderr.buffer,
     }
 
-    for arg in reversed(argv):
+    for arg in argv:
         value = arg.encode("utf-8")
         n = len(value)
 
@@ -312,7 +312,7 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
             elif op.operand == Intrinsic.LOAD64:
                 addr = stack.pop()
                 _bytes = bytearray(8)
-                for offset in range(0, 8):
+                for offset in range(0,8):
                     _bytes[offset] = mem[addr + offset]
                 stack.append(int.from_bytes(_bytes, byteorder="little"))
                 ip += 1
@@ -324,9 +324,11 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
                     store_addr64 += 1;
                 ip += 1
             elif op.operand == Intrinsic.ARGC:
-                assert False, "not implemented"
+                stack.append(argc)
+                ip += 1
             elif op.operand == Intrinsic.ARGV:
-                assert False, "not implemented"
+                stack.append(argv_buf_ptr)
+                ip += 1
             elif op.operand == Intrinsic.SYSCALL0:
                 syscall_number = stack.pop();
                 if syscall_number == 39:
@@ -419,6 +421,7 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str):
         out.write("    ret\n")
         out.write("global _start\n")
         out.write("_start:\n")
+        out.write("    mov [args_ptr], rsp\n")
         for ip in range(len(program)):
             op = program[ip]
             assert (
@@ -618,13 +621,19 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str):
                     out.write("    push rbx\n")
                 elif op.operand == Intrinsic.STORE:
                     out.write("    ;; -- store --\n")
-                    out.write("    pop rbx\n")
-                    out.write("    pop rax\n")
-                    out.write("    mov [rax], bl\n")
+                    out.write("    pop rbx\n");
+                    out.write("    pop rax\n");
+                    out.write("    mov [rax], bl\n");
                 elif op.operand == Intrinsic.ARGC:
-                    assert False, "not implemented"
+                    out.write("    ;; -- argc --\n")
+                    out.write("    mov rax, [args_ptr]\n")
+                    out.write("    mov rax, [rax]\n")
+                    out.write("    push rax\n")
                 elif op.operand == Intrinsic.ARGV:
-                    assert False, "not implemented"
+                    out.write("    ;; -- argv --\n")
+                    out.write("    mov rax, [args_ptr]\n")
+                    out.write("    add rax, 8\n")
+                    out.write("    push rax\n")
                 elif op.operand == Intrinsic.LOAD64:
                     out.write("    ;; -- load64 --\n")
                     out.write("    pop rax\n")
@@ -633,9 +642,9 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str):
                     out.write("    push rbx\n")
                 elif op.operand == Intrinsic.STORE64:
                     out.write("    ;; -- store64 --\n")
-                    out.write("    pop rbx\n")
-                    out.write("    pop rax\n")
-                    out.write("    mov [rax], rbx\n")
+                    out.write("    pop rbx\n");
+                    out.write("    pop rax\n");
+                    out.write("    mov [rax], rbx\n");
                 elif op.operand == Intrinsic.SYSCALL0:
                     out.write("    ;; -- syscall0 --\n")
                     out.write("    pop rax\n")
@@ -649,10 +658,10 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str):
                     out.write("    push rax\n")
                 elif op.operand == Intrinsic.SYSCALL2:
                     out.write("    ;; -- syscall2 -- \n")
-                    out.write("    pop rax\n")
-                    out.write("    pop rdi\n")
-                    out.write("    pop rsi\n")
-                    out.write("    syscall\n")
+                    out.write("    pop rax\n");
+                    out.write("    pop rdi\n");
+                    out.write("    pop rsi\n");
+                    out.write("    syscall\n");
                     out.write("    push rax\n")
                 elif op.operand == Intrinsic.SYSCALL3:
                     out.write("    ;; -- syscall3 --\n")
@@ -703,8 +712,9 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str):
         out.write("    syscall\n")
         out.write("segment .data\n")
         for index, s in enumerate(strs):
-            out.write("str_%d: db %s\n" % (index, ",".join(map(hex, list(s)))))
+            out.write("str_%d: db %s\n" % (index, ','.join(map(hex, list(s)))))
         out.write("segment .bss\n")
+        out.write("args_ptr: resq 1\n")
         out.write("mem: resb %d\n" % MEM_CAPACITY)
 
 assert len(Keyword) == 7, "Exhaustive KEYWORD_NAMES definition."
@@ -777,13 +787,11 @@ def human(typ: TokenType) -> str:
     else:
         assert False, "unreachable"
 
-
 def expand_func(func: Func, expanded: int) -> List[Token]:
     result = list(map(lambda k: copy(k), func.tokens))
     for token in result:
         token.expanded = expanded
     return result
-
 
 def compile_tokens_to_program(
     tokens: List[Token], include_paths: List[str], expansion_limit: int
@@ -792,7 +800,7 @@ def compile_tokens_to_program(
     program: List[Op] = []
     rtokens: List[Token] = list(reversed(tokens))
     funcs: Dict[str, Func] = {}
-    ip: OpAddr = 0
+    ip: OpAddr = 0;
     while len(rtokens) > 0:
         token = rtokens.pop()
         assert (
@@ -805,7 +813,7 @@ def compile_tokens_to_program(
                     Op(
                         typ=OpType.INTRINSIC,
                         loc=token.loc,
-                        operand=INTRINSIC_NAMES[token.value],
+                        operand=INTRINSIC_NAMES[token.value]
                     )
                 )
                 ip += 1
@@ -831,11 +839,11 @@ def compile_tokens_to_program(
             ip += 1
         elif token.typ == TokenType.STR:
             assert isinstance(token.value, str), "This could be a bug in the lexer"
-            program.append(Op(typ=OpType.PUSH_STR, operand=token.value, loc=token.loc))
+            program.append(Op(typ=OpType.PUSH_STR, operand=token.value, loc=token.loc));
             ip += 1
         elif token.typ == TokenType.CHAR:
             assert isinstance(token.value, int)
-            program.append(Op(typ=OpType.PUSH_INT, operand=token.value, loc=token.loc))
+            program.append(Op(typ=OpType.PUSH_INT, operand=token.value, loc=token.loc));
             ip += 1
         elif token.typ == TokenType.KEYWORD:
             assert (
@@ -1074,7 +1082,7 @@ def lex_lines(file_path: str, lines: List[str]) -> Generator[Token, None, None]:
                         file=sys.stderr,
                     )
                     exit(1)
-                char_bytes = unescape_string(line[col + 1 : col_end]).encode("utf-8")
+                char_bytes = unescape_string(line[col+1:col_end]).encode("utf-8")
                 if len(char_bytes) != 1:
                     print(
                         "%s:%d:%d: [ERROR] Only a single byte is allowed inside of a character literal"
@@ -1102,14 +1110,12 @@ def lex_lines(file_path: str, lines: List[str]) -> Generator[Token, None, None]:
                 col = find_col(line, col_end, lambda k: not k.isspace())
         row += 1
 
-
 def lex_file(file_path: str, expanded: int = 0) -> List[Token]:
     with open(file_path, "r", encoding="utf-8") as f:
         result = [token for token in lex_lines(file_path, f.readlines())]
         for token in result:
             token.expanded = expanded
         return result
-
 
 def compile_file_to_program(
     file_path: str, include_paths: List[str], expansion_limit: int
@@ -1119,11 +1125,10 @@ def compile_file_to_program(
     )
 
 
-def cmd_call_echoed(cmd: List[str], silent: bool = False) -> int:
+def cmd_call_echoed(cmd: List[str], silent: bool=False) -> int:
     if not silent:
         print("[CMD] %s" % " ".join(map(shlex.quote, cmd)))
     return subprocess.call(cmd)
-
 
 def usage(compiler_name: str):
     print(f"Usage: {compiler_name} [OPTIONS] <SUBCOMMAND> [ARGS]\n")
@@ -1188,7 +1193,7 @@ if __name__ == "__main__" and "__file__" in globals():
 
     program_path: Optional[str] = None
 
-    if subcommand in "-s":
+    if subcommand == "-s":
         if len(argv) < 1:
             usage(compiler_name)
             print(
@@ -1199,7 +1204,7 @@ if __name__ == "__main__" and "__file__" in globals():
         include_paths.append(path.dirname(program_path))
         program = compile_file_to_program(program_path, include_paths, expansion_limit)
         simulate_little_endian_linux(program, [program_path] + argv)
-    elif subcommand in "-c":
+    elif subcommand == "-c":
         silent = False
         run = False
         output_path = None
@@ -1221,6 +1226,7 @@ if __name__ == "__main__" and "__file__" in globals():
             else:
                 program_path = arg
                 break
+
         if program_path is None:
             usage(compiler_name)
             print(
@@ -1259,7 +1265,7 @@ if __name__ == "__main__" and "__file__" in globals():
         cmd_call_echoed(["ld", "-o", basepath, basepath + ".o"], silent)
         if run:
             exit(cmd_call_echoed([basepath] + argv, silent))
-    elif subcommand in "-h":
+    elif subcommand == "-h":
         usage(compiler_name)
         exit(0)
     else:
