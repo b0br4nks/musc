@@ -6,7 +6,7 @@ import subprocess
 import shlex
 from os import path
 # from typing import *
-from typing import List, BinaryIO, Tuple
+from typing import List, BinaryIO, Tuple, Optional, Union, Callable, Generator
 from enum import Enum, auto
 from dataclasses import dataclass
 from copy import copy
