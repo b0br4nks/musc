@@ -2,11 +2,13 @@
 
 import sys
 import os
+from os import path
 import subprocess
 import shlex
 from typing import List, BinaryIO, Tuple
 from dataclasses import dataclass
 
+SKORPIO_EXT = '.sko'
 
 def cmd_run_echoed(cmd, **kwargs):
     print("[CMD] %s" % " ".join(map(shlex.quote, cmd)))
@@ -75,170 +77,206 @@ def save_test_case(
     with open(file_path, "wb") as f:
         write_int_field(f, b"argc", len(argv))
         for index, arg in enumerate(argv):
-            write_blob_field(f, b"arg%d" % index, arg)
+            write_blob_field(f, b"arg%d" % index, arg.encode('utf-8'))
         write_blob_field(f, b"stdin", stdin)
         write_int_field(f, b"returncode", returncode)
         write_blob_field(f, b"stdout", stdout)
         write_blob_field(f, b"stderr", stderr)
 
+def run_test_for_file(file_path: str) -> Tuple[bool, bool]:
 
-def test(folder: str):
+    assert path.isfile(file_path)
+    assert file_path.endswith(SKORPIO_EXT)
+
+    print('[INFO] Testing %s' % file_path)
+
+    tc_path = file_path[:-len(SKORPIO_EXT)] + ".txt"
+    tc = load_test_case(tc_path)
+
+    sim = cmd_run_echoed(
+            [
+                sys.executable,
+                "./skorpio.py",
+                "-s",
+                file_path,
+                *tc.argv
+            ],
+            input=tc.stdin,
+            capture_output=True)
+    sim_ok = True
+    if sim.returncode != tc.returncode or sim.stdout != tc.stdout or sim.stderr != tc.stderr:
+        sim_ok = False
+        print("[ERROR] Unexpected simulation output")
+        print("  Expected:")
+        print("    return code: %s" % tc.returncode)
+        print("    stdout: %s" % tc.stdout.decode("utf-8"))
+        print("    stderr: %s" % tc.stderr.decode("utf-8"))
+        print("  Actual:")
+        print("    return code: %s" % sim.returncode)
+        print("    stdout: %s" % sim.stdout.decode("utf-8"))
+        print("    stderr: %s" % sim.stderr.decode("utf-8"))
+
+    com = cmd_run_echoed(
+            [
+                sys.executable,
+                "./skorpio.py",
+                "-c",
+                "-r",
+                "--silent",
+                file_path,
+                *tc.argv
+            ],
+            input=tc.stdin,
+            capture_output=True)
+    com_ok = True
+    if com.returncode != tc.returncode or com.stdout != tc.stdout or com.stderr != tc.stderr:
+        com_ok = False
+        print("[ERROR] Unexpected compilation output")
+        print("  Expected:")
+        print("    return code: %s" % tc.returncode)
+        print("    stdout: %s" % tc.stdout.decode("utf-8"))
+        print("    stderr: %s" % tc.stderr.decode("utf-8"))
+        print("  Actual:")
+        print("    return code: %s" % com.returncode)
+        print("    stdout: %s" % com.stdout.decode("utf-8"))
+        print("    stderr: %s" % com.stderr.decode("utf-8"))
+
+    return (sim_ok, com_ok)
+
+def run_test_for_folder(folder: str):
     s_failed = 0
     c_failed = 0
     for entry in os.scandir(folder):
-        skorpio_ext = ".sko"
-        if entry.is_file() and entry.path.endswith(skorpio_ext):
-            print("[INFO] Testing %s" % entry.path)
-
-            txt_path = entry.path[: -len(skorpio_ext)] + ".txt"
-            tc = load_test_case(txt_path)
-
-            sim = cmd_run_echoed(
-                [sys.executable, "./skorpio.py", "-I", folder, "-s", entry.path],
-                capture_output=True,
-            )
-            if (
-                sim.returncode != tc.returncode
-                or sim.stdout != tc.stdout
-                or sim.stderr != tc.stderr
-            ):
+        if entry.is_file() and entry.path.endswith(SKORPIO_EXT):
+            sim_ok, com_ok = run_test_for_file(entry.path)
+            if not sim_ok:
                 s_failed += 1
-                print("[ERROR] Unexpected simulation output")
-                print("  Expected:")
-                print("    return code: %s" % tc.returncode)
-                print("    stdout: %s" % tc.stdout.decode("utf-8"))
-                print("    stderr: %s" % tc.stderr.decode("utf-8"))
-                print("  Actual:")
-                print("    return code: %s" % sim.returncode)
-                print("    stdout: %s" % sim.stdout.decode("utf-8"))
-                print("    stderr: %s" % sim.stderr.decode("utf-8"))
-
-            com = cmd_run_echoed(
-                [
-                    sys.executable,
-                    "./skorpio.py",
-                    "-I",
-                    folder,
-                    "-c",
-                    "-r",
-                    "--silent",
-                    entry.path,
-                ],
-                capture_output=True,
-            )
-            if (
-                com.returncode != tc.returncode
-                or com.stdout != tc.stdout
-                or com.stderr != tc.stderr
-            ):
+            if not com_ok:
                 c_failed += 1
-                print("[ERROR] Unexpected compilation output")
-                print("  Expected:")
-                print("    return code: %s" % tc.returncode)
-                print("    stdout: %s" % tc.stdout.decode("utf-8"))
-                print("    stderr: %s" % tc.stderr.decode("utf-8"))
-                print("  Actual:")
-                print("    return code: %s" % com.returncode)
-                print("    stdout: %s" % com.stdout.decode("utf-8"))
-                print("    stderr: %s" % com.stderr.decode("utf-8"))
     print()
     print("     Simulation failed: %d, Compilation failed: %d\n" % (s_failed, c_failed))
     if s_failed != 0 or c_failed != 0:
         exit(1)
 
+def update_input_for_file(file_path: str, argv: List[str]):
+    assert file_path.endswith(SKORPIO_EXT)
+    tc_path = file_path[:-len(SKORPIO_EXT)] + ".txt"
 
-def record(folder: str, mode: str = "-s"):
+    tc = load_test_case(tc_path)
+
+    print("[INFO] Provide the stdin for the test case. Press ^D when you are done...")
+
+    stdin = sys.stdin.buffer.read()
+
+    print("[INFO] Saving input to %s" % tc_path)
+    save_test_case(tc_path,
+                   argv, stdin,
+                   tc.returncode, tc.stdout, tc.stderr)
+
+def update_output_for_file(file_path: str):
+    tc_path = file_path[:-len(SKORPIO_EXT)] + ".txt"
+    tc = load_test_case(tc_path)
+
+    output = cmd_run_echoed(
+            [
+                sys.executable,
+                "./skorpio.py",
+                "-s",
+                file_path,
+                *tc.argv
+            ],
+            input=tc.stdin,
+            capture_output=True)
+    print("[INFO] Saving output to %s" % tc_path)
+    save_test_case(tc_path,
+                   tc.argv, tc.stdin,
+                   output.returncode, output.stdout, output.stderr)
+
+def update_output_for_folder(folder: str):
     for entry in os.scandir(folder):
-        skorpio_ext = ".sko"
-        if entry.is_file() and entry.path.endswith(skorpio_ext):
-            if mode == "-s":
-                output = cmd_run_echoed(
-                    [sys.executable, "./skorpio.py", "-I", folder, "-s", entry.path],
-                    capture_output=True,
-                )
-            elif mode == "-c":
-                output = cmd_run_echoed(
-                    [
-                        sys.executable,
-                        "./skorpio.py",
-                        "-I",
-                        folder,
-                        "-c",
-                        "-r",
-                        "-s",
-                        entry.path,
-                    ],
-                    capture_output=True,
-                )
-            else:
-                print("[ERROR] Unknown record mode `%s`" % mode)
-                exit(1)
-            txt_path = entry.path[: -len(skorpio_ext)] + ".txt"
-            print("[INFO] Saving output to %s" % txt_path)
-            save_test_case(
-                txt_path, [], b"", output.returncode, output.stdout, output.stderr
-            )
+        if entry.is_file() and entry.path.endswith(SKORPIO_EXT):
+            update_output_for_file(entry.path)
 
 
 def usage(exe_name: str):
-    print("Usage: ./test.py [OPTIONS] [SUBCOMMAND]")
-    print("OPTIONS:")
-    print("    -f <folder> Folder with the tests. (Default: ./tests/)")
-    print("SUBCOMMANDS:")
-    print("    -t          Run the tests. ")
-    print("    -r  [-com]  Record expected output of the tests.")
-    print("    -c          Clean the directory.")
-    print(
-        "    -h          Print this message to stdout and exit with 0 code.(Default when no subcommand is provided)"
-    )
-
-
-# NOTE: temporary
-def clean(folder):
-    for entry in os.scandir(folder):
-        if (
-            entry.is_file()
-            and not entry.path.endswith(".sko")
-            and not entry.path.endswith(".txt")
-            and not entry.path.endswith(".md")
-        ):
-            os.remove(entry.path)
-
+    print()
+    print("Usage: ./test.py [SUBCOMMAND]")
+    print("  Run or update the tests. The default [SUBCOMMAND] is 'run'.")
+    print()
+    print("  SUBCOMMAND:")
+    print("    run [TARGET]")
+    print("      Run the test on the [TARGET]. The [TARGET] is either a *.sko file or ")
+    print("      folder with *.sko files. The default [TARGET] is './tests/'.")
+    print()
+    print("    update [SUBSUBCOMMAND]")
+    print("      Update the input or output of the tests.")
+    print("      The default [SUBSUBCOMMAND] is 'output'.")
+    print()
+    print("      SUBSUBCOMMAND:")
+    print("        input <TARGET>")
+    print("          Update the input of the <TARGET>. The <TARGET> can only be")
+    print("          a *.sko file.")
+    print()
+    print("        output [TARGET]")
+    print("          Update the output of the [TARGET]. The [TARGET] is either a *.sko")
+    print("          file or folder with *.sko files. The default [TARGET] is")
+    print("          './tests/'.")
+    print()
+    print("    help")
+    print("      Print this message to stdout and exit with 0 code.")
+    print()
 
 if __name__ == "__main__":
     exe_name, *argv = sys.argv
 
-    folder = "./tests/"
-    subcmd = "-h"
+    subcommand = "run"
 
-    while len(argv) > 0:
-        arg, *argv = argv
-        if arg == "-f":
-            if len(argv) == 0:
-                print("[ERROR] no <folder> is provided for option `-f`")
-                exit(1)
-            folder, *argv = argv
-        else:
-            subcmd = arg
-            break
+    if len(argv) > 0:
+        subcommand, *argv = argv
 
-    if subcmd == "-r":
-        mode = "-s"
-        while len(argv) > 0:
-            arg, *argv = argv
-            if arg == "-c":
-                mode = "c"
+    if subcommand == 'update' or subcommand == 'record':
+        subsubcommand = 'output'
+        if len(argv) > 0:
+            subsubcommand, *argv = argv
+
+        if subsubcommand == 'output':
+            target = './tests/'
+
+            if len(argv) > 0:
+                target, *argv = argv
+
+            if path.isdir(target):
+                update_output_for_folder(target)
+            elif path.isfile(target):
+                update_output_for_file(target)
             else:
-                print("[ERROR] Unknown flag `%s`" % arg)
+                assert False, 'unreachable'
+        elif subsubcommand == 'input':
+            if len(argv) == 0:
+                usage(exe_name)
+                print("[ERROR] No file is provided for `record input` subcommand", file=sys.stderr)
                 exit(1)
-        record(folder, mode)
-    elif subcmd == "-t":
-        test(folder)
-    elif subcmd == "-c":
-        clean(folder)
-    elif subcmd == "-h":
+            file_path, *argv = argv
+            update_input_for_file(file_path, argv)
+        else:
+            usage(exe_name)
+            print("[ERROR] Unknown subcommand `%s`" % subsubcommand, file=sys.stderr)
+            exit(1)
+    elif subcommand == 'run' or subcommand == 'test':
+        target = './tests/'
+
+        if len(argv) > 0:
+            target, *argv = argv
+
+        if path.isdir(target):
+            run_test_for_folder(target)
+        elif path.isfile(target):
+            run_test_for_file(target)
+        else:
+            assert False, 'unreachable'
+    elif subcommand == "-h":
         usage(exe_name)
     else:
         usage(exe_name)
-        print("[ERROR] unknown subcommand `%s`" % subcmd, file=sys.stderr)
+        print("[ERROR] unknown subcommand `%s`" % subcommand, file=sys.stderr)
         exit(1)

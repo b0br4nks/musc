@@ -10,6 +10,8 @@ from enum import Enum, auto
 from dataclasses import dataclass
 from copy import copy
 
+SKORPIO_EXT = '.sko'
+
 debug = False
 
 Loc = Tuple[str, int, int]
@@ -1186,6 +1188,7 @@ if __name__ == "__main__" and "__file__" in globals():
             )
             exit(1)
         program_path, *argv = argv
+        include_paths.append(path.dirname(program_path))
         program = compile_file_to_program(program_path, include_paths, expansion_limit)
         simulate_little_endian_linux(program, [program_path] + argv)
     elif subcommand in ["compile", "-c"]:
@@ -1220,18 +1223,16 @@ if __name__ == "__main__" and "__file__" in globals():
         if output_path is not None:
             if path.isdir(output_path):
                 basename = path.basename(program_path)
-                skorpio_ext = ".sko"
-                if basename.endswith(skorpio_ext):
-                    basename = basename[: -len(skorpio_ext)]
+                if basename.endswith(SKORPIO_EXT):
+                    basename = basename[:-len(SKORPIO_EXT)]
                 basedir = path.dirname(output_path)
             else:
                 basename = path.basename(output_path)
                 basedir = path.dirname(output_path)
         else:
             basename = path.basename(program_path)
-            skorpio_ext = ".sko"
-            if basename.endswith(skorpio_ext):
-                basename = basename[: -len(skorpio_ext)]
+            if basename.endswith(SKORPIO_EXT):
+                basename = basename[:-len(SKORPIO_EXT)]
             basedir = path.dirname(program_path)
         if basedir == "":
             basedir = os.getcwd()
@@ -1239,6 +1240,9 @@ if __name__ == "__main__" and "__file__" in globals():
 
         if not silent:
             print(f"[INFO] Generating {basename}.asm")
+
+        include_paths.append(path.dirname(program_path))
+
         program = compile_file_to_program(program_path, include_paths, expansion_limit)
         generate_nasm_linux_x86_64(program, basepath + ".asm")
         cmd_call_echoed(["nasm", "-felf64", basepath + ".asm"], silent)
@@ -1252,3 +1256,4 @@ if __name__ == "__main__" and "__file__" in globals():
         usage(compiler_name)
         print("[ERROR] unknown subcommand %s" % (subcommand), file=sys.stderr)
         exit(1)
+
