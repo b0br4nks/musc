@@ -54,6 +54,8 @@ class Intrinsic(Enum):
     STORE=auto()
     LOAD64=auto()
     STORE64=auto()
+    ARGC=auto()
+    ARGV=auto()
     SYSCALL0=auto()
     SYSCALL1=auto()
     SYSCALL2=auto()
@@ -98,14 +100,22 @@ class Token:
     expanded: int = 0
 
 NULL_POINTER_PADDING = 1
-STR_CAPACITY = 640_000
-MEM_CAPACITY = 640_000
+STR_CAPACITY  = 640_000
+MEM_CAPACITY  = 640_000
+ARGV_CAPACITY = 640_000
 
 def simulate_little_endian_linux(program: Program, argv: List[str]):
     stack: List[int] = []
-    mem = bytearray(NULL_POINTER_PADDING + STR_CAPACITY + MEM_CAPACITY)
-    str_offsets: Dict[int, int] = {}
-    str_size = NULL_POINTER_PADDING
+    mem = bytearray(NULL_POINTER_PADDING + STR_CAPACITY + ARGV_CAPACITY + MEM_CAPACITY)
+
+    str_buf_ptr  = NULL_POINTER_PADDING
+    str_ptrs: Dict[int, int] = {}
+    str_size = 0
+
+    argv_buf_ptr = NULL_POINTER_PADDING + STR_CAPACITY
+    argc = 0
+
+    mem_buf_ptr  = NULL_POINTER_PADDING + STR_CAPACITY + ARGV_CAPACITY
 
     fds: Dict[int, BinaryIO] = {
         0: sys.stdin.buffer,
@@ -113,16 +123,20 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
         2: sys.stderr.buffer,
     }
 
-    stack.append(0)
     for arg in reversed(argv):
         value = arg.encode("utf-8")
         n = len(value)
-        mem[str_size:str_size+n] = value
-        mem[str_size+n] = 0
-        stack.append(str_size)
+
+        arg_ptr = str_buf_ptr + str_size
+        mem[arg_ptr:arg_ptr+n] = value
+        mem[arg_ptr+n] = 0
         str_size += n + 1
         assert str_size <= STR_CAPACITY, "String buffer overflow"
-    stack.append(len(argv))
+
+        argv_ptr = argv_buf_ptr+argc*8
+        mem[argv_ptr:argv_ptr+8] = arg_ptr.to_bytes(8, byteorder='little')
+        argc += 1
+        assert argc*8 <= ARGV_CAPACITY, "Argv buffer overflow"
 
     ip = 0
     while ip < len(program):
@@ -143,12 +157,13 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
             value = op.operand.encode("utf-8")
             n = len(value)
             stack.append(n)
-            if ip not in str_offsets:
-                str_offsets[ip] = str_size
-                mem[str_size:str_size+n] = value
+            if ip not in str_ptrs:
+                str_ptr = str_buf_ptr+str_size
+                str_ptrs[ip] = str_ptr
+                mem[str_ptr:str_ptr+n] = value
                 str_size += n
                 assert str_size <= STR_CAPACITY, "String buffer overflow"
-            stack.append(str_offsets[ip])
+            stack.append(str_ptrs[ip])
             ip += 1
         elif op.typ == OpType.IF:
             a = stack.pop()
@@ -182,7 +197,7 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
                 ip += 1
         elif op.typ == OpType.INTRINSIC:
             assert (
-                len(Intrinsic) == 31
+                len(Intrinsic) == 33
             ), "Exhaustive handling of intrinsic in simulate_little_endian_linux()"
             if op.operand == Intrinsic.PLUS:
                 a = stack.pop()
@@ -302,16 +317,20 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
                 stack.append(int.from_bytes(_bytes, byteorder="little"))
                 ip += 1
             elif op.operand == Intrinsic.STORE64:
-                store_value64 = stack.pop().to_bytes(length=8, byteorder="little")
-                store_addr64 = stack.pop()
+                store_value64 = stack.pop().to_bytes(length=8, byteorder="little");
+                store_addr64 = stack.pop();
                 for byte in store_value64:
-                    mem[store_addr64] = byte
-                    store_addr64 += 1
+                    mem[store_addr64] = byte;
+                    store_addr64 += 1;
                 ip += 1
+            elif op.operand == Intrinsic.ARGC:
+                assert False, "not implemented"
+            elif op.operand == Intrinsic.ARGV:
+                assert False, "not implemented"
             elif op.operand == Intrinsic.SYSCALL0:
-                syscall_number = stack.pop()
+                syscall_number = stack.pop();
                 if syscall_number == 39:
-                    stack.append(os.getpid())
+                    stack.append(os.getpid());
                 else:
                     assert False, "unknown syscall number %d" % syscall_number
                 ip += 1
@@ -457,7 +476,7 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str):
                 out.write("    jz addr_%d\n" % op.operand)
             elif op.typ == OpType.INTRINSIC:
                 assert (
-                    len(Intrinsic) == 31
+                    len(Intrinsic) == 33
                 ), "Exhaustive intrinsic handling in generate_nasm_linux_x86_64()"
                 if op.operand == Intrinsic.PLUS:
                     out.write("    ;; -- plus --\n")
@@ -602,6 +621,10 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str):
                     out.write("    pop rbx\n")
                     out.write("    pop rax\n")
                     out.write("    mov [rax], bl\n")
+                elif op.operand == Intrinsic.ARGC:
+                    assert False, "not implemented"
+                elif op.operand == Intrinsic.ARGV:
+                    assert False, "not implemented"
                 elif op.operand == Intrinsic.LOAD64:
                     out.write("    ;; -- load64 --\n")
                     out.write("    pop rax\n")
@@ -695,7 +718,7 @@ KEYWORD_NAMES = {
     "use": Keyword.USE,
 }
 
-assert len(Intrinsic) == 31, "Exhaustive INTRINSIC_NAMES definition"
+assert len(Intrinsic) == 33, "Exhaustive INTRINSIC_NAMES definition"
 INTRINSIC_NAMES = {
     "+": Intrinsic.PLUS,
     "-": Intrinsic.MINUS,
@@ -721,6 +744,8 @@ INTRINSIC_NAMES = {
     "&l": Intrinsic.LOAD,
     "*64": Intrinsic.STORE64,
     "&64": Intrinsic.LOAD64,
+    "argc": Intrinsic.ARGC,
+    "argv": Intrinsic.ARGV,
     "sys0": Intrinsic.SYSCALL0,
     "sys1": Intrinsic.SYSCALL1,
     "sys2": Intrinsic.SYSCALL2,
