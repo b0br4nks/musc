@@ -10,72 +10,69 @@ from enum import Enum, auto
 from dataclasses import dataclass
 from copy import copy
 
-SKORPIO_EXT = '.sko'
+SKORPIO_EXT=".sko"
 
-debug = False
+debug=False
 
-Loc = Tuple[str, int, int]
+Loc=Tuple[str, int, int]
 
-DEFAULT_EXPANSION_LIMIT = 1000
+DEFAULT_EXPANSION_LIMIT=1000
 
 
 class Keyword(Enum):
-    IF = auto()
-    END = auto()
-    ELSE = auto()
-    WHILE = auto()
-    DO = auto()
-    FUNC = auto()
-    USE = auto()
+    IF=auto()
+    END=auto()
+    ELSE=auto()
+    WHILE=auto()
+    DO=auto()
+    FUNC=auto()
+    USE=auto()
 
 
 class Intrinsic(Enum):
-    PLUS = auto()
-    MINUS = auto()
-    MUL = auto()
-    DIVMOD = auto()
-    EQ = auto()
-    GT = auto()
-    LT = auto()
-    GE = auto()
-    LE = auto()
-    NE = auto()
-    RSH = auto()
-    LSH = auto()
-    BOR = auto()
-    BAND = auto()
-    PRINT = auto()
-    DUPL = auto()
-    SWAP = auto()
-    DROP = auto()
-    OVER = auto()
-    MEM = auto()
-    LOAD = auto()
-    STORE = auto()
-    LOAD64 = auto()
-    STORE64 = auto()
-    SYSCALL0 = auto()
-    SYSCALL1 = auto()
-    SYSCALL2 = auto()
-    SYSCALL3 = auto()
-    SYSCALL4 = auto()
-    SYSCALL5 = auto()
-    SYSCALL6 = auto()
-
+    PLUS=auto()
+    MINUS=auto()
+    MUL=auto()
+    DIVMOD=auto()
+    EQ=auto()
+    GT=auto()
+    LT=auto()
+    GE=auto()
+    LE=auto()
+    NE=auto()
+    RSH=auto()
+    LSH=auto()
+    BOR=auto()
+    BAND=auto()
+    PRINT=auto()
+    DUPL=auto()
+    SWAP=auto()
+    DROP=auto()
+    OVER=auto()
+    MEM=auto()
+    LOAD=auto()
+    STORE=auto()
+    LOAD64=auto()
+    STORE64=auto()
+    SYSCALL0=auto()
+    SYSCALL1=auto()
+    SYSCALL2=auto()
+    SYSCALL3=auto()
+    SYSCALL4=auto()
+    SYSCALL5=auto()
+    SYSCALL6=auto()
 
 class OpType(Enum):
-    PUSH_INT = auto()
-    PUSH_STR = auto()
-    INTRINSIC = auto()
-    IF = auto()
-    END = auto()
-    ELSE = auto()
-    WHILE = auto()
-    DO = auto()
+    PUSH_INT=auto()
+    PUSH_STR=auto()
+    INTRINSIC=auto()
+    IF=auto()
+    END=auto()
+    ELSE=auto()
+    WHILE=auto()
+    DO=auto()
 
-
-OpAddr = int
-
+OpAddr=int
 
 @dataclass
 class Op:
@@ -83,23 +80,16 @@ class Op:
     loc: Loc
     operand: Optional[Union[int, str, Intrinsic, OpAddr]] = None
 
-
-Program = List[Op]
-
+Program=List[Op]
 
 class TokenType(Enum):
-    WORD = auto()
-    INT = auto()
-    STR = auto()
-    CHAR = auto()
-    KEYWORD = auto()
+    WORD=auto()
+    INT=auto()
+    STR=auto()
+    CHAR=auto()
+    KEYWORD=auto()
 
-
-assert (
-    len(TokenType) == 5
-), "Exhaustive Token type definition. The `value` field of the Token dataclass may require an update"
-
-
+assert len(TokenType) == 5, "Exhaustive Token type definition. The `value` field of the Token dataclass may require an update"
 @dataclass
 class Token:
     typ: TokenType
@@ -107,11 +97,9 @@ class Token:
     value: Union[int, str, Keyword]
     expanded: int = 0
 
-
 NULL_POINTER_PADDING = 1
 STR_CAPACITY = 640_000
 MEM_CAPACITY = 640_000
-
 
 def simulate_little_endian_linux(program: Program, argv: List[str]):
     stack: List[int] = []
@@ -129,8 +117,8 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
     for arg in reversed(argv):
         value = arg.encode("utf-8")
         n = len(value)
-        mem[str_size : str_size + n] = value
-        mem[str_size + n] = 0
+        mem[str_size:str_size+n] = value
+        mem[str_size+n] = 0
         stack.append(str_size)
         str_size += n + 1
         assert str_size <= STR_CAPACITY, "String buffer overflow"
@@ -157,7 +145,7 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
             stack.append(n)
             if ip not in str_offsets:
                 str_offsets[ip] = str_size
-                mem[str_size : str_size + n] = value
+                mem[str_size:str_size+n] = value
                 str_size += n
                 assert str_size <= STR_CAPACITY, "String buffer overflow"
             stack.append(str_offsets[ip])
@@ -346,13 +334,13 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
                     buf = arg2
                     count = arg3
                     data = fds[fd].readline(count)
-                    mem[buf : buf + len(data)] = data
+                    mem[buf:buf+len(data)] = data
                     stack.append(len(data))
-                elif syscall_number == 1:  # SYS_write
+                elif syscall_number == 1: # SYS_write
                     fd = arg1
                     buf = arg2
                     count = arg3
-                    fds[fd].write(mem[buf : buf + count])
+                    fds[fd].write(mem[buf:buf+count])
                     fds[fd].flush()
                     stack.append(count)
                 else:
@@ -372,8 +360,7 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
         print("[INFO] Memory dump")
         print(mem[:20])
 
-
-def generate_nasm_linux_x86_64(program: Program, out_file_path: str) -> None:
+def generate_nasm_linux_x86_64(program: Program, out_file_path: str):
     strs: List[bytes] = []
     with open(out_file_path, "w") as out:
         out.write("BITS 64\n")
@@ -697,7 +684,6 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str) -> None:
         out.write("segment .bss\n")
         out.write("mem: resb %d\n" % MEM_CAPACITY)
 
-
 assert len(Keyword) == 7, "Exhaustive KEYWORD_NAMES definition."
 KEYWORD_NAMES = {
     "if": Keyword.IF,
@@ -743,7 +729,6 @@ INTRINSIC_NAMES = {
     "sys5": Intrinsic.SYSCALL5,
     "sys6": Intrinsic.SYSCALL6,
 }
-
 
 @dataclass
 class Func:
@@ -804,7 +789,7 @@ def compile_tokens_to_program(
                     print(
                         "%s:%d:%d: [ERROR] The function exceeded the expansion limit (it expanded %d times)"
                         % (token.loc + (token.expanded,)),
-                        file=sys.stderr,
+                        file=sys.stderr
                     )
                     exit(1)
                 rtokens += reversed(expand_func(funcs[token.value], token.expanded + 1))
@@ -812,7 +797,7 @@ def compile_tokens_to_program(
                 print(
                     "%s:%d:%d: [ERROR] Unknown word `%s`"
                     % (token.loc + (token.value,)),
-                    file=sys.stderr,
+                    file=sys.stderr
                 )
                 exit(1)
         elif token.typ == TokenType.INT:
@@ -1001,12 +986,10 @@ def compile_tokens_to_program(
 
     return program
 
-
 def find_col(line: str, start: int, predicate: Callable[[str], bool]) -> int:
     while start < len(line) and not predicate(line[start]):
         start += 1
     return start
-
 
 def unescape_string(s: str) -> str:
     return s.encode("utf-8").decode("unicode_escape").encode("latin-1").decode("utf-8")
@@ -1051,7 +1034,7 @@ def lex_lines(file_path: str, lines: List[str]) -> Generator[Token, None, None]:
                 if row >= len(lines):
                     print(
                         "%s:%d:%d: [ERROR] Unclosed string literal" % loc,
-                        file=sys.stderr,
+                        file=sys.stderr
                     )
                     exit(1)
                 text_of_token = str_literal_buf
@@ -1117,7 +1100,7 @@ def cmd_call_echoed(cmd: List[str], silent: bool = False) -> int:
     return subprocess.call(cmd)
 
 
-def usage(compiler_name: str) -> None:
+def usage(compiler_name: str):
     print(f"Usage: {compiler_name} [OPTIONS] <SUBCOMMAND> [ARGS]\n")
     print("OPTIONS")
     print("     -dbg                     Enable debug mode")
@@ -1180,7 +1163,7 @@ if __name__ == "__main__" and "__file__" in globals():
 
     program_path: Optional[str] = None
 
-    if subcommand in ["simulate", "-s"]:
+    if subcommand in "-s":
         if len(argv) < 1:
             usage(compiler_name)
             print(
@@ -1191,7 +1174,7 @@ if __name__ == "__main__" and "__file__" in globals():
         include_paths.append(path.dirname(program_path))
         program = compile_file_to_program(program_path, include_paths, expansion_limit)
         simulate_little_endian_linux(program, [program_path] + argv)
-    elif subcommand in ["compile", "-c"]:
+    elif subcommand in "-c":
         silent = False
         run = False
         output_path = None
@@ -1206,7 +1189,7 @@ if __name__ == "__main__" and "__file__" in globals():
                     usage(compiler_name)
                     print(
                         "[ERROR] No argument is provided for parameter -o",
-                        file=sys.stderr,
+                        file=sys.stderr
                     )
                     exit(1)
                 output_path, *argv = argv
@@ -1215,7 +1198,9 @@ if __name__ == "__main__" and "__file__" in globals():
                 break
         if program_path is None:
             usage(compiler_name)
-            print("[ERROR] No input file is provided", file=sys.stderr)
+            print(
+                "[ERROR] No input file is provided for the compilation", file=sys.stderr
+            )
             exit(1)
 
         basename = None
@@ -1224,7 +1209,7 @@ if __name__ == "__main__" and "__file__" in globals():
             if path.isdir(output_path):
                 basename = path.basename(program_path)
                 if basename.endswith(SKORPIO_EXT):
-                    basename = basename[:-len(SKORPIO_EXT)]
+                    basename = basename[: -len(SKORPIO_EXT)]
                 basedir = path.dirname(output_path)
             else:
                 basename = path.basename(output_path)
@@ -1232,7 +1217,7 @@ if __name__ == "__main__" and "__file__" in globals():
         else:
             basename = path.basename(program_path)
             if basename.endswith(SKORPIO_EXT):
-                basename = basename[:-len(SKORPIO_EXT)]
+                basename = basename[: -len(SKORPIO_EXT)]
             basedir = path.dirname(program_path)
         if basedir == "":
             basedir = os.getcwd()
@@ -1249,11 +1234,10 @@ if __name__ == "__main__" and "__file__" in globals():
         cmd_call_echoed(["ld", "-o", basepath, basepath + ".o"], silent)
         if run:
             exit(cmd_call_echoed([basepath] + argv, silent))
-    elif subcommand in ["help", "-h"]:
+    elif subcommand in "-h":
         usage(compiler_name)
         exit(0)
     else:
         usage(compiler_name)
         print("[ERROR] unknown subcommand %s" % (subcommand), file=sys.stderr)
         exit(1)
-
