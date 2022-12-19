@@ -122,7 +122,7 @@ def run_test_for_folder(folder: str):
             if not com_ok:
                 com_failed += 1
     print()
-    print("Simulation failed: %d, Compilation failed: %d" % (sim_failed, com_failed))
+    print("     Simulation failed: %d, Compilation failed: %d\n" % (sim_failed, com_failed))
     if sim_failed != 0 or com_failed != 0:
         exit(1)
 

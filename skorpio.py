@@ -372,7 +372,7 @@ class DataType(IntEnum):
     PTR=auto()
 
 def type_check_program(program: Program):
-    stack: List[Tuple[Type, Loc]] = []
+    stack: List[Tuple[DataType, Loc]] = []
     for ip in range(len(program)):
         op = program[ip]
         assert len(OpType) == 8, "Exhaustive ops handling in type_check_program()"
@@ -384,7 +384,7 @@ def type_check_program(program: Program):
         elif op.typ == OpType.INTRINSIC:
             assert len(Intrinsic) == 33, "Exhaustive intrinsic handling in type_check_program()"
             if op.operand == Intrinsic.PLUS:
-                assert len(Type) == 3, "Exhaustive type handling in PLUS intrinsic"
+                assert len(DataType) == 3, "Exhaustive type handling in PLUS intrinsic"
                 if len(stack) < 2:
                     print("%s:%d:%d: [ERROR] not enough arguments for the PLUS intrinsic" % op.loc, file=sys.stderr)
                     exit(1)
