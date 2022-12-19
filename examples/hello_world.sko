@@ -1,12 +1,8 @@
 -- "Hello, World\n"
 use "std.sko"
 
-"Hello, World\n" stdout fmt
-
-"===========================\n" stdout fmt
-
 -- with str
-"Hello, World\n" stdout fmt
+"Hello, World\n" stdout fmt !
 
 "===========================\n" stdout fmt
 

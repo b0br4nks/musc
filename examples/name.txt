@@ -1,0 +1,10 @@
+:i argc 0
+:b stdin 2
+K
+
+:i returncode 0
+:b stdout 29
+What is your name? Hello, K!
+
+:b stderr 0
+

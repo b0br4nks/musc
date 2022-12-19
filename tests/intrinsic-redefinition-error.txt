@@ -1,6 +1,9 @@
-: returncode 1
-: stdout 0
+:i argc 0
+:b stdin 0
 
-: stderr 143
+:i returncode 1
+:b stdout 0
+
+:b stderr 143
 ./tests/intrinsic-redefinition-error.sko:1:4: [ERROR] Redefinition of an intrinsic word `*`. Please choose a different name for your function.
 

@@ -1,8 +1,10 @@
 use "std.sko"
 
-! !
+argv 8 +
+argc 1 -
 while cp 0 > do
-    cp len ~
+    over &64 cp len ~
     stdout fmt !
     "\n" stdout fmt !
+    1 - ~ 8 + ~
 end

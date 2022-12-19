@@ -1,5 +1,8 @@
-: returncode 0
-: stdout 83
+:i argc 0
+:b stdin 0
+
+:i returncode 0
+:b stdout 83
 yes
 no
 ===========================
@@ -15,5 +18,5 @@ no
 196418
 832040
 
-: stderr 0
+:b stderr 0
 

@@ -1,12 +1,13 @@
-: returncode 0
-: stdout 136
-Hello, World
-===========================
+:i argc 0
+:b stdin 0
+
+:i returncode 0
+:b stdout 95
 Hello, World
 ===========================
 Hello, World
 ===========================
 Hello, World
 
-: stderr 0
+:b stderr 0
 

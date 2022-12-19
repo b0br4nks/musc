@@ -1,6 +1,9 @@
-: returncode 1
-: stdout 0
+:i argc 0
+:b stdin 0
 
-: stderr 124
+:i returncode 1
+:b stdout 0
+
+:b stderr 124
 ./tests/func-without-end-error.sko:2:1: [ERROR] Expected `end` at the end of the function definition but got `Keyword.FUNC`
 

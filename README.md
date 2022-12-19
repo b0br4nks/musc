@@ -189,46 +189,36 @@ $ mkdir output && ./skorpio.py -c -r -o output/ ./tests/arithmetic.sko
 
 ### Testing
 
-Test cases are located in [./tests/](./tests/) folder. The `*.txt` files contain expected outcomes of the corresponding programs (exit code, stdout, stderr).
+Test cases are located in [./tests/](./tests/) folder. The `*.txt` files contain inputs (command line arguments, stdin) and expected outputs (exit code, stdout, stderr) of the corresponding programs.
 
-However, you can choose in which folder the tests should be executed with the `-f` subcommand:
+Run [./test.py](./test.py) script to execute the programs and assert their outputs:
 ```console
-$ ./test.py -f <folder>
+$ ./test.py run
 ```
 
-Run [./test.py](./test.py) script with the `-h` subcommand to print more info on the stdout (default, if no subcommand is provided):
+To update expected outputs of the programs run the `update` subcommand:
 ```console
-Usage: ./test.py [OPTIONS] [SUBCOMMAND]
-OPTIONS:
-    -f <folder> Folder with the tests. (Default: ./tests/)
-SUBCOMMANDS:
-    -t          Run the tests. 
-    -r          Record expected output of the tests.
-    -c          Clean the directory.
-    -h          Print this message to stdout and exit with 0 code.(Default when no subcommand is provided)
+$ ./test.py update
 ```
 
-Run [./test.py](./test.py) script with the `-t` subcommand to execute the programs and assert their outputs:
+To update expected command line arguments and stdin of a specific program run the `update input <path/to/program.sko>` subcommand:
 
 ```console
-$ ./test.py -t
-```
-
-To update expected output files run the `-r` subcommand:
-```console
-$ ./test.py -r
+$ ./test.py update input ./tests/argv.sko <new> <cmd> <args>
+[INFO] Provide the stdin for the test case. Press ^D when you are done...
+Hello, World
+^D
+[INFO] Saving input to ./tests/argv.txt
 ```
 
 The [./examples/](./examples/) folder contains programs that are meant for showcasing the language rather then testing it:
 ```console
-$ ./test.py -f ./examples/ -r
+$ ./test.py run ./examples/
+$ ./test.py update input ./examples/name.sko
+$ ./test.py update output ./examples/
 ```
 
-To clean the folder from the `*.asm` `*.o` and `binary* (ELF 64-bit LSB executable)`, you can run the `-c` subcommand:
-```console
-$ ./test.py -c
-$ ./test.py -f ./examples/ -c
-```
+For more info see `./test.py help`
 
 ### Usage
 

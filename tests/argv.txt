@@ -1,5 +1,18 @@
-: returncode 0
-: stdout 0
+:i argc 3
+:b arg0 5
+arg_1
+:b arg1 5
+arg_2
+:b arg2 5
+arg_n
+:b stdin 13
+Hello, World
 
-: stderr 0
+:i returncode 0
+:b stdout 18
+arg_1
+arg_2
+arg_n
+
+:b stderr 0
 

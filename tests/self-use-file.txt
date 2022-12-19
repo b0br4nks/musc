@@ -1,6 +1,9 @@
-: returncode 1
-: stdout 0
+:i argc 0
+:b stdin 0
 
-: stderr 103
+:i returncode 1
+:b stdout 0
+
+:b stderr 103
 ./tests/./self-use-file.sko:1:5: [ERROR] The use exceeded the expansion limit (it expanded 1000 times)
 
