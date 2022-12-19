@@ -339,7 +339,7 @@ fn i64
 end
 
 fn len
-  0 ~ while cp &l 0 != do
-    1 + ~ 1 + ~
-  end !
+    cp
+    while cp &l 0 != do 1 + end
+    ~ -
 end
