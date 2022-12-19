@@ -5,7 +5,8 @@ import sys
 import subprocess
 import shlex
 from os import path
-from typing import *
+# from typing import *
+from typing import List, BinaryIO, Tuple
 from enum import Enum, auto
 from dataclasses import dataclass
 from copy import copy
