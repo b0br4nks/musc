@@ -2,7 +2,7 @@
 use "std.sko"
 
 -- with str
-"Hello, World\n" stdout fmt
+"Hello, World\n" stdout fmt !
 
 "===========================\n" stdout fmt
 

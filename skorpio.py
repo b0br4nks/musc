@@ -366,6 +366,177 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
         print("[INFO] Memory dump")
         print(mem[:20])
 
+class Type(IntEnum):
+    INT=auto()
+    BOOL=auto()
+    PTR=auto()
+
+def type_check_program(program: Program):
+    stack: List[Tuple[Type, Loc]] = []
+    for ip in range(len(program)):
+        op = program[ip]
+        assert len(OpType) == 8, "Exhaustive ops handling in type_check_program()"
+        if op.typ == OpType.PUSH_INT:
+            stack.append((Type.INT, op.loc))
+        elif op.typ == OpType.PUSH_STR:
+            stack.append((Type.INT, op.loc))
+            stack.append((Type.PTR, op.loc))
+        elif op.typ == OpType.INTRINSIC:
+            assert len(Intrinsic) == 33, "Exhaustive intrinsic handling in type_check_program()"
+            if op.operand == Intrinsic.PLUS:
+                assert len(Type) == 3, "Exhaustive type handling in PLUS intrinsic"
+                if len(stack) < 2:
+                    print("%s:%d:%d: [ERROR] not enough arguments for the PLUS intrinsic" % op.loc, file=sys.stderr)
+                    exit(1)
+                a_type, a_loc = stack.pop()
+                b_type, b_loc = stack.pop()
+
+                if a_type == Type.INT and b_type == Type.INT:
+                    stack.append((Type.INT, op.loc))
+                elif a_type == Type.INT and b_type == Type.PTR:
+                    stack.append((Type.PTR, op.loc))
+                elif a_type == Type.PTR and b_type == Type.INT:
+                    stack.append((Type.PTR, op.loc))
+                else:
+                    print("%s:%d:%d: [ERROR] Invalid argument types for PLUS intrinsic %s %s" % (op.loc + (a_type, b_type)), file=sys.stderr)
+                    exit(1)
+            elif op.operand == Intrinsic.MINUS:
+                assert False, "not implemented"
+            elif op.operand == Intrinsic.MUL:
+                assert False, "not implemented"
+            elif op.operand == Intrinsic.DIVMOD:
+                assert False, "not implemented"
+            elif op.operand == Intrinsic.EQ:
+                assert False, "not implemented"
+            elif op.operand == Intrinsic.GT:
+                if len(stack) < 2:
+                    print("%s:%d:%d: [ERROR] Not enough arguments for the GT intrinsic" % op.loc, file=sys.stderr)
+                    exit(1)
+                # b a
+                a_type, a_loc = stack.pop()
+                b_type, b_loc = stack.pop()
+
+                if a_type == b_type and (a_type == Type.INT or a_type == Type.PTR):
+                    stack.append((Type.BOOL, op.loc))
+                else:
+                    print("%s:%d:%d: [ERROR] Invalid argument type for GT intrinsic" % op.loc, file=sys.stderr)
+                    exit(1)
+            elif op.operand == Intrinsic.LT:
+                assert False, "not implemented"
+            elif op.operand == Intrinsic.GE:
+                assert False, "not implemented"
+            elif op.operand == Intrinsic.LE:
+                assert False, "not implemented"
+            elif op.operand == Intrinsic.NE:
+                assert False, "not implemented"
+            elif op.operand == Intrinsic.RSH:
+                assert False, "not implemented"
+            elif op.operand == Intrinsic.LSH:
+                assert False, "not implemented"
+            elif op.operand == Intrinsic.BOR:
+                assert False, "not implemented"
+            elif op.operand == Intrinsic.BAND:
+                assert False, "not implemented"
+            elif op.operand == Intrinsic.PRINT:
+                if len(stack) < 1:
+                    print("%s:%d:%d: [ERROR] Not enough arguments for the PRINT intrinsic" % op.loc, file=sys.stderr)
+                    exit(1)
+                stack.pop()
+            elif op.operand == Intrinsic.DUPL:
+                if len(stack) < 1:
+                    print("%s:%d:%d: [ERROR] Not enough arguments for the DUPL intrinsic" % op.loc, file=sys.stderr)
+                    exit(1)
+                a = stack.pop()
+                stack.append(a)
+                stack.append(a)
+            elif op.operand == Intrinsic.SWAP:
+                assert False, "not implemented"
+            elif op.operand == Intrinsic.DROP:
+                if len(stack) < 1:
+                    print("%s:%d:%d: [ERROR] Not enough arguments for the DROP intrinsic" % op.loc, file=sys.stderr)
+                    exit(1)
+                stack.pop()
+            elif op.operand == Intrinsic.OVER:
+                if len(stack) < 2:
+                    print("%s:%d:%d: [ERROR] Not enough arguments for the OVER intrinsic" % op.loc, file=sys.stderr)
+                    exit(1)
+                a = stack.pop()
+                b = stack.pop()
+                stack.append(b)
+                stack.append(a)
+                stack.append(b)
+            elif op.operand == Intrinsic.MEM:
+                assert False, "not implemented"
+            elif op.operand == Intrinsic.LOAD:
+                assert False, "not implemented"
+            elif op.operand == Intrinsic.STORE:
+                assert False, "not implemented"
+            elif op.operand == Intrinsic.LOAD64:
+                assert False, "not implemented"
+            elif op.operand == Intrinsic.STORE64:
+                assert False, "not implemented"
+            elif op.operand == Intrinsic.ARGC:
+                assert False, "not implemented"
+            elif op.operand == Intrinsic.ARGV:
+                assert False, "not implemented"
+            elif op.operand == Intrinsic.SYSCALL0:
+                if len(stack) < 1:
+                    print("%s:%d:%d: [ERROR] Not enough arguments for SYSCALL0 intrinsic" % op.loc, file=sys.stderr)
+                    exit(1)
+                for i in range(1):
+                    stack.pop()
+                stack.append((Type.INT, op.loc))
+            elif op.operand == Intrinsic.SYSCALL1:
+                if len(stack) < 2:
+                    print("%s:%d:%d: [ERROR] Not enough arguments for SYSCALL1 intrinsic" % op.loc, file=sys.stderr)
+                    exit(1)
+                for i in range(2):
+                    stack.pop()
+                stack.append((Type.INT, op.loc))
+            elif op.operand == Intrinsic.SYSCALL2:
+                if len(stack) < 3:
+                    print("%s:%d:%d: [ERROR] Not enough arguments for SYSCALL2 intrinsic" % op.loc, file=sys.stderr)
+                    exit(1)
+                for i in range(3):
+                    stack.pop()
+                stack.append((Type.INT, op.loc))
+            elif op.operand == Intrinsic.SYSCALL3:
+                if len(stack) < 4:
+                    print("%s:%d:%d: [ERROR] Not enough arguments for SYSCALL3 intrinsic" % op.loc, file=sys.stderr)
+                    exit(1)
+                for i in range(4):
+                    stack.pop()
+                stack.append((Type.INT, op.loc))
+            elif op.operand == Intrinsic.SYSCALL4:
+                assert False, "not implemented"
+            elif op.operand == Intrinsic.SYSCALL5:
+                assert False, "not implemented"
+            elif op.operand == Intrinsic.SYSCALL6:
+                assert False, "not implemented"
+            else:
+                assert False, "unreachable"
+        elif op.typ == OpType.IF:
+            assert False, "not implemented"
+        elif op.typ == OpType.END:
+            assert False, "not implemented"
+        elif op.typ == OpType.ELSE:
+            assert False, "not implemented"
+        elif op.typ == OpType.WHILE:
+            pass
+        elif op.typ == OpType.DO:
+            if len(stack) < 1:
+                print("%s:%d:%d: [ERROR] Not enough arguments for DO operation" % op.loc, file=sys.stderr)
+                exit(1)
+            a_type, a_loc = stack.pop()
+            if a_type != Type.BOOL:
+                print("%s:%d:%d: [ERROR] DO operation expects BOOL argument" % op.loc, file=sys.stderr)
+                exit(1)
+        else:
+            assert False, "unreachable"
+    if len(stack) != 0:
+        print("%s:%d:%d: [ERROR] Unhandled data on the stack" % stack.pop()[1], file=sys.stderr)
+        exit(1)
+
 def generate_nasm_linux_x86_64(program: Program, out_file_path: str):
     strs: List[bytes] = []
     with open(out_file_path, "w") as out:
@@ -1084,6 +1255,7 @@ def usage(compiler_name: str):
         "     -E   <expansion-limit>   Function and use expansion limit. (Default %d)\n"
         % DEFAULT_EXPANSION_LIMIT
     )
+    print("     -check                   Type check the program")
     print("SUBCOMMANDS")
     print("     -s           <file>      Simulate the program")
     print("     -c [OPTIONS] <file>      Compile the program")
@@ -1103,6 +1275,7 @@ if __name__ == "__main__" and "__file__" in globals():
 
     include_paths = [".", "./std/"]
     expansion_limit = DEFAULT_EXPANSION_LIMIT
+    check = False
 
     while len(argv) > 0:
         if argv[0] == "-dbg":
@@ -1124,6 +1297,9 @@ if __name__ == "__main__" and "__file__" in globals():
                 exit(1)
             arg, *argv = argv
             expansion_limit = int(arg)
+        elif argv[0] == "-check":
+            argv = argv[1:]
+            check = True
         else:
             break
 
@@ -1148,6 +1324,8 @@ if __name__ == "__main__" and "__file__" in globals():
         program_path, *argv = argv
         include_paths.append(path.dirname(program_path))
         program = compile_file_to_program(program_path, include_paths, expansion_limit)
+        if check:
+            type_check_program(program)
         simulate_little_endian_linux(program, [program_path] + argv)
     elif subcommand == "-c":
         silent = False
@@ -1205,6 +1383,8 @@ if __name__ == "__main__" and "__file__" in globals():
         include_paths.append(path.dirname(program_path))
 
         program = compile_file_to_program(program_path, include_paths, expansion_limit)
+        if check:
+            type_check_program(program)
         generate_nasm_linux_x86_64(program, basepath + ".asm")
         cmd_call_echoed(["nasm", "-felf64", basepath + ".asm"], silent)
         cmd_call_echoed(["ld", "-o", basepath, basepath + ".o"], silent)
