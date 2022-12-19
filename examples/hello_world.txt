@@ -2,9 +2,7 @@
 :b stdin 0
 
 :i returncode 0
-:b stdout 136
-Hello, World
-===========================
+:b stdout 95
 Hello, World
 ===========================
 Hello, World
