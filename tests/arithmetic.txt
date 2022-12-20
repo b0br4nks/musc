@@ -2,13 +2,20 @@
 :b stdin 0
 
 :i returncode 0
-:b stdout 95
+:b stdout 186
+Addition:
 3
 ===========================
+Substraction:
 1
 ===========================
+Division:
+1337
+===========================
+Modulo:
 2022
 ===========================
+Multiplication:
 6
 
 :b stderr 0
