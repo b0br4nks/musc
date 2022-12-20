@@ -99,9 +99,9 @@ class Token:
     expanded: int = 0
 
 NULL_POINTER_PADDING = 1
-STR_CAPACITY  = 6.4e5
-MEM_CAPACITY  = 6.4e5
-ARGV_CAPACITY = 6.4e5
+STR_CAPACITY  = 640_000
+MEM_CAPACITY  = 640_000
+ARGV_CAPACITY = 640_000
 
 def simulate_little_endian_linux(program: Program, argv: List[str]):
     stack: List[int] = []
