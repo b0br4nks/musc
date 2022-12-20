@@ -1,4 +1,4 @@
-use "./std.sko"
+use "std.sko"
 
 fn &node/value &64 end
 fn &node/prev 8 + &64 end

@@ -19,7 +19,6 @@ Loc=Tuple[str, int, int]
 
 DEFAULT_EXPANSION_LIMIT=1000
 
-
 class Keyword(Enum):
     IF=auto()
     END=auto()
@@ -28,7 +27,6 @@ class Keyword(Enum):
     DO=auto()
     FUNC=auto()
     USE=auto()
-
 
 class Intrinsic(Enum):
     PLUS=auto()
@@ -371,6 +369,10 @@ class DataType(IntEnum):
     BOOL=auto()
     PTR=auto()
 
+def not_enough_arguments_for_intrinsic(intr: Intrinsic, loc: Loc):
+    print("%s:%d:%d: [ERROR] Not enough arguments for the `%s` intrinsic" % (loc + (INTRINSIC_NAMES[intr],)), file=sys.stderr)
+
+
 def type_check_program(program: Program):
     stack: List[Tuple[DataType, Loc]] = []
     for ip in range(len(program)):
@@ -383,10 +385,11 @@ def type_check_program(program: Program):
             stack.append((DataType.PTR, op.loc))
         elif op.typ == OpType.INTRINSIC:
             assert len(Intrinsic) == 33, "Exhaustive intrinsic handling in type_check_program()"
+            assert isinstance(op.operand, Intrinsic), "This could be a bug in compilation step"
             if op.operand == Intrinsic.PLUS:
                 assert len(DataType) == 3, "Exhaustive type handling in PLUS intrinsic"
                 if len(stack) < 2:
-                    print("%s:%d:%d: [ERROR] not enough arguments for the PLUS intrinsic" % op.loc, file=sys.stderr)
+                    not_enough_arguments_for_intrinsic(op.operand, op.loc)
                     exit(1)
                 a_type, a_loc = stack.pop()
                 b_type, b_loc = stack.pop()
@@ -410,7 +413,7 @@ def type_check_program(program: Program):
                 assert False, "not implemented"
             elif op.operand == Intrinsic.GT:
                 if len(stack) < 2:
-                    print("%s:%d:%d: [ERROR] Not enough arguments for the GT intrinsic" % op.loc, file=sys.stderr)
+                    not_enough_arguments_for_intrinsic(op.operand, op.loc)
                     exit(1)
                 # b a
                 a_type, a_loc = stack.pop()
@@ -439,12 +442,12 @@ def type_check_program(program: Program):
                 assert False, "not implemented"
             elif op.operand == Intrinsic.PRINT:
                 if len(stack) < 1:
-                    print("%s:%d:%d: [ERROR] Not enough arguments for the PRINT intrinsic" % op.loc, file=sys.stderr)
+                    not_enough_arguments_for_intrinsic(op.operand, op.loc)
                     exit(1)
                 stack.pop()
             elif op.operand == Intrinsic.DUPL:
                 if len(stack) < 1:
-                    print("%s:%d:%d: [ERROR] Not enough arguments for the DUPL intrinsic" % op.loc, file=sys.stderr)
+                    not_enough_arguments_for_intrinsic(op.operand, op.loc)
                     exit(1)
                 a = stack.pop()
                 stack.append(a)
@@ -453,12 +456,12 @@ def type_check_program(program: Program):
                 assert False, "not implemented"
             elif op.operand == Intrinsic.DROP:
                 if len(stack) < 1:
-                    print("%s:%d:%d: [ERROR] Not enough arguments for the DROP intrinsic" % op.loc, file=sys.stderr)
+                    not_enough_arguments_for_intrinsic(op.operand, op.loc)
                     exit(1)
                 stack.pop()
             elif op.operand == Intrinsic.OVER:
                 if len(stack) < 2:
-                    print("%s:%d:%d: [ERROR] Not enough arguments for the OVER intrinsic" % op.loc, file=sys.stderr)
+                    not_enough_arguments_for_intrinsic(op.operand, op.loc)
                     exit(1)
                 a = stack.pop()
                 b = stack.pop()
@@ -466,7 +469,7 @@ def type_check_program(program: Program):
                 stack.append(a)
                 stack.append(b)
             elif op.operand == Intrinsic.MEM:
-                assert False, "not implemented"
+                stack.append((DataType.PTR, op.loc))
             elif op.operand == Intrinsic.LOAD:
                 assert False, "not implemented"
             elif op.operand == Intrinsic.STORE:
@@ -481,28 +484,28 @@ def type_check_program(program: Program):
                 assert False, "not implemented"
             elif op.operand == Intrinsic.SYSCALL0:
                 if len(stack) < 1:
-                    print("%s:%d:%d: [ERROR] Not enough arguments for SYSCALL0 intrinsic" % op.loc, file=sys.stderr)
+                    not_enough_arguments_for_intrinsic(op.operand, op.loc)
                     exit(1)
                 for i in range(1):
                     stack.pop()
                 stack.append((DataType.INT, op.loc))
             elif op.operand == Intrinsic.SYSCALL1:
                 if len(stack) < 2:
-                    print("%s:%d:%d: [ERROR] Not enough arguments for SYSCALL1 intrinsic" % op.loc, file=sys.stderr)
+                    not_enough_arguments_for_intrinsic(op.operand, op.loc)
                     exit(1)
                 for i in range(2):
                     stack.pop()
                 stack.append((DataType.INT, op.loc))
             elif op.operand == Intrinsic.SYSCALL2:
                 if len(stack) < 3:
-                    print("%s:%d:%d: [ERROR] Not enough arguments for SYSCALL2 intrinsic" % op.loc, file=sys.stderr)
+                    not_enough_arguments_for_intrinsic(op.operand, op.loc)
                     exit(1)
                 for i in range(3):
                     stack.pop()
                 stack.append((DataType.INT, op.loc))
             elif op.operand == Intrinsic.SYSCALL3:
                 if len(stack) < 4:
-                    print("%s:%d:%d: [ERROR] Not enough arguments for SYSCALL3 intrinsic" % op.loc, file=sys.stderr)
+                    not_enough_arguments_for_intrinsic(op.operand, op.loc)
                     exit(1)
                 for i in range(4):
                     stack.pop()
@@ -524,13 +527,8 @@ def type_check_program(program: Program):
         elif op.typ == OpType.WHILE:
             pass
         elif op.typ == OpType.DO:
-            if len(stack) < 1:
-                print("%s:%d:%d: [ERROR] Not enough arguments for DO operation" % op.loc, file=sys.stderr)
-                exit(1)
-            a_type, a_loc = stack.pop()
-            if a_type != DataType.BOOL:
-                print("%s:%d:%d: [ERROR] DO operation expects BOOL argument" % op.loc, file=sys.stderr)
-                exit(1)
+            assert False, "not implemented"
+            exit(1)
         else:
             assert False, "unreachable"
     if len(stack) != 0:
@@ -868,8 +866,8 @@ KEYWORD_NAMES = {
     "use": Keyword.USE,
 }
 
-assert len(Intrinsic) == 33, "Exhaustive INTRINSIC_NAMES definition"
-INTRINSIC_NAMES = {
+assert len(Intrinsic) == 33, "Exhaustive INTRINSIC_BY_NAMES definition"
+INTRINSIC_BY_NAMES = {
     "+": Intrinsic.PLUS,
     "-": Intrinsic.MINUS,
     "*": Intrinsic.MUL,
@@ -904,6 +902,7 @@ INTRINSIC_NAMES = {
     "sys5": Intrinsic.SYSCALL5,
     "sys6": Intrinsic.SYSCALL6,
 }
+INTRINSIC_NAMES = {v: k for k, v in INTRINSIC_BY_NAMES.items()}
 
 @dataclass
 class Func:
@@ -911,21 +910,28 @@ class Func:
     tokens: List[Token]
 
 
-def human(typ: TokenType) -> str:
+def human(obj: Union[TokenType, Op, Intrinsic]) -> str:
     """Human readable representation of an object that can be used in error messages"""
-    assert len(TokenType) == 5, "Exhaustive handling of token types in human()"
-    if typ == TokenType.WORD:
-        return "a word"
-    elif typ == TokenType.INT:
-        return "an integer"
-    elif typ == TokenType.STR:
-        return "a string"
-    elif typ == TokenType.CHAR:
-        return "a character"
-    elif typ == TokenType.KEYWORD:
-        return "a keyword"
+    if obj is TokenType:
+        assert len(TokenType) == 5, "Exhaustive handling of token types in human()"
+        if obj == TokenType.WORD:
+            return "a word"
+        elif obj == TokenType.INT:
+            return "an integer"
+        elif obj == TokenType.STR:
+            return "a string"
+        elif obj == TokenType.CHAR:
+            return "a character"
+        elif obj == TokenType.KEYWORD:
+            return "a keyword"
+        else:
+            assert False, "unreachable"
+    elif obj is Op:
+        assert False, "not implemented"
+    elif obj is Intrinsic:
+        assert False, "not implemented"
     else:
-        assert False, "unreachable"
+        assert False, "unsupported object in human()"
 
 def expand_func(func: Func, expanded: int) -> List[Token]:
     result = list(map(lambda k: copy(k), func.tokens))
@@ -948,8 +954,8 @@ def compile_tokens_to_program(
         ), "Exhaustive token handling in compile_tokens_to_program"
         if token.typ == TokenType.WORD:
             assert isinstance(token.value, str), "This could be a bug in the lexer"
-            if token.value in INTRINSIC_NAMES:
-                program.append(Op(typ=OpType.INTRINSIC, loc=token.loc, operand=INTRINSIC_NAMES[token.value]))
+            if token.value in INTRINSIC_BY_NAMES:
+                program.append(Op(typ=OpType.INTRINSIC, loc=token.loc, operand=INTRINSIC_BY_NAMES[token.value]))
                 ip += 1
             elif token.value in funcs:
                 if token.expanded >= expansion_limit:
@@ -1094,7 +1100,7 @@ def compile_tokens_to_program(
                         file=sys.stderr
                     )
                     exit(1)
-                if token.value in INTRINSIC_NAMES:
+                if token.value in INTRINSIC_BY_NAMES:
                     print(
                         "%s:%d:%d: [ERROR] Redefinition of an intrinsic word `%s`. Please choose a different name for your function."
                         % (token.loc + (token.value,)),
