@@ -479,9 +479,9 @@ def type_check_program(program: Program):
             elif op.operand == Intrinsic.STORE64:
                 assert False, "not implemented"
             elif op.operand == Intrinsic.ARGC:
-                assert False, "not implemented"
+                stack.append((DataType.INT, op.loc))
             elif op.operand == Intrinsic.ARGV:
-                assert False, "not implemented"
+                stack.append((DataType.PTR, op.loc))
             elif op.operand == Intrinsic.SYSCALL0:
                 if len(stack) < 1:
                     not_enough_arguments_for_intrinsic(op.operand, op.loc)
