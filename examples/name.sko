@@ -1,3 +1,4 @@
+-- name input
 use "std.sko"
 
 fn NAME_CAPACITY 256 end
