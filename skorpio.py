@@ -453,7 +453,13 @@ def type_check_program(program: Program):
                 stack.append(a)
                 stack.append(a)
             elif op.operand == Intrinsic.SWAP:
-                assert False, "not implemented"
+                if len(stack) < 2:
+                    not_enough_arguments_for_intrinsic(op.operand, op.loc)
+                    exit(1)
+                a = stack.pop()
+                b = stack.pop()
+                stack.append(a)
+                stack.append(b)
             elif op.operand == Intrinsic.DROP:
                 if len(stack) < 1:
                     not_enough_arguments_for_intrinsic(op.operand, op.loc)
