@@ -377,15 +377,6 @@ def compiler_error(loc: Loc, message: str):
 def compiler_note(loc: Loc, message: str):
     compiler_diagnostic(loc, 'NOTE', message)
 
-def compiler_diagnostic(loc: Loc, tag: str, message: str):
-    print("%s:%d:%d: %s: %s" % (loc + (tag, message)), file=sys.stderr)
-
-def compiler_error(loc: Loc, message: str):
-    compiler_diagnostic(loc, 'ERROR', message)
-
-def compiler_note(loc: Loc, message: str):
-    compiler_diagnostic(loc, 'NOTE', message)
-
 def not_enough_arguments_for_intrinsic(intr: Intrinsic, loc: Loc):
     compiler_error(loc, "Not enough arguments for the `%s` intrinsic" % INTRINSIC_NAMES[intr])
 
