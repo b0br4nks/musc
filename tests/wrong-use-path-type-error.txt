@@ -4,6 +4,6 @@
 :i returncode 1
 :b stdout 0
 
-:b stderr 120
-./tests/wrong-use-path-type-error.sko:1:5: ERROR: Expected path to the include file to be a string but found an integer
+:b stderr 116
+./tests/wrong-use-path-type-error.sko:1:5: ERROR: expected path to the use file to be a string but found an integer
 

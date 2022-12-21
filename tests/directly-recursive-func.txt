@@ -4,6 +4,19 @@
 :i returncode 1
 :b stdout 0
 
-:b stderr 115
+:b stderr 1104
 ./tests/directly-recursive-func.sko:2:3: ERROR: The function exceeded the expansion limit (it expanded 1000 times)
+./tests/directly-recursive-func.sko:2:3: NOTE: expanded from `directly-recursive-func`
+./tests/directly-recursive-func.sko:2:3: NOTE: expanded from `directly-recursive-func`
+./tests/directly-recursive-func.sko:2:3: NOTE: expanded from `directly-recursive-func`
+./tests/directly-recursive-func.sko:2:3: NOTE: expanded from `directly-recursive-func`
+./tests/directly-recursive-func.sko:2:3: NOTE: expanded from `directly-recursive-func`
+./tests/directly-recursive-func.sko:2:3: NOTE: expanded from `directly-recursive-func`
+./tests/directly-recursive-func.sko:2:3: NOTE: expanded from `directly-recursive-func`
+./tests/directly-recursive-func.sko:2:3: NOTE: expanded from `directly-recursive-func`
+./tests/directly-recursive-func.sko:2:3: NOTE: expanded from `directly-recursive-func`
+./tests/directly-recursive-func.sko:2:3: NOTE: expanded from `directly-recursive-func`
+./tests/directly-recursive-func.sko:2:3: NOTE: expanded from `directly-recursive-func`
+...
+... too many expansions ...
 

@@ -5,5 +5,5 @@
 :b stdout 0
 
 :b stderr 90
-./tests/no-use-file-error.sko:1:1: ERROR: Expected path to the use file but found nothing
+./tests/no-use-file-error.sko:1:1: ERROR: expected path to the use file but found nothing
 

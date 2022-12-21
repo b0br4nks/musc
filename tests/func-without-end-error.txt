@@ -5,5 +5,5 @@
 :b stdout 0
 
 :b stderr 123
-./tests/func-without-end-error.sko:2:1: ERROR: Expected `end` at the end of the function definition but got `Keyword.FUNC`
+./tests/func-without-end-error.sko:2:1: ERROR: expected `end` at the end of the function definition but got `Keyword.FUNC`
 

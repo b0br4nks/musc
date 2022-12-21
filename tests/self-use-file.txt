@@ -4,6 +4,19 @@
 :i returncode 1
 :b stdout 0
 
-:b stderr 102
+:b stderr 959
 ./tests/./self-use-file.sko:1:5: ERROR: the use exceeded the expansion limit (it expanded 1000 times)
+./tests/./self-use-file.sko:1:5: NOTE: expanded from `./self-use-file.sko`
+./tests/./self-use-file.sko:1:5: NOTE: expanded from `./self-use-file.sko`
+./tests/./self-use-file.sko:1:5: NOTE: expanded from `./self-use-file.sko`
+./tests/./self-use-file.sko:1:5: NOTE: expanded from `./self-use-file.sko`
+./tests/./self-use-file.sko:1:5: NOTE: expanded from `./self-use-file.sko`
+./tests/./self-use-file.sko:1:5: NOTE: expanded from `./self-use-file.sko`
+./tests/./self-use-file.sko:1:5: NOTE: expanded from `./self-use-file.sko`
+./tests/./self-use-file.sko:1:5: NOTE: expanded from `./self-use-file.sko`
+./tests/./self-use-file.sko:1:5: NOTE: expanded from `./self-use-file.sko`
+./tests/./self-use-file.sko:1:5: NOTE: expanded from `./self-use-file.sko`
+./tests/./self-use-file.sko:1:5: NOTE: expanded from `./self-use-file.sko`
+...
+... too many expansions ...
 
