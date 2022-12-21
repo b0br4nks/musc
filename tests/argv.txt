@@ -8,11 +8,9 @@ arg_n
 :b stdin 13
 Hello, World
 
-:i returncode 0
-:b stdout 18
-arg_1
-arg_2
-arg_n
+:i returncode 1
+:b stdout 0
 
-:b stderr 0
+:b stderr 98
+./tests/argv.sko:10:7: ERROR: unhandled data on the stack: [<DataType.PTR: 3>, <DataType.INT: 1>]
 

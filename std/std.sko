@@ -324,7 +324,7 @@ fn SYS_finit_module 313 end
 -- Wrappers for common syscalls
 fn fmt SYS_write sys3 end
 fn scan SYS_read sys3 end
-fn exit SYS_exit sys3 end
+fn exit SYS_exit sys1 ! end
 
 fn pcp over over end
 fn !! ! ! end

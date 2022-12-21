@@ -4,7 +4,7 @@ use "std.sko"
 argv 8 +
 argc 1 -
 while cp 0 > do
-    over &64 cp len ~
+    over &64 cp cast(ptr) len ~
     stdout fmt !
     "\n" stdout fmt !
     1 - ~ 8 + ~

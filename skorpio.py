@@ -53,6 +53,7 @@ class Intrinsic(Enum):
     STORE=auto()
     LOAD64=auto()
     STORE64=auto()
+    CAST_PTR=auto()
     ARGC=auto()
     ARGV=auto()
     SYSCALL0=auto()
@@ -183,7 +184,7 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
             else:
                 ip += 1
         elif op.typ == OpType.INTRINSIC:
-            assert len(Intrinsic) == 33, "Exhaustive handling of intrinsic in simulate_little_endian_linux()"
+            assert len(Intrinsic) == 34, "Exhaustive handling of intrinsic in simulate_little_endian_linux()"
             if op.operand == Intrinsic.PLUS:
                 a = stack.pop()
                 b = stack.pop()
@@ -314,6 +315,8 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
             elif op.operand == Intrinsic.ARGV:
                 stack.append(argv_buf_ptr)
                 ip += 1
+            elif op.operand == Intrinsic.CAST_PTR:
+                ip += 1
             elif op.operand == Intrinsic.SYSCALL0:
                 syscall_number = stack.pop();
                 if syscall_number == 39:
@@ -415,7 +418,7 @@ def type_check_program(program: Program):
             stack.append((DataType.INT, op.token))
             stack.append((DataType.PTR, op.token))
         elif op.typ == OpType.INTRINSIC:
-            assert len(Intrinsic) == 33, "Exhaustive intrinsic handling in type_check_program()"
+            assert len(Intrinsic) == 34, "Exhaustive intrinsic handling in type_check_program()"
             assert isinstance(op.operand, Intrinsic), "This could be a bug in compilation step"
             if op.operand == Intrinsic.PLUS:
                 assert len(DataType) == 3, "Exhaustive type handling in PLUS intrinsic"
@@ -444,8 +447,10 @@ def type_check_program(program: Program):
 
                 if a_type == b_type and (a_type == DataType.INT or a_type == DataType.PTR):
                     stack.append((DataType.INT, op.token))
+                elif b_type == DataType.PTR and a_type == DataType.INT:
+                    stack.append((DataType.PTR, op.token))
                 else:
-                    compiler_error_(op.token, "invalid argument types fo MINUS intrinsic. Expected INT or PTR")
+                    compiler_error_(op.token, "invalid argument types fo MINUS intrinsic: %s" % [b_type, a_type])
                     exit(1)
             elif op.operand == Intrinsic.MUL:
                 assert len(DataType) == 3, "Exhaustive type handling in MUL intrinsic"
@@ -569,7 +574,7 @@ def type_check_program(program: Program):
                 if a_type == b_type and a_type == DataType.INT:
                     stack.append((DataType.INT, op.token))
                 else:
-                    compiler_error_(op.token.loc, "invalid argument type for RSH intrinsic")
+                    compiler_error_(op.token, "invalid argument type for RSH intrinsic")
                     exit(1)
             elif op.operand == Intrinsic.LSH:
                 assert len(DataType) == 3, "Exhaustive type handling in LSH intrinsic"
@@ -596,6 +601,8 @@ def type_check_program(program: Program):
 
                 if a_type == b_type and a_type == DataType.INT:
                     stack.append((DataType.INT, op.token))
+                elif a_type == b_type and a_type == DataType.BOOL:
+                    stack.append((DataType.BOOL, op.token))
                 else:
                     compiler_error_(op.token, "invalid argument type for BOR intrinsic")
                     exit(1)
@@ -659,7 +666,7 @@ def type_check_program(program: Program):
                 if a_type == DataType.PTR:
                     stack.append((DataType.INT, op.token))
                 else:
-                    compiler_error_(op.token, "invalid argument type for LOAD intrinsic")
+                    compiler_error_(op.token, "invalid argument type for LOAD intrinsic: %s" % a_type)
                     exit(1)
             elif op.operand == Intrinsic.STORE:
                 assert len(DataType) == 3, "Exhaustive type handling in STORE intrinsic"
@@ -696,11 +703,19 @@ def type_check_program(program: Program):
                 a_type, a_loc = stack.pop()
                 b_type, b_loc = stack.pop()
 
-                if a_type == DataType.INT and b_type == DataType.PTR:
+                if (a_type == DataType.INT or a_type == DataType.PTR) and b_type == DataType.PTR:
                     pass
                 else:
-                    compiler_error_(op.token, "invalid argument type for STORE64 intrinsic")
+                    compiler_error_(op.token, "invalid argument type for STORE64 intrinsic: %s" % [b_type, a_type])
                     exit(1)
+            elif op.operand == Intrinsic.CAST_PTR:
+                if len(stack) < 1:
+                    not_enough_arguments(op)
+                    exit(1)
+
+                a_type, a_token = stack.pop()
+
+                stack.append((DataType.PTR, a_token))
             elif op.operand == Intrinsic.ARGC:
                 stack.append((DataType.INT, op.token))
             elif op.operand == Intrinsic.ARGV:
@@ -819,7 +834,7 @@ def type_check_program(program: Program):
         else:
             assert False, "unreachable"
     if len(stack) != 0:
-        compiler_error_(stack.pop()[1], "unhandled data on the stack")
+        compiler_error_(stack[-1][1], "unhandled data on the stack: %s" % list(map(lambda x: x[0], stack)))
         exit(1)
 
 def generate_nasm_linux_x86_64(program: Program, out_file_path: str):
@@ -905,7 +920,7 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str):
                 assert isinstance(op.operand, int), "This could be a bug in the compilation step"
                 out.write("    jz addr_%d\n" % op.operand)
             elif op.typ == OpType.INTRINSIC:
-                assert len(Intrinsic) == 33, "Exhaustive intrinsic handling in generate_nasm_linux_x86_64()"
+                assert len(Intrinsic) == 34, "Exhaustive intrinsic handling in generate_nasm_linux_x86_64()"
                 if op.operand == Intrinsic.PLUS:
                     out.write("    ;; -- plus --\n")
                     out.write("    pop rax\n")
@@ -1070,6 +1085,8 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str):
                     out.write("    pop rbx\n");
                     out.write("    pop rax\n");
                     out.write("    mov [rax], rbx\n");
+                elif op.operand == Intrinsic.CAST_PTR:
+                    out.write("    ;; -- cast(ptr) --\n")
                 elif op.operand == Intrinsic.SYSCALL0:
                     out.write("    ;; -- syscall0 --\n")
                     out.write("    pop rax\n")
@@ -1153,7 +1170,7 @@ KEYWORD_NAMES = {
     "use": Keyword.USE,
 }
 
-assert len(Intrinsic) == 33, "Exhaustive INTRINSIC_BY_NAMES definition"
+assert len(Intrinsic) == 34, "Exhaustive INTRINSIC_BY_NAMES definition"
 INTRINSIC_BY_NAMES = {
     "+": Intrinsic.PLUS,
     "-": Intrinsic.MINUS,
@@ -1179,6 +1196,7 @@ INTRINSIC_BY_NAMES = {
     "&l": Intrinsic.LOAD,
     "*64": Intrinsic.STORE64,
     "&64": Intrinsic.LOAD64,
+    "cast(ptr)": Intrinsic.CAST_PTR,
     "argc": Intrinsic.ARGC,
     "argv": Intrinsic.ARGV,
     "sys0": Intrinsic.SYSCALL0,
@@ -1458,24 +1476,23 @@ def cmd_call_echoed(cmd: List[str], silent: bool=False) -> int:
     return subprocess.call(cmd)
 
 def usage(compiler_name: str):
-    print(f"Usage: {compiler_name} [OPTIONS] <SUBCOMMAND> [ARGS]\n")
-    print("OPTIONS")
-    print("     -dbg                     Enable debug mode")
-    print("     -I           <path>      Add the path to the include search list")
+    print("Usage: %s [OPTIONS] <SUBCOMMAND> [ARGS]\n" % compiler_name)
+    print("  OPTIONS:")
+    print("    -dbg                     Enable debug mode")
+    print("    -I           <path>      Add the path to the include search list")
     print(
-        "     -E   <expansion-limit>   Function and use expansion limit. (Default %d)\n"
+        "    -E   <expansion-limit>   Function and use expansion limit. (Default %d)\n"
         % DEFAULT_EXPANSION_LIMIT
     )
-    print("     -check                   Type check the program")
-    print("SUBCOMMANDS")
-    print("     -s           <file>      Simulate the program")
-    print("     -c [OPTIONS] <file>      Compile the program")
-    print("     -h                       Print help to STDOUT and exit 0\n")
-    print("OPTIONS")
-    print("     -r                       Run the program after successful compilation")
-    print("     -o         <file|dir>    Customize the output path")
+    print("  SUBCOMMANDS:")
+    print("    -s           <file>      Simulate the program")
+    print("    -c [OPTIONS] <file>      Compile the program")
+    print("    -h                       Print help to STDOUT and exit 0\n")
+    print("        OPTIONS:")
+    print("          -r                       Run the program after successful compilation")
+    print("          -o         <file|dir>    Customize the output path")
     print(
-        "     --silent                 Silent mode. Hide infos about compilation phases\n"
+        "          --silent                 Silent mode. Hide infos about compilation phases\n"
     )
 
 
@@ -1486,7 +1503,6 @@ if __name__ == "__main__" and "__file__" in globals():
 
     include_paths = [".", "./std/"]
     expansion_limit = DEFAULT_EXPANSION_LIMIT
-    check = False
 
     while len(argv) > 0:
         if argv[0] == "-dbg":
@@ -1508,9 +1524,6 @@ if __name__ == "__main__" and "__file__" in globals():
                 exit(1)
             arg, *argv = argv
             expansion_limit = int(arg)
-        elif argv[0] == "-check":
-            argv = argv[1:]
-            check = True
         else:
             break
 
@@ -1528,15 +1541,12 @@ if __name__ == "__main__" and "__file__" in globals():
     if subcommand == "-s":
         if len(argv) < 1:
             usage(compiler_name)
-            print(
-                "[ERROR] No input file is provided for the simulation", file=sys.stderr
-            )
+            print("[ERROR] no input file is provided for the simulation", file=sys.stderr)
             exit(1)
         program_path, *argv = argv
         include_paths.append(path.dirname(program_path))
-        program = compile_file_to_program(program_path, include_paths, expansion_limit)
-        if check:
-            type_check_program(program)
+        program = compile_file_to_program(program_path, include_paths, expansion_limit);
+        type_check_program(program)
         simulate_little_endian_linux(program, [program_path] + argv)
     elif subcommand == "-c":
         silent = False
@@ -1594,8 +1604,7 @@ if __name__ == "__main__" and "__file__" in globals():
         include_paths.append(path.dirname(program_path))
 
         program = compile_file_to_program(program_path, include_paths, expansion_limit)
-        if check:
-            type_check_program(program)
+        type_check_program(program)
         generate_nasm_linux_x86_64(program, basepath + ".asm")
         cmd_call_echoed(["nasm", "-felf64", basepath + ".asm"], silent)
         cmd_call_echoed(["ld", "-o", basepath, basepath + ".o"], silent)

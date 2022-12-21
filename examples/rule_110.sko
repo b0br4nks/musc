@@ -13,7 +13,7 @@ out N + 10 *s
 
 0 while cp N 2 - < do
     0 while cp N < do
-        cp row + &l if
+        cp row + &l 1 = if
             cp out + '$' *s
         else
             cp out + ' ' *s

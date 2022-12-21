@@ -4,16 +4,16 @@ use "std.sko"
 -- check if a number is less than another
 fn is_less
     < if
-        "yes\n" stdout fmt
+        "yes\n"
     else
-        "no\n" stdout fmt
-    end
+        "no\n"
+    end stdout fmt !
 end
 
 1 2 is_less
 2 1 is_less
 
-"===========================\n" stdout fmt
+"===========================\n" stdout fmt !
 
 -- even fibonacci numbers under 1,000,000
 fn even_fibs
