@@ -4,6 +4,6 @@
 :i returncode 1
 :b stdout 0
 
-:b stderr 124
-./tests/func-without-end-error.sko:2:1: [ERROR] Expected `end` at the end of the function definition but got `Keyword.FUNC`
+:b stderr 123
+./tests/func-without-end-error.sko:2:1: ERROR: Expected `end` at the end of the function definition but got `Keyword.FUNC`
 

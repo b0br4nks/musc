@@ -4,6 +4,6 @@
 :i returncode 1
 :b stdout 0
 
-:b stderr 66
-./tests/unknown-word-error.sko:1:1: [ERROR] Unknown word `xxyyzz`
+:b stderr 65
+./tests/unknown-word-error.sko:1:1: ERROR: Unknown word `xxyyzz`
 

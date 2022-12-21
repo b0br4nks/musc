@@ -4,6 +4,6 @@
 :i returncode 1
 :b stdout 0
 
-:b stderr 85
-./tests/no-func-name-error.sko:1:1: [ERROR] Expected function name but found nothing
+:b stderr 84
+./tests/no-func-name-error.sko:1:1: ERROR: Expected function name but found nothing
 

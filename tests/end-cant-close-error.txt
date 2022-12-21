@@ -4,6 +4,6 @@
 :i returncode 1
 :b stdout 0
 
-:b stderr 103
-./tests/end-cant-close-error.sko:1:1: [ERROR] `end` can only close `if`, `else` or `do` blocks for now
+:b stderr 102
+./tests/end-cant-close-error.sko:1:1: ERROR: `end` can only close `if`, `else` or `do` blocks for now
 
