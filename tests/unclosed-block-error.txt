@@ -5,5 +5,5 @@
 :b stdout 0
 
 :b stderr 60
-./tests/unclosed-block-error.sko:1:1: ERROR: Unclosed block
+./tests/unclosed-block-error.sko:1:1: ERROR: unclosed block
 

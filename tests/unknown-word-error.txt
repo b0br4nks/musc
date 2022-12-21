@@ -5,5 +5,5 @@
 :b stdout 0
 
 :b stderr 65
-./tests/unknown-word-error.sko:1:1: ERROR: Unknown word `xxyyzz`
+./tests/unknown-word-error.sko:1:1: ERROR: unknown word `xxyyzz`
 
