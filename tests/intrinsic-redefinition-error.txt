@@ -4,6 +4,6 @@
 :i returncode 1
 :b stdout 0
 
-:b stderr 143
-./tests/intrinsic-redefinition-error.sko:1:4: [ERROR] Redefinition of an intrinsic word `*`. Please choose a different name for your function.
+:b stderr 142
+./tests/intrinsic-redefinition-error.sko:1:4: ERROR: Redefinition of an intrinsic word `*`. Please choose a different name for your function.
 

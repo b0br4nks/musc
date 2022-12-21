@@ -4,6 +4,6 @@
 :i returncode 1
 :b stdout 0
 
-:b stderr 120
-./tests/multi-byte-character-literal-error.sko:1:1: [ERROR] Only a single byte is allowed inside of a character literal
+:b stderr 119
+./tests/multi-byte-character-literal-error.sko:1:1: ERROR: Only a single byte is allowed inside of a character literal
 
