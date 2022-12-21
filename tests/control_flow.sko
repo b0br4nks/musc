@@ -16,13 +16,13 @@ end =>
 "===========================\n" stdout fmt !
 
 -- while multi-line
--- 10 while cp -1 > do
---	cp =>
---	1
--- end
+10 while cp -1 > do
+	cp =>
+	1 -
+end !
 
 "===========================\n" stdout fmt !
 
 -- while oneline
--- 0 while cp 11 < do cp => 1 + end
+0 while cp 11 < do cp => 1 + end !
 

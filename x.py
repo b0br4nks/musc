@@ -5,13 +5,12 @@ import sys
 import subprocess
 import shlex
 from os import path
-# from typing import *
-from typing import List, BinaryIO, Tuple, Optional, Union, Callable, Generator, Dict
+from typing import *
 from enum import IntEnum, Enum, auto
 from dataclasses import dataclass
 from copy import copy
 
-SKORPIO_EXT=".sko"
+PORTH_EXT = '.porth'
 DEFAULT_EXPANSION_LIMIT=1000
 EXPANSION_DIAGNOSTIC_LIMIT=10
 
@@ -25,8 +24,8 @@ class Keyword(Enum):
     ELSE=auto()
     WHILE=auto()
     DO=auto()
-    FUNC=auto()
-    USE=auto()
+    MACRO=auto()
+    INCLUDE=auto()
 
 class Intrinsic(Enum):
     PLUS=auto()
@@ -39,12 +38,12 @@ class Intrinsic(Enum):
     GE=auto()
     LE=auto()
     NE=auto()
-    RSH=auto()
-    LSH=auto()
+    SHR=auto()
+    SHL=auto()
     BOR=auto()
     BAND=auto()
     PRINT=auto()
-    DUPL=auto()
+    DUP=auto()
     SWAP=auto()
     DROP=auto()
     OVER=auto()
@@ -87,6 +86,7 @@ class Token:
     text: str
     loc: Loc
     value: Union[int, str, Keyword]
+    # https://www.python.org/dev/peps/pep-0484/#forward-references
     expanded_from: Optional['Token'] = None
     expanded_count: int = 0
 
@@ -100,11 +100,12 @@ class Op:
 
 Program=List[Op]
 
-NULL_POINTER_PADDING = 1
-STR_CAPACITY  = 640_000
+NULL_POINTER_PADDING = 1 # just a little bit of a padding at the beginning of the memory to make 0 an invalid address
+STR_CAPACITY  = 640_000 # should be enough for everyone
 MEM_CAPACITY  = 640_000
 ARGV_CAPACITY = 640_000
 
+# TODO: introduce the profiler mode
 def simulate_little_endian_linux(program: Program, argv: List[str]):
     stack: List[int] = []
     mem = bytearray(NULL_POINTER_PADDING + STR_CAPACITY + ARGV_CAPACITY + MEM_CAPACITY)
@@ -125,7 +126,7 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
     }
 
     for arg in argv:
-        value = arg.encode("utf-8")
+        value = arg.encode('utf-8')
         n = len(value)
 
         arg_ptr = str_buf_ptr + str_size
@@ -137,7 +138,7 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
         argv_ptr = argv_buf_ptr+argc*8
         mem[argv_ptr:argv_ptr+8] = arg_ptr.to_bytes(8, byteorder='little')
         argc += 1
-        assert argc*8 <= ARGV_CAPACITY, "Argv buffer overflow"
+        assert argc*8 <= ARGV_CAPACITY, "Argv buffer, overflow"
 
     ip = 0
     while ip < len(program):
@@ -149,7 +150,7 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
             ip += 1
         elif op.typ == OpType.PUSH_STR:
             assert isinstance(op.operand, str), "This could be a bug in the compilation step"
-            value = op.operand.encode("utf-8")
+            value = op.operand.encode('utf-8')
             n = len(value)
             stack.append(n)
             if ip not in str_ptrs:
@@ -213,12 +214,12 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
             elif op.operand == Intrinsic.GT:
                 a = stack.pop()
                 b = stack.pop()
-                stack.append(int(a < b))
+                stack.append(int(b > a))
                 ip += 1
             elif op.operand == Intrinsic.LT:
                 a = stack.pop()
                 b = stack.pop()
-                stack.append(int(a > b))
+                stack.append(int(b < a))
                 ip += 1
             elif op.operand == Intrinsic.GE:
                 a = stack.pop()
@@ -235,12 +236,12 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
                 b = stack.pop()
                 stack.append(int(b != a))
                 ip += 1
-            elif op.operand == Intrinsic.RSH:
+            elif op.operand == Intrinsic.SHR:
                 a = stack.pop()
                 b = stack.pop()
                 stack.append(int(b >> a))
                 ip += 1
-            elif op.operand == Intrinsic.LSH:
+            elif op.operand == Intrinsic.SHL:
                 a = stack.pop()
                 b = stack.pop()
                 stack.append(int(b << a))
@@ -260,7 +261,7 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
                 fds[1].write(b"%d\n" % a)
                 fds[1].flush()
                 ip += 1
-            elif op.operand == Intrinsic.DUPL:
+            elif op.operand == Intrinsic.DUP:
                 a = stack.pop()
                 stack.append(a)
                 stack.append(a)
@@ -316,7 +317,7 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
                 ip += 1
             elif op.operand == Intrinsic.SYSCALL0:
                 syscall_number = stack.pop();
-                if syscall_number == 39:
+                if syscall_number == 39: # SYS_getpid
                     stack.append(os.getpid());
                 else:
                     assert False, "unknown syscall number %d" % syscall_number
@@ -324,7 +325,7 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
             elif op.operand == Intrinsic.SYSCALL1:
                 syscall_number = stack.pop()
                 arg1 = stack.pop()
-                if syscall_number == 60:
+                if syscall_number == 60: # SYS_exit
                     exit(arg1)
                 else:
                     assert False, "unknown syscall number %d" % syscall_number
@@ -335,10 +336,14 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
                 arg1 = stack.pop()
                 arg2 = stack.pop()
                 arg3 = stack.pop()
-                if syscall_number == 0:
+                if syscall_number == 0: # SYS_read
                     fd = arg1
                     buf = arg2
                     count = arg3
+                    # NOTE: trying to behave like a POSIX tty in canonical mode by making the data available
+                    # on each newline
+                    # https://en.wikipedia.org/wiki/POSIX_terminal_interface#Canonical_mode_processing
+                    # TODO: maybe this behavior should be customizable
                     data = fds[fd].readline(count)
                     mem[buf:buf+len(data)] = data
                     stack.append(len(data))
@@ -383,6 +388,7 @@ def compiler_diagnostic(place: Union[Loc, Token], tag: str, message: str):
         if limit > EXPANSION_DIAGNOSTIC_LIMIT:
             print('...', file=sys.stderr)
             print('... too many expansions ...', file=sys.stderr)
+            print('...', file=sys.stderr)
     else:
         print("%s:%d:%d: %s: %s" % (place + (tag, message)), file=sys.stderr)
 
@@ -557,8 +563,8 @@ def type_check_program(program: Program):
                 else:
                     compiler_error_(op.token, "invalid argument type for NE intrinsic")
                     exit(1)
-            elif op.operand == Intrinsic.RSH:
-                assert len(DataType) == 3, "Exhaustive type handling in RSH intrinsic"
+            elif op.operand == Intrinsic.SHR:
+                assert len(DataType) == 3, "Exhaustive type handling in SHR intrinsic"
                 if len(stack) < 2:
                     not_enough_arguments(op)
                     exit(1)
@@ -569,10 +575,10 @@ def type_check_program(program: Program):
                 if a_type == b_type and a_type == DataType.INT:
                     stack.append((DataType.INT, op.token))
                 else:
-                    compiler_error_(op.token.loc, "invalid argument type for RSH intrinsic")
+                    compiler_error_(op.token, "invalid argument type for SHR intrinsic")
                     exit(1)
-            elif op.operand == Intrinsic.LSH:
-                assert len(DataType) == 3, "Exhaustive type handling in LSH intrinsic"
+            elif op.operand == Intrinsic.SHL:
+                assert len(DataType) == 3, "Exhaustive type handling in SHL intrinsic"
                 if len(stack) < 2:
                     not_enough_arguments(op)
                     exit(1)
@@ -583,7 +589,7 @@ def type_check_program(program: Program):
                 if a_type == b_type and a_type == DataType.INT:
                     stack.append((DataType.INT, op.token))
                 else:
-                    compiler_error_(op.token, "invalid argument type for LSH intrinsic")
+                    compiler_error_(op.token, "invalid argument type for SHL intrinsic")
                     exit(1)
             elif op.operand == Intrinsic.BOR:
                 assert len(DataType) == 3, "Exhaustive type handling in BOR intrinsic"
@@ -618,7 +624,7 @@ def type_check_program(program: Program):
                     not_enough_arguments(op)
                     exit(1)
                 stack.pop()
-            elif op.operand == Intrinsic.DUPL:
+            elif op.operand == Intrinsic.DUP:
                 if len(stack) < 1:
                     not_enough_arguments(op)
                     exit(1)
@@ -705,6 +711,7 @@ def type_check_program(program: Program):
                 stack.append((DataType.INT, op.token))
             elif op.operand == Intrinsic.ARGV:
                 stack.append((DataType.PTR, op.token))
+            # TODO: figure out how to type check syscall arguments and return types
             elif op.operand == Intrinsic.SYSCALL0:
                 if len(stack) < 1:
                     not_enough_arguments(op)
@@ -874,7 +881,7 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str):
                 out.write("    push rax\n")
             elif op.typ == OpType.PUSH_STR:
                 assert isinstance(op.operand, str), "This could be a bug in the compilation step"
-                value = op.operand.encode("utf-8")
+                value = op.operand.encode('utf-8')
                 n = len(value)
                 out.write("    ;; -- push str --\n")
                 out.write("    mov rax, %d\n" % n)
@@ -918,55 +925,6 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str):
                     out.write("    pop rbx\n")
                     out.write("    sub rbx, rax\n")
                     out.write("    push rbx\n")
-                elif op.operand == Intrinsic.PRINT:
-                    out.write("    ;; -- print --\n")
-                    out.write("    pop rdi\n")
-                    out.write("    call print\n")
-                elif op.operand == Intrinsic.EQ:
-                    out.write("    ;; -- equal --\n")
-                    out.write("    mov rcx, 0\n")
-                    out.write("    mov rdx, 1\n")
-                    out.write("    pop rax\n")
-                    out.write("    pop rbx\n")
-                    out.write("    cmp rax, rbx\n")
-                    out.write("    cmove rcx, rdx\n")
-                    out.write("    push rcx\n")
-                elif op.operand == Intrinsic.GT:
-                    out.write("    ;; -- gt --\n")
-                    out.write("    mov rcx, 0\n")
-                    out.write("    mov rdx, 1\n")
-                    out.write("    pop rbx\n")
-                    out.write("    pop rax\n")
-                    out.write("    cmp rax, rbx\n")
-                    out.write("    cmovg rcx, rdx\n")
-                    out.write("    push rcx\n")
-                elif op.operand == Intrinsic.LT:
-                    out.write("    ;; -- lt --\n")
-                    out.write("    mov rcx, 0\n")
-                    out.write("    mov rdx, 1\n")
-                    out.write("    pop rbx\n")
-                    out.write("    pop rax\n")
-                    out.write("    cmp rax, rbx\n")
-                    out.write("    cmovl rcx, rdx\n")
-                    out.write("    push rcx\n")
-                elif op.operand == Intrinsic.GE:
-                    out.write("    ;; -- gt --\n")
-                    out.write("    mov rcx, 0\n")
-                    out.write("    mov rdx, 1\n")
-                    out.write("    pop rbx\n")
-                    out.write("    pop rax\n")
-                    out.write("    cmp rax, rbx\n")
-                    out.write("    cmovge rcx, rdx\n")
-                    out.write("    push rcx\n")
-                elif op.operand == Intrinsic.LE:
-                    out.write("    ;; -- gt --\n")
-                    out.write("    mov rcx, 0\n")
-                    out.write("    mov rdx, 1\n")
-                    out.write("    pop rbx\n")
-                    out.write("    pop rax\n")
-                    out.write("    cmp rax, rbx\n")
-                    out.write("    cmovle rcx, rdx\n")
-                    out.write("    push rcx\n")
                 elif op.operand == Intrinsic.MUL:
                     out.write("    ;; -- mul --\n")
                     out.write("    pop rax\n")
@@ -974,30 +932,21 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str):
                     out.write("    mul rbx\n")
                     out.write("    push rax\n")
                 elif op.operand == Intrinsic.DIVMOD:
-                    out.write("    ;; -- divmod --\n")
+                    out.write("    ;; -- mod --\n")
                     out.write("    xor rdx, rdx\n")
                     out.write("    pop rbx\n")
                     out.write("    pop rax\n")
                     out.write("    div rbx\n")
-                    out.write("    push rax\n")
-                    out.write("    push rdx\n")
-                elif op.operand == Intrinsic.NE:
-                    out.write("    ;; -- ne --\n")
-                    out.write("    mov rcx, 0\n")
-                    out.write("    mov rdx, 1\n")
-                    out.write("    pop rbx\n")
-                    out.write("    pop rax\n")
-                    out.write("    cmp rax, rbx\n")
-                    out.write("    cmovne rcx, rdx\n")
-                    out.write("    push rcx\n")
-                elif op.operand == Intrinsic.RSH:
-                    out.write("    ;; -- rsh --\n")
+                    out.write("    push rax\n");
+                    out.write("    push rdx\n");
+                elif op.operand == Intrinsic.SHR:
+                    out.write("    ;; -- shr --\n")
                     out.write("    pop rcx\n")
                     out.write("    pop rbx\n")
                     out.write("    shr rbx, cl\n")
                     out.write("    push rbx\n")
-                elif op.operand == Intrinsic.LSH:
-                    out.write("    ;; -- lsh --\n")
+                elif op.operand == Intrinsic.SHL:
+                    out.write("    ;; -- shl --\n")
                     out.write("    pop rcx\n")
                     out.write("    pop rbx\n")
                     out.write("    shl rbx, cl\n")
@@ -1014,8 +963,66 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str):
                     out.write("    pop rbx\n")
                     out.write("    and rbx, rax\n")
                     out.write("    push rbx\n")
-                elif op.operand == Intrinsic.DUPL:
-                    out.write("    ;; -- dupl --\n")
+                elif op.operand == Intrinsic.PRINT:
+                    out.write("    ;; -- print --\n")
+                    out.write("    pop rdi\n")
+                    out.write("    call print\n")
+                elif op.operand == Intrinsic.EQ:
+                    out.write("    ;; -- equal -- \n")
+                    out.write("    mov rcx, 0\n");
+                    out.write("    mov rdx, 1\n");
+                    out.write("    pop rax\n");
+                    out.write("    pop rbx\n");
+                    out.write("    cmp rax, rbx\n");
+                    out.write("    cmove rcx, rdx\n");
+                    out.write("    push rcx\n")
+                elif op.operand == Intrinsic.GT:
+                    out.write("    ;; -- gt --\n")
+                    out.write("    mov rcx, 0\n");
+                    out.write("    mov rdx, 1\n");
+                    out.write("    pop rbx\n");
+                    out.write("    pop rax\n");
+                    out.write("    cmp rax, rbx\n");
+                    out.write("    cmovg rcx, rdx\n");
+                    out.write("    push rcx\n")
+                elif op.operand == Intrinsic.LT:
+                    out.write("    ;; -- gt --\n")
+                    out.write("    mov rcx, 0\n");
+                    out.write("    mov rdx, 1\n");
+                    out.write("    pop rbx\n");
+                    out.write("    pop rax\n");
+                    out.write("    cmp rax, rbx\n");
+                    out.write("    cmovl rcx, rdx\n");
+                    out.write("    push rcx\n")
+                elif op.operand == Intrinsic.GE:
+                    out.write("    ;; -- gt --\n")
+                    out.write("    mov rcx, 0\n");
+                    out.write("    mov rdx, 1\n");
+                    out.write("    pop rbx\n");
+                    out.write("    pop rax\n");
+                    out.write("    cmp rax, rbx\n");
+                    out.write("    cmovge rcx, rdx\n");
+                    out.write("    push rcx\n")
+                elif op.operand == Intrinsic.LE:
+                    out.write("    ;; -- gt --\n")
+                    out.write("    mov rcx, 0\n");
+                    out.write("    mov rdx, 1\n");
+                    out.write("    pop rbx\n");
+                    out.write("    pop rax\n");
+                    out.write("    cmp rax, rbx\n");
+                    out.write("    cmovle rcx, rdx\n");
+                    out.write("    push rcx\n")
+                elif op.operand == Intrinsic.NE:
+                    out.write("    ;; -- ne --\n")
+                    out.write("    mov rcx, 0\n")
+                    out.write("    mov rdx, 1\n")
+                    out.write("    pop rbx\n")
+                    out.write("    pop rax\n")
+                    out.write("    cmp rax, rbx\n")
+                    out.write("    cmovne rcx, rdx\n")
+                    out.write("    push rcx\n")
+                elif op.operand == Intrinsic.DUP:
+                    out.write("    ;; -- dup -- \n")
                     out.write("    pop rax\n")
                     out.write("    push rax\n")
                     out.write("    push rax\n")
@@ -1060,13 +1067,13 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str):
                     out.write("    add rax, 8\n")
                     out.write("    push rax\n")
                 elif op.operand == Intrinsic.LOAD64:
-                    out.write("    ;; -- load64 --\n")
+                    out.write("    ;; -- load --\n")
                     out.write("    pop rax\n")
                     out.write("    xor rbx, rbx\n")
                     out.write("    mov rbx, [rax]\n")
                     out.write("    push rbx\n")
                 elif op.operand == Intrinsic.STORE64:
-                    out.write("    ;; -- store64 --\n")
+                    out.write("    ;; -- store --\n")
                     out.write("    pop rbx\n");
                     out.write("    pop rax\n");
                     out.write("    mov [rax], rbx\n");
@@ -1144,60 +1151,60 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str):
 
 assert len(Keyword) == 7, "Exhaustive KEYWORD_NAMES definition."
 KEYWORD_NAMES = {
-    "if": Keyword.IF,
-    "end": Keyword.END,
-    "else": Keyword.ELSE,
-    "while": Keyword.WHILE,
-    "do": Keyword.DO,
-    "fn": Keyword.FUNC,
-    "use": Keyword.USE,
+    'if': Keyword.IF,
+    'end': Keyword.END,
+    'else': Keyword.ELSE,
+    'while': Keyword.WHILE,
+    'do': Keyword.DO,
+    'macro': Keyword.MACRO,
+    'include': Keyword.INCLUDE,
 }
 
 assert len(Intrinsic) == 33, "Exhaustive INTRINSIC_BY_NAMES definition"
 INTRINSIC_BY_NAMES = {
-    "+": Intrinsic.PLUS,
-    "-": Intrinsic.MINUS,
-    "*": Intrinsic.MUL,
-    "divmod": Intrinsic.DIVMOD,
-    "=>": Intrinsic.PRINT,
-    "=": Intrinsic.EQ,
-    ">": Intrinsic.GT,
-    "<": Intrinsic.LT,
-    ">=": Intrinsic.GE,
-    "<=": Intrinsic.LE,
-    "!=": Intrinsic.NE,
-    ">>": Intrinsic.RSH,
-    "<<": Intrinsic.LSH,
-    "or": Intrinsic.BOR,
-    "&": Intrinsic.BAND,
-    "cp": Intrinsic.DUPL,
-    "~": Intrinsic.SWAP,
-    "!": Intrinsic.DROP,
-    "over": Intrinsic.OVER,
-    "mem": Intrinsic.MEM,
-    "*s": Intrinsic.STORE,
-    "&l": Intrinsic.LOAD,
-    "*64": Intrinsic.STORE64,
-    "&64": Intrinsic.LOAD64,
-    "argc": Intrinsic.ARGC,
-    "argv": Intrinsic.ARGV,
-    "sys0": Intrinsic.SYSCALL0,
-    "sys1": Intrinsic.SYSCALL1,
-    "sys2": Intrinsic.SYSCALL2,
-    "sys3": Intrinsic.SYSCALL3,
-    "sys4": Intrinsic.SYSCALL4,
-    "sys5": Intrinsic.SYSCALL5,
-    "sys6": Intrinsic.SYSCALL6,
+    '+': Intrinsic.PLUS,
+    '-': Intrinsic.MINUS,
+    '*': Intrinsic.MUL,
+    'divmod': Intrinsic.DIVMOD,
+    'print': Intrinsic.PRINT,
+    '=': Intrinsic.EQ,
+    '>': Intrinsic.GT,
+    '<': Intrinsic.LT,
+    '>=': Intrinsic.GE,
+    '<=': Intrinsic.LE,
+    '!=': Intrinsic.NE,
+    'shr': Intrinsic.SHR,
+    'shl': Intrinsic.SHL,
+    'bor': Intrinsic.BOR,
+    'band': Intrinsic.BAND,
+    'dup': Intrinsic.DUP,
+    'swap': Intrinsic.SWAP,
+    'drop': Intrinsic.DROP,
+    'over': Intrinsic.OVER,
+    'mem': Intrinsic.MEM,
+    '.': Intrinsic.STORE,
+    ',': Intrinsic.LOAD,
+    '.64': Intrinsic.STORE64,
+    ',64': Intrinsic.LOAD64,
+    'argc': Intrinsic.ARGC,
+    'argv': Intrinsic.ARGV,
+    'syscall0': Intrinsic.SYSCALL0,
+    'syscall1': Intrinsic.SYSCALL1,
+    'syscall2': Intrinsic.SYSCALL2,
+    'syscall3': Intrinsic.SYSCALL3,
+    'syscall4': Intrinsic.SYSCALL4,
+    'syscall5': Intrinsic.SYSCALL5,
+    'syscall6': Intrinsic.SYSCALL6,
 }
 INTRINSIC_NAMES = {v: k for k, v in INTRINSIC_BY_NAMES.items()}
 
 @dataclass
-class Func:
+class Macro:
     loc: Loc
     tokens: List[Token]
 
 def human(obj: Union[TokenType, Op, Intrinsic]) -> str:
-    """Human readable representation of an object that can be used in error messages"""
+    '''Human readable representation of an object that can be used in error messages'''
     assert len(TokenType) == 5, "Exhaustive handling of token types in human()"
     if obj == TokenType.WORD:
         return "a word"
@@ -1212,8 +1219,8 @@ def human(obj: Union[TokenType, Op, Intrinsic]) -> str:
     else:
         assert False, "unreachable"
 
-def expand_func(func: Func, expanded_from: Token) -> List[Token]:
-    result = list(map(lambda x: copy(x), func.tokens))
+def expand_macro(macro: Macro, expanded_from: Token) -> List[Token]:
+    result = list(map(lambda x: copy(x), macro.tokens))
     for token in result:
         token.expanded_from = expanded_from
         token.expanded_count = expanded_from.expanded_count + 1
@@ -1223,7 +1230,7 @@ def compile_tokens_to_program(tokens: List[Token], include_paths: List[str], exp
     stack: List[OpAddr] = []
     program: List[Op] = []
     rtokens: List[Token] = list(reversed(tokens))
-    funcs: Dict[str, Func] = {}
+    macros: Dict[str, Macro] = {}
     ip: OpAddr = 0;
     while len(rtokens) > 0:
         token = rtokens.pop()
@@ -1233,11 +1240,11 @@ def compile_tokens_to_program(tokens: List[Token], include_paths: List[str], exp
             if token.value in INTRINSIC_BY_NAMES:
                 program.append(Op(typ=OpType.INTRINSIC, token=token, operand=INTRINSIC_BY_NAMES[token.value]))
                 ip += 1
-            elif token.value in funcs:
+            elif token.value in macros:
                 if token.expanded_count >= expansion_limit:
-                    compiler_error_(token, "The function exceeded the expansion limit (it expanded %d times)" % token.expanded_count)
+                    compiler_error_(token, "the macro exceeded the expansion limit (it expanded %d times)" % token.expanded_count)
                     exit(1)
-                rtokens += reversed(expand_func(funcs[token.value], token))
+                rtokens += reversed(expand_macro(macros[token.value], token))
             else:
                 compiler_error_(token, "unknown word `%s`" % token.value)
                 exit(1)
@@ -1292,20 +1299,20 @@ def compile_tokens_to_program(tokens: List[Token], include_paths: List[str], exp
                 program[ip].operand = while_ip
                 stack.append(ip)
                 ip += 1
-            elif token.value == Keyword.USE:
+            elif token.value == Keyword.INCLUDE:
                 if len(rtokens) == 0:
-                    compiler_error_(token, "expected path to the use file but found nothing")
+                    compiler_error_(token, "expected path to the include file but found nothing")
                     exit(1)
                 token = rtokens.pop()
                 if token.typ != TokenType.STR:
-                    compiler_error_(token, "expected path to the use file to be %s but found %s" % (human(TokenType.STR), human(token.typ)))
+                    compiler_error_(token, "expected path to the include file to be %s but found %s" % (human(TokenType.STR), human(token.typ)))
                     exit(1)
                 assert isinstance(token.value, str), "This is probably a bug in the lexer"
                 file_included = False
                 for include_path in include_paths:
                     try:
                         if token.expanded_count >= expansion_limit:
-                            compiler_error_(token, "the use exceeded the expansion limit (it expanded %d times)" % token.expanded_count)
+                            compiler_error_(token, "the include exceeded the expansion limit (it expanded %d times)" % token.expanded_count)
                             exit(1)
                         rtokens += reversed(lex_file(path.join(include_path, token.value), token))
                         file_included = True
@@ -1313,47 +1320,46 @@ def compile_tokens_to_program(tokens: List[Token], include_paths: List[str], exp
                     except FileNotFoundError:
                         continue
                 if not file_included:
-                    compiler_error_(token.loc, "file `%s` not found" % token.value)
+                    compiler_error_(token, "file `%s` not found" % token.value)
                     exit(1)
-            elif token.value == Keyword.FUNC:
+            elif token.value == Keyword.MACRO:
                 if len(rtokens) == 0:
-                    compiler_error_(token.loc, "Expected function name but found nothing")
+                    compiler_error_(token, "expected macro name but found nothing")
                     exit(1)
                 token = rtokens.pop()
                 if token.typ != TokenType.WORD:
-                    compiler_error_(token, "expected function name to be %s but found %s" % (human(TokenType.WORD), human(token.typ)))
+                    compiler_error_(token, "expected macro name to be %s but found %s" % (human(TokenType.WORD), human(token.typ)))
                     exit(1)
-                assert isinstance(
-                    token.value, str
-                ), "This is probably a bug in the lexer"
-                if token.value in funcs:
-                    compiler_error_(token.loc, "Redefinition of already existing function `%s`" % token.value)
-                    compiler_note_(funcs[token.value].loc, "The first definition is located here")
+                assert isinstance(token.value, str), "This is probably a bug in the lexer"
+                if token.value in macros:
+                    compiler_error_(token, "redefinition of already existing macro `%s`" % token.value)
+                    compiler_note_(macros[token.value].loc, "the first definition is located here")
                     exit(1)
                 if token.value in INTRINSIC_BY_NAMES:
-                    compiler_error_(token, "redefinition of an intrinsic word `%s`. Please choose a different name for your function." % (token.value, ))
+                    compiler_error_(token, "redefinition of an intrinsic word `%s`. Please choose a different name for your macro." % (token.value, ))
                     exit(1)
-                func = Func(token.loc, [])
-                funcs[token.value] = func
+                macro = Macro(token.loc, [])
+                macros[token.value] = macro
                 nesting_depth = 0
                 while len(rtokens) > 0:
                     token = rtokens.pop()
                     if token.typ == TokenType.KEYWORD and token.value == Keyword.END and nesting_depth == 0:
                         break
                     else:
-                        func.tokens.append(token)
+                        macro.tokens.append(token)
                         if token.typ == TokenType.KEYWORD:
-                            if token.value in [Keyword.IF, Keyword.WHILE, Keyword.FUNC]:
+                            if token.value in [Keyword.IF, Keyword.WHILE, Keyword.MACRO]:
                                 nesting_depth += 1
                             elif token.value == Keyword.END:
                                 nesting_depth -= 1
                 if token.typ != TokenType.KEYWORD or token.value != Keyword.END:
-                    compiler_error_(token, "expected `end` at the end of the function definition but got `%s`" % (token.value, ))
+                    compiler_error_(token, "expected `end` at the end of the macro definition but got `%s`" % (token.value, ))
                     exit(1)
             else:
-                assert False, "unreachable"
+                assert False, 'unreachable';
         else:
-            assert False, "unreachable"
+            assert False, 'unreachable'
+
 
     if len(stack) > 0:
         compiler_error_(program[stack.pop()].token, 'unclosed block')
@@ -1367,21 +1373,22 @@ def find_col(line: str, start: int, predicate: Callable[[str], bool]) -> int:
     return start
 
 def unescape_string(s: str) -> str:
-    return s.encode("utf-8").decode("unicode_escape").encode("latin-1").decode("utf-8")
-
+    # NOTE: unicode_escape assumes latin-1 encoding, so we kinda have
+    # to do this weird round trip
+    return s.encode('utf-8').decode('unicode_escape').encode('latin-1').decode('utf-8')
 
 def find_string_literal_end(line: str, start: int) -> int:
     prev = line[start]
     while start < len(line):
         curr = line[start]
-        if curr == '"' and prev != "\\":
+        if curr == '"' and prev != '\\':
             break
         prev = curr
         start += 1
     return start
 
 def lex_lines(file_path: str, lines: List[str]) -> Generator[Token, None, None]:
-    assert len(TokenType) == 5, "Exhaustive handling of token types in lex_lines"
+    assert len(TokenType) == 5, 'Exhaustive handling of token types in lex_lines'
     row = 0
     str_literal_buf = ""
     while row < len(lines):
@@ -1400,7 +1407,7 @@ def lex_lines(file_path: str, lines: List[str]) -> Generator[Token, None, None]:
                     col_end = find_string_literal_end(line, start)
                     if col_end >= len(line) or line[col_end] != '"':
                         str_literal_buf += line[start:]
-                        row += 1
+                        row +=1
                         col = 0
                     else:
                         str_literal_buf += line[start:col_end]
@@ -1434,7 +1441,7 @@ def lex_lines(file_path: str, lines: List[str]) -> Generator[Token, None, None]:
                     if text_of_token in KEYWORD_NAMES:
                         yield Token(TokenType.KEYWORD, text_of_token, loc, KEYWORD_NAMES[text_of_token])
                     else:
-                        if text_of_token.startswith("--"):
+                        if text_of_token.startswith("//"):
                             break
                         yield Token(TokenType.WORD, text_of_token, loc, text_of_token)
                 col = find_col(line, col_end, lambda x: not x.isspace())
@@ -1458,57 +1465,51 @@ def cmd_call_echoed(cmd: List[str], silent: bool=False) -> int:
     return subprocess.call(cmd)
 
 def usage(compiler_name: str):
-    print(f"Usage: {compiler_name} [OPTIONS] <SUBCOMMAND> [ARGS]\n")
-    print("OPTIONS")
-    print("     -dbg                     Enable debug mode")
-    print("     -I           <path>      Add the path to the include search list")
-    print(
-        "     -E   <expansion-limit>   Function and use expansion limit. (Default %d)\n"
-        % DEFAULT_EXPANSION_LIMIT
-    )
-    print("     -check                   Type check the program")
-    print("SUBCOMMANDS")
-    print("     -s           <file>      Simulate the program")
-    print("     -c [OPTIONS] <file>      Compile the program")
-    print("     -h                       Print help to STDOUT and exit 0\n")
-    print("OPTIONS")
-    print("     -r                       Run the program after successful compilation")
-    print("     -o         <file|dir>    Customize the output path")
-    print(
-        "     --silent                 Silent mode. Hide infos about compilation phases\n"
-    )
+    print("Usage: %s [OPTIONS] <SUBCOMMAND> [ARGS]" % compiler_name)
+    print("  OPTIONS:")
+    print("    -debug                Enable debug mode.")
+    print("    -I <path>             Add the path to the include search list")
+    print("    -E <expansion-limit>  Macro and include expansion limit. (Default %d)" % DEFAULT_EXPANSION_LIMIT)
+    print("    -check                Type check the program")
+    print("  SUBCOMMAND:")
+    print("    sim <file>            Simulate the program")
+    print("    com [OPTIONS] <file>  Compile the program")
+    print("      OPTIONS:")
+    print("        -r                  Run the program after successful compilation")
+    print("        -o <file|dir>       Customize the output path")
+    print("        -s                  Silent mode. Don't print any info about compilation phases.")
+    print("    help                  Print this help to stdout and exit with 0 code")
 
-
-if __name__ == "__main__" and "__file__" in globals():
+if __name__ == '__main__' and '__file__' in globals():
     argv = sys.argv
     assert len(argv) >= 1
     compiler_name, *argv = argv
 
-    include_paths = [".", "./std/"]
+    include_paths = ['.', './std/']
     expansion_limit = DEFAULT_EXPANSION_LIMIT
     check = False
 
     while len(argv) > 0:
-        if argv[0] == "-dbg":
+        if argv[0] == '-debug':
             argv = argv[1:]
             debug = True
-        elif argv[0] == "-I":
+        elif argv[0] == '-I':
             argv = argv[1:]
             if len(argv) == 0:
                 usage(compiler_name)
-                print("[ERROR] No path is provided for `-I` flag", file=sys.stderr)
+                print("[ERROR] no path is provided for `-I` flag", file=sys.stderr)
                 exit(1)
             include_path, *argv = argv
             include_paths.append(include_path)
-        elif argv[0] == "-E":
+        elif argv[0] == '-E':
             argv = argv[1:]
             if len(argv) == 0:
                 usage(compiler_name)
-                print("[ERROR] No value is provided for `-E` flag", file=sys.stderr)
+                print("[ERROR] no value is provided for `-E` flag", file=sys.stderr)
                 exit(1)
             arg, *argv = argv
             expansion_limit = int(arg)
-        elif argv[0] == "-check":
+        elif argv[0] == '-check':
             argv = argv[1:]
             check = True
         else:
@@ -1519,42 +1520,37 @@ if __name__ == "__main__" and "__file__" in globals():
 
     if len(argv) < 1:
         usage(compiler_name)
-        print("[ERROR] No subcommand is provided", file=sys.stderr)
+        print("[ERROR] no subcommand is provided", file=sys.stderr)
         exit(1)
     subcommand, *argv = argv
 
     program_path: Optional[str] = None
 
-    if subcommand == "-s":
+    if subcommand == "sim":
         if len(argv) < 1:
             usage(compiler_name)
-            print(
-                "[ERROR] No input file is provided for the simulation", file=sys.stderr
-            )
+            print("[ERROR] no input file is provided for the simulation", file=sys.stderr)
             exit(1)
         program_path, *argv = argv
         include_paths.append(path.dirname(program_path))
-        program = compile_file_to_program(program_path, include_paths, expansion_limit)
+        program = compile_file_to_program(program_path, include_paths, expansion_limit);
         if check:
             type_check_program(program)
         simulate_little_endian_linux(program, [program_path] + argv)
-    elif subcommand == "-c":
+    elif subcommand == "com":
         silent = False
         run = False
         output_path = None
         while len(argv) > 0:
             arg, *argv = argv
-            if arg == "-r":
+            if arg == '-r':
                 run = True
-            elif arg == "--silent":
+            elif arg == '-s':
                 silent = True
-            elif arg == "-o":
+            elif arg == '-o':
                 if len(argv) == 0:
                     usage(compiler_name)
-                    print(
-                        "[ERROR] No argument is provided for parameter -o",
-                        file=sys.stderr
-                    )
+                    print("[ERROR] no argument is provided for parameter -o", file=sys.stderr)
                     exit(1)
                 output_path, *argv = argv
             else:
@@ -1563,9 +1559,7 @@ if __name__ == "__main__" and "__file__" in globals():
 
         if program_path is None:
             usage(compiler_name)
-            print(
-                "[ERROR] No input file is provided for the compilation", file=sys.stderr
-            )
+            print("[ERROR] no input file is provided for the compilation", file=sys.stderr)
             exit(1)
 
         basename = None
@@ -1573,17 +1567,20 @@ if __name__ == "__main__" and "__file__" in globals():
         if output_path is not None:
             if path.isdir(output_path):
                 basename = path.basename(program_path)
-                if basename.endswith(SKORPIO_EXT):
-                    basename = basename[: -len(SKORPIO_EXT)]
+                if basename.endswith(PORTH_EXT):
+                    basename = basename[:-len(PORTH_EXT)]
                 basedir = path.dirname(output_path)
             else:
                 basename = path.basename(output_path)
                 basedir = path.dirname(output_path)
         else:
             basename = path.basename(program_path)
-            if basename.endswith(SKORPIO_EXT):
-                basename = basename[: -len(SKORPIO_EXT)]
+            if basename.endswith(PORTH_EXT):
+                basename = basename[:-len(PORTH_EXT)]
             basedir = path.dirname(program_path)
+
+        # if basedir is empty we should "fix" the path appending the current working directory.
+        # So we avoid `com -r` to run command from $PATH.
         if basedir == "":
             basedir = os.getcwd()
         basepath = path.join(basedir, basename)
@@ -1593,7 +1590,7 @@ if __name__ == "__main__" and "__file__" in globals():
 
         include_paths.append(path.dirname(program_path))
 
-        program = compile_file_to_program(program_path, include_paths, expansion_limit)
+        program = compile_file_to_program(program_path, include_paths, expansion_limit);
         if check:
             type_check_program(program)
         generate_nasm_linux_x86_64(program, basepath + ".asm")
@@ -1601,7 +1598,7 @@ if __name__ == "__main__" and "__file__" in globals():
         cmd_call_echoed(["ld", "-o", basepath, basepath + ".o"], silent)
         if run:
             exit(cmd_call_echoed([basepath] + argv, silent))
-    elif subcommand == "-h":
+    elif subcommand == "help":
         usage(compiler_name)
         exit(0)
     else:
