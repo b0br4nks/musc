@@ -5,5 +5,5 @@
 :b stdout 0
 
 :b stderr 142
-./tests/intrinsic-redefinition-error.sko:1:4: ERROR: Redefinition of an intrinsic word `*`. Please choose a different name for your function.
+./tests/intrinsic-redefinition-error.sko:1:4: ERROR: redefinition of an intrinsic word `*`. Please choose a different name for your function.
 

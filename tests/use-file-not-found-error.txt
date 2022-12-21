@@ -5,5 +5,5 @@
 :b stdout 0
 
 :b stderr 74
-./tests/use-file-not-found-error.sko:1:5: ERROR: File `404.sko` not found
+./tests/use-file-not-found-error.sko:1:5: ERROR: file `404.sko` not found
 

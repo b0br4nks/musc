@@ -5,5 +5,5 @@
 :b stdout 0
 
 :b stderr 108
-./tests/wrong-func-name-type-error.sko:1:4: ERROR: Expected function name to be a word but found an integer
+./tests/wrong-func-name-type-error.sko:1:4: ERROR: expected function name to be a word but found an integer
 
