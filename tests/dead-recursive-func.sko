@@ -1,4 +1,4 @@
-use "std.sko"
+use <std.sko>
 
 fn dead-recursive-func
     dead-recursive-func

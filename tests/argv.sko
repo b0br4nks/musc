@@ -1,5 +1,5 @@
 -- argv.sko
-use "std.sko"
+use <std.sko>
 
 argv 8 +
 argc 1 -

@@ -1,5 +1,5 @@
 -- memory.sko
-use "std.sko"
+use <std.sko>
 
 -- write 'SKORPIO' into the memory
 mem 0 + 83 *s

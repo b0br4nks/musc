@@ -1,6 +1,5 @@
 -- arithmetic.sko
-use "std.sko"
-
+use <std.sko>
 -- add
 "Addition:\n" stdout fmt !
 1 2 + =>

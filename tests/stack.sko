@@ -1,5 +1,5 @@
 -- stack.sko
-use "std.sko"
+use <std.sko>
 
 -- push int
 1 2 3 => => =>

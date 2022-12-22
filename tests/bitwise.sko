@@ -1,5 +1,5 @@
 -- bitwise.sko
-use "std.sko"
+use <std.sko>
 
 -- left shift
 2 4 << =>

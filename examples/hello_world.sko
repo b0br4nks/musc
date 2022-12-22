@@ -1,5 +1,5 @@
 -- "Hello, World\n"
-use "std.sko"
+use <std.sko>
 
 -- with str
 "Hello, World\n" stdout fmt !

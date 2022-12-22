@@ -1315,8 +1315,12 @@ def compile_tokens_to_program(tokens: List[Token], include_paths: List[str], exp
                     compiler_error_(token, "expected path to the use file but found nothing")
                     exit(1)
                 token = rtokens.pop()
-                if token.typ != TokenType.STR:
-                    compiler_error_(token, "expected path to the use file to be %s but found %s" % (human(TokenType.STR), human(token.typ)))
+                if token.typ == TokenType.WORD:
+                    token_delimited = token.value[0] == '<' and token.value[-1] == '>'
+                else:
+                    token_delimited = False
+                if token.typ != TokenType.WORD and not token_delimited:
+                    compiler_error_(token, "expected path to the use file to be <%s> but found %s" % (human(TokenType.WORD), human(token.typ)))
                     exit(1)
                 assert isinstance(token.value, str), "This is probably a bug in the lexer"
                 file_included = False
@@ -1325,13 +1329,13 @@ def compile_tokens_to_program(tokens: List[Token], include_paths: List[str], exp
                         if token.expanded_count >= expansion_limit:
                             compiler_error_(token, "the use exceeded the expansion limit (it expanded %d times)" % token.expanded_count)
                             exit(1)
-                        rtokens += reversed(lex_file(path.join(include_path, token.value), token))
+                        rtokens += reversed(lex_file(path.join(include_path, token.value[1:-1]), token))
                         file_included = True
                         break
                     except FileNotFoundError:
                         continue
                 if not file_included:
-                    compiler_error_(token.loc, "file `%s` not found" % token.value)
+                    compiler_error_(token.loc, "file `%s` not found" % token.value[1:-1])
                     exit(1)
             elif token.value == Keyword.FUNC:
                 if len(rtokens) == 0:

@@ -1,5 +1,5 @@
 -- comparison.sko
-use "std.sko"
+use <std.sko>
 
 -- equal
 1 3 = =>

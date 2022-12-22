@@ -1,5 +1,5 @@
 -- control_flow.sko
-use "std.sko"
+use <std.sko>
 
 -- if-else multi-line
 32 32 + 65 = if

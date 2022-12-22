@@ -1,5 +1,5 @@
 -- functions.sko
-use "std.sko"
+use <std.sko>
 
 -- check if a number is less than another
 fn is_less

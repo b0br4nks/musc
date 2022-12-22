@@ -1,5 +1,5 @@
 -- rule 110 (https://en.wikipedia.org/wiki/Rule_110)
-use "std.sko"
+use <std.sko>
 
 -- max width of the row
 fn N 100 end
