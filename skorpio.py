@@ -1315,7 +1315,7 @@ def compile_tokens_to_program(tokens: List[Token], include_paths: List[str], exp
                     compiler_error_(token, "expected path to the use file but found nothing")
                     exit(1)
                 token = rtokens.pop()
-                if token.typ == TokenType.WORD:
+                if token.typ == TokenType.WORD and type(token.value) == str:
                     token_delimited = token.value[0] == '<' and token.value[-1] == '>'
                 else:
                     token_delimited = False
