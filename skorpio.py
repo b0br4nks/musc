@@ -106,7 +106,17 @@ STR_CAPACITY  = 640_000
 MEM_CAPACITY  = 640_000
 ARGV_CAPACITY = 640_000
 
+def get_cstr_from_mem(mem: bytearray, ptr: int) -> bytes:
+    end = ptr
+    while mem[end] != 0:
+        end += 1
+    return mem[ptr:end]
+
 def simulate_little_endian_linux(program: Program, argv: List[str]):
+    AT_FDCWD=-100
+    O_RDONLY=0
+    ENOENT=2
+
     stack: List[int] = []
     mem = bytearray(NULL_POINTER_PADDING + STR_CAPACITY + ARGV_CAPACITY + MEM_CAPACITY)
 
@@ -119,11 +129,7 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
 
     mem_buf_ptr  = NULL_POINTER_PADDING + STR_CAPACITY + ARGV_CAPACITY
 
-    fds: Dict[int, BinaryIO] = {
-        0: sys.stdin.buffer,
-        1: sys.stdout.buffer,
-        2: sys.stderr.buffer,
-    }
+    fds: List[BinaryIO] = [sys.stdin.buffer, sys.stdout.buffer, sys.stderr.buffer]
 
     for arg in argv:
         value = arg.encode("utf-8")
@@ -303,11 +309,11 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
                 stack.append(int.from_bytes(_bytes, byteorder="little"))
                 ip += 1
             elif op.operand == Intrinsic.STORE64:
-                store_value64 = stack.pop().to_bytes(length=8, byteorder="little");
-                store_addr64 = stack.pop();
+                store_value64 = stack.pop().to_bytes(length=8, byteorder="little", signed=True)
+                store_addr64 = stack.pop()
                 for byte in store_value64:
-                    mem[store_addr64] = byte;
-                    store_addr64 += 1;
+                    mem[store_addr64] = byte
+                    store_addr64 += 1
                 ip += 1
             elif op.operand == Intrinsic.ARGC:
                 stack.append(argc)
@@ -318,9 +324,9 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
             elif op.operand == Intrinsic.CAST_PTR:
                 ip += 1
             elif op.operand == Intrinsic.SYSCALL0:
-                syscall_number = stack.pop();
+                syscall_number = stack.pop()
                 if syscall_number == 39:
-                    stack.append(os.getpid());
+                    stack.append(os.getpid())
                 else:
                     assert False, "unknown syscall number %d" % syscall_number
                 ip += 1
@@ -329,8 +335,12 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
                 arg1 = stack.pop()
                 if syscall_number == 60:
                     exit(arg1)
+                elif syscall_number == 3:
+                    fds[arg1].close()
+                    stack.append(0)
                 else:
                     assert False, "unknown syscall number %d" % syscall_number
+                ip += 1
             elif op.operand == Intrinsic.SYSCALL2:
                 assert False, "not implemented"
             elif op.operand == Intrinsic.SYSCALL3:
@@ -352,6 +362,21 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
                     fds[fd].write(mem[buf:buf+count])
                     fds[fd].flush()
                     stack.append(count)
+                elif syscall_number == 257:
+                    dirfd = arg1
+                    pathname_ptr = arg2
+                    flags = arg3
+                    if dirfd != AT_FDCWD:
+                        assert False, "openat: unsupported dirfd"
+                    if flags != O_RDONLY:
+                        assert False, "openat: unsupported flags"
+                    pathname = get_cstr_from_mem(mem, pathname_ptr).decode('utf-8')
+                    fd = len(fds)
+                    try:
+                        fds.append(open(pathname, 'rb'))
+                        stack.append(fd)
+                    except FileNotFoundError:
+                        stack.append(-ENOENT)
                 else:
                     assert False, "unknown syscall number %d" % syscall_number
                 ip += 1
@@ -1061,9 +1086,9 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str):
                     out.write("    push rbx\n")
                 elif op.operand == Intrinsic.STORE:
                     out.write("    ;; -- store --\n")
-                    out.write("    pop rbx\n");
-                    out.write("    pop rax\n");
-                    out.write("    mov [rax], bl\n");
+                    out.write("    pop rbx\n")
+                    out.write("    pop rax\n")
+                    out.write("    mov [rax], bl\n")
                 elif op.operand == Intrinsic.ARGC:
                     out.write("    ;; -- argc --\n")
                     out.write("    mov rax, [args_ptr]\n")
@@ -1082,9 +1107,9 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str):
                     out.write("    push rbx\n")
                 elif op.operand == Intrinsic.STORE64:
                     out.write("    ;; -- store64 --\n")
-                    out.write("    pop rbx\n");
-                    out.write("    pop rax\n");
-                    out.write("    mov [rax], rbx\n");
+                    out.write("    pop rbx\n")
+                    out.write("    pop rax\n")
+                    out.write("    mov [rax], rbx\n")
                 elif op.operand == Intrinsic.CAST_PTR:
                     out.write("    ;; -- cast(ptr) --\n")
                 elif op.operand == Intrinsic.SYSCALL0:
@@ -1100,10 +1125,10 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str):
                     out.write("    push rax\n")
                 elif op.operand == Intrinsic.SYSCALL2:
                     out.write("    ;; -- syscall2 -- \n")
-                    out.write("    pop rax\n");
-                    out.write("    pop rdi\n");
-                    out.write("    pop rsi\n");
-                    out.write("    syscall\n");
+                    out.write("    pop rax\n")
+                    out.write("    pop rdi\n")
+                    out.write("    pop rsi\n")
+                    out.write("    syscall\n")
                     out.write("    push rax\n")
                 elif op.operand == Intrinsic.SYSCALL3:
                     out.write("    ;; -- syscall3 --\n")
@@ -1242,7 +1267,7 @@ def compile_tokens_to_program(tokens: List[Token], include_paths: List[str], exp
     program: List[Op] = []
     rtokens: List[Token] = list(reversed(tokens))
     funcs: Dict[str, Func] = {}
-    ip: OpAddr = 0;
+    ip: OpAddr = 0
     while len(rtokens) > 0:
         token = rtokens.pop()
         assert len(TokenType) == 5, "Exhaustive token handling in compile_tokens_to_program"
@@ -1550,7 +1575,7 @@ if __name__ == "__main__" and "__file__" in globals():
             exit(1)
         program_path, *argv = argv
         include_paths.append(path.dirname(program_path))
-        program = compile_file_to_program(program_path, include_paths, expansion_limit);
+        program = compile_file_to_program(program_path, include_paths, expansion_limit)
         if not unsafe:
             type_check_program(program)
         simulate_little_endian_linux(program, [program_path] + argv)
@@ -1579,9 +1604,7 @@ if __name__ == "__main__" and "__file__" in globals():
 
         if program_path is None:
             usage(compiler_name)
-            print(
-                "[ERROR] No input file is provided for the compilation", file=sys.stderr
-            )
+            print("[ERROR] No input file is provided for the compilation", file=sys.stderr)
             exit(1)
 
         basename = None

@@ -321,9 +321,14 @@ fn SYS_process_vm_writev 311 end
 fn SYS_kcmp 312 end
 fn SYS_finit_module 313 end
 
+fn AT_FDCWD -100 end
+fn O_RDONLY 0 end
+
 -- Wrappers for common syscalls
 fn fmt SYS_write sys3 end
 fn scan SYS_read sys3 end
+fn openat SYS_openat sys3 end
+fn close SYS_close sys1 end
 fn exit SYS_exit sys1 ! end
 
 fn pcp over over end
