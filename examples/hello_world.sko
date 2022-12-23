@@ -4,13 +4,13 @@ use <std.sko>
 -- with str
 "Hello, World\n" stdout fmt !
 
-"===========================\n" stdout fmt !
+"\n" stdout fmt !
 
 -- with fn
 fn print fmt end
 "Hello, World\n" stdout print !
 
-"===========================\n" stdout fmt !
+"\n" stdout fmt !
 
 -- with int
 mem

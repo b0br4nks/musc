@@ -1,20 +1,15 @@
 :i argc 0
 :b stdin 0
 
-:i returncode 1
-:b stdout 108
+:i returncode 0
+:b stdout 60
 SKORPIO
-===========================
-SKORPIO
-===========================
-TLPSQJP
-===========================
 
-:b stderr 333
-Traceback (most recent call last):
-  File "./skorpio.py", line 1581, in <module>
-    simulate_little_endian_linux(program, [program_path] + argv)
-  File "./skorpio.py", line 312, in simulate_little_endian_linux
-    store_value64 = stack.pop().to_bytes(length=8, byteorder="little", signed=True)
-OverflowError: int too big to convert
+SKORPIO
+
+9223372036854775809
+
+18446744073709551615
+
+:b stderr 0
 

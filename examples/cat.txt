@@ -8,7 +8,7 @@ test
 :b stdin 0
 
 :i returncode 0
-:b stdout 977
+:b stdout 923
 use <std.sko>
 
 fn BUFFER_CAP 1024 end
@@ -51,13 +51,13 @@ use <std.sko>
 -- with str
 "Hello, World\n" stdout fmt !
 
-"===========================\n" stdout fmt !
+"\n" stdout fmt !
 
 -- with fn
 fn print fmt end
 "Hello, World\n" stdout print !
 
-"===========================\n" stdout fmt !
+"\n" stdout fmt !
 
 -- with int
 mem

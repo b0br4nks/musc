@@ -4,25 +4,25 @@ use <std.sko>
 "Addition:\n" stdout fmt !
 1 2 + =>
 
-"===========================\n" stdout fmt !
+"\n" stdout fmt !
 
 -- substract
 "Substraction:\n" stdout fmt !
 3 2 - =>
 
-"===========================\n" stdout fmt !
+"\n" stdout fmt !
 
 -- divide
 "Division:\n" stdout fmt !
 2674 2 / =>
 
-"===========================\n" stdout fmt !
+"\n" stdout fmt !
 
 -- modulo
 "Modulo:\n" stdout fmt !
 5999 3977 mod =>
 
-"===========================\n" stdout fmt !
+"\n" stdout fmt !
 
 -- multiply
 "Multiplication:\n" stdout fmt !

@@ -14,7 +14,7 @@ mem 7 + 10 *s
 -- print 'SKORPIO' to stdout
 8 mem stdout fmt !
 
-"===========================\n" stdout fmt !
+"\n" stdout fmt !
 
 -- more dynamic way
 mem cp 83 *s
@@ -28,28 +28,14 @@ mem cp 83 *s
 1 + cp 10 *s
 mem - mem stdout fmt !
 
--- increment each character by 1 making it 'TLPSQJP'
-mem 0 + cp &l 1 + *s
-mem 1 + cp &l 1 + *s
-mem 2 + cp &l 1 + *s
-mem 3 + cp &l 1 + *s
-mem 4 + cp &l 1 + *s
-mem 5 + cp &l 1 + *s
-mem 6 + cp &l 1 + *s
-
-"===========================\n" stdout fmt !
-
--- print 'TLPSQJP' to stdout
-7 mem stdout fmt !
-
-"\n===========================\n" stdout fmt !
+"\n" stdout fmt !
 
 -- print 1000...0001 (64bit word)
 mem 1 63 <<
 1 + *64
 mem &64 =>
 
-"===========================\n" stdout fmt !
+"\n" stdout fmt !
 
 -- print UINT64_MAX (64bit word)
 mem 18446744073709551615 *64 
