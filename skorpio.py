@@ -1482,22 +1482,18 @@ def cmd_call_echoed(cmd: List[str], silent: bool=False) -> int:
 def usage(compiler_name: str):
     print("Usage: %s [OPTIONS] <SUBCOMMAND> [ARGS]\n" % compiler_name)
     print("  OPTIONS:")
-    print("    -dbg                     Enable debug mode")
-    print("    -I           <path>      Add the path to the include search list")
-    print(
-        "    -E   <expansion-limit>   Function and use expansion limit. (Default %d)\n"
-        % DEFAULT_EXPANSION_LIMIT
-    )
+    print("    -dbg                     Enable debug mode.")
+    print("    -I           <path>      Add the path to the include search list.")
+    print("    -E   <expansion-limit>   Function and use expansion limit. (Default %d)" % DEFAULT_EXPANSION_LIMIT)
+    print("    --unsafe                 Disable type checking.\n")
     print("  SUBCOMMANDS:")
-    print("    -s           <file>      Simulate the program")
-    print("    -c [OPTIONS] <file>      Compile the program")
-    print("    -h                       Print help to STDOUT and exit 0\n")
+    print("    -s           <file>      Simulate the program.")
+    print("    -c [OPTIONS] <file>      Compile the program.")
+    print("    -h                       Print help to STDOUT and exit 0.\n")
     print("        OPTIONS:")
-    print("          -r                       Run the program after successful compilation")
-    print("          -o         <file|dir>    Customize the output path")
-    print(
-        "          --silent                 Silent mode. Hide infos about compilation phases\n"
-    )
+    print("          -r                       Run the program after successful compilation.")
+    print("          -o         <file|dir>    Customize the output path.")
+    print("          --silent                 Silent mode. Hide infos about compilation phases.\n")
 
 
 if __name__ == "__main__" and "__file__" in globals():
@@ -1507,6 +1503,7 @@ if __name__ == "__main__" and "__file__" in globals():
 
     include_paths = [".", "./std/"]
     expansion_limit = DEFAULT_EXPANSION_LIMIT
+    unsafe = False
 
     while len(argv) > 0:
         if argv[0] == "-dbg":
@@ -1528,6 +1525,10 @@ if __name__ == "__main__" and "__file__" in globals():
                 exit(1)
             arg, *argv = argv
             expansion_limit = int(arg)
+        elif argv[0] == '--unsafe':
+            argv = argv[1:]
+            unsafe = True
+
         else:
             break
 
@@ -1550,7 +1551,8 @@ if __name__ == "__main__" and "__file__" in globals():
         program_path, *argv = argv
         include_paths.append(path.dirname(program_path))
         program = compile_file_to_program(program_path, include_paths, expansion_limit);
-        type_check_program(program)
+        if not unsafe:
+            type_check_program(program)
         simulate_little_endian_linux(program, [program_path] + argv)
     elif subcommand == "-c":
         silent = False
@@ -1608,7 +1610,8 @@ if __name__ == "__main__" and "__file__" in globals():
         include_paths.append(path.dirname(program_path))
 
         program = compile_file_to_program(program_path, include_paths, expansion_limit)
-        type_check_program(program)
+        if not unsafe:
+            type_check_program(program)
         generate_nasm_linux_x86_64(program, basepath + ".asm")
         cmd_call_echoed(["nasm", "-felf64", basepath + ".asm"], silent)
         cmd_call_echoed(["ld", "-o", basepath, basepath + ".o"], silent)
