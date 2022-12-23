@@ -1,6 +1,6 @@
 -- sequence 100
-use "std.sko"
+use <std.sko>
 
 100 0 while pcp > do
     cp => 1 +
-end
+end !!

@@ -1,5 +1,5 @@
 -- name input
-use "std.sko"
+use <std.sko>
 
 fn NAME_CAPACITY 256 end
 fn name mem end

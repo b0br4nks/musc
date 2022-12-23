@@ -1,0 +1,81 @@
+:i argc 3
+:b arg0 4
+test
+:b arg1 18
+./examples/cat.sko
+:b arg2 26
+./examples/hello_world.sko
+:b stdin 0
+
+:i returncode 0
+:b stdout 923
+use <std.sko>
+
+fn BUFFER_CAP 1024 end
+
+-- memory layout
+fn fd mem end
+fn buffer fd 8 + end
+
+fn cat_fd
+  1
+  while ! BUFFER_CAP buffer fd &64 scan cp 0 > do
+     buffer stdout fmt
+  end !
+end
+
+argc 2 < if
+  fd stdin *64
+  cat_fd
+else
+  1 while cp argc < do
+    O_RDONLY over nth_argv AT_FDCWD openat
+    
+    cp 0 < if
+      "ERROR: could not open file " stderr fmt !
+      over nth_argv cp len ~ stderr fmt !
+      "\n" stderr fmt !
+      !
+    else
+      fd ~ *64
+      cat_fd
+      fd &64 close !
+    end
+  
+    1 +
+  end !
+end
+-- "Hello, World\n"
+use <std.sko>
+
+-- with str
+"Hello, World\n" stdout fmt !
+
+"\n" stdout fmt !
+
+-- with fn
+fn print fmt end
+"Hello, World\n" stdout print !
+
+"\n" stdout fmt !
+
+-- with int
+mem
+cp 72 *s 1 +
+cp 101 *s 1 +
+cp 108 *s 1 +
+cp 108 *s 1 +
+cp 111 *s 1 +
+cp 44 *s 1 +
+cp 32 *s 1 +
+cp 87 *s 1 +
+cp 111 *s 1 +
+cp 114 *s 1 +
+cp 108 *s 1 +
+cp 100 *s 1 +
+cp 10 *s 1 +
+mem - mem stdout fmt !
+
+:b stderr 32
+ERROR: could not open file test
+

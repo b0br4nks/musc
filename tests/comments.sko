@@ -1,5 +1,5 @@
 -- comments.sko
-use "std.sko"
+use <std.sko>
 
 --comment one
 
@@ -9,4 +9,4 @@ use "std.sko"
 
 -- string literal with `--` should be printed
 
-"Hello, -- World\n" stdout fmt -- this comment should be allowed
+"Hello, -- World\n" stdout fmt ! -- this comment should be allowed

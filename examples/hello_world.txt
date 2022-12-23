@@ -2,11 +2,11 @@
 :b stdin 0
 
 :i returncode 0
-:b stdout 95
+:b stdout 41
 Hello, World
-===========================
+
 Hello, World
-===========================
+
 Hello, World
 
 :b stderr 0

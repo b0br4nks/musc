@@ -1,16 +1,16 @@
 -- "Hello, World\n"
-use "std.sko"
+use <std.sko>
 
 -- with str
 "Hello, World\n" stdout fmt !
 
-"===========================\n" stdout fmt
+"\n" stdout fmt !
 
 -- with fn
 fn print fmt end
-"Hello, World\n" stdout print
+"Hello, World\n" stdout print !
 
-"===========================\n" stdout fmt
+"\n" stdout fmt !
 
 -- with int
 mem
@@ -27,4 +27,4 @@ cp 114 *s 1 +
 cp 108 *s 1 +
 cp 100 *s 1 +
 cp 10 *s 1 +
-mem - mem stdout fmt
+mem - mem stdout fmt !

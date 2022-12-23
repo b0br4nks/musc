@@ -2,10 +2,10 @@
 :b stdin 0
 
 :i returncode 0
-:b stdout 83
+:b stdout 56
 yes
 no
-===========================
+
 0
 2
 8

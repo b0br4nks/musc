@@ -1,4 +1,4 @@
-use "std.sko"
+use <std.sko>
 
 0 3 while cp 1000 < do
     cp   3 mod 0 =
