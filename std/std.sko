@@ -334,6 +334,10 @@ fn % divmod ~ ! end
 fn mod % end
 fn div / end
 
+fn nth_argv
+  8 * argv + &64 cast(ptr)
+end
+
 fn i64
   dup *64 1 + &64
 end
