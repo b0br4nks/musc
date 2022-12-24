@@ -7,9 +7,8 @@ fn fd mem end
 fn buffer fd 8 + end
 
 fn cat_fd
-  1
-  while ! BUFFER_CAP buffer fd &64 scan cp 0 > do
-     buffer stdout fmt
+  while BUFFER_CAP buffer fd &64 scan cp 0 > do
+     buffer stdout fmt !
   end !
 end
 
