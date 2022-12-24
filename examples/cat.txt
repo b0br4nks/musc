@@ -8,7 +8,7 @@ test
 :b stdin 0
 
 :i returncode 0
-:b stdout 919
+:b stdout 836
 use <std.sko>
 
 fn BUFFER_CAP 1024 end
@@ -19,7 +19,7 @@ fn buffer fd 8 + end
 
 fn cat_fd
   while BUFFER_CAP buffer fd &64 scan cp 0 > do
-     buffer stdout fmt !
+     buffer fmt
   end !
 end
 
@@ -31,9 +31,9 @@ else
     O_RDONLY over nth_argv AT_FDCWD openat
     
     cp 0 < if
-      "ERROR: could not open file " stderr fmt !
-      over nth_argv cp len ~ stderr fmt !
-      "\n" stderr fmt !
+      "ERROR: could not open file " efmt
+      over nth_argv cp len ~ efmt
+      "\n" efmt
       !
     else
       fd ~ *64
@@ -48,15 +48,15 @@ end
 use <std.sko>
 
 -- with str
-"Hello, World\n" stdout fmt !
+"Hello, World\n"fmt
 
-"\n" stdout fmt !
+"\n" fmt
 
 -- with fn
-fn print fmt end
-"Hello, World\n" stdout print !
+fn log fmt end
+"Hello, World\n" log
 
-"\n" stdout fmt !
+"\n" fmt
 
 -- with int
 mem
@@ -73,7 +73,7 @@ cp 114 *s 1 +
 cp 108 *s 1 +
 cp 100 *s 1 +
 cp 10 *s 1 +
-mem - mem stdout fmt !
+mem - mem fmt
 
 :b stderr 32
 ERROR: could not open file test

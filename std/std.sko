@@ -325,7 +325,7 @@ fn AT_FDCWD -100 end
 fn O_RDONLY 0 end
 
 -- Wrappers for common syscalls
-fn fmt SYS_write sys3 end
+fn print SYS_write sys3 end
 fn scan SYS_read sys3 end
 fn openat SYS_openat sys3 end
 fn close SYS_close sys1 end
@@ -351,4 +351,12 @@ fn len
     cp
     while cp &l 0 != do 1 + end
     ~ -
+end
+
+fn fmt
+  stdout print !
+end
+
+fn efmt
+  stderr print !
 end

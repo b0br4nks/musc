@@ -5,52 +5,52 @@ use <std.sko>
 1 2 3 => => =>
 1 => 2 => 3 =>
 
-"\n" stdout fmt !
+"\n" fmt
 
 -- push str
-"Hello, World\n" stdout fmt ! -- ascii
-"Привет, Мир\n" stdout fmt ! -- utf-8
-"Hello, \"World\"\n" stdout fmt ! -- double quotes
+"Hello, World\n" fmt -- ascii
+"Привет, Мир\n" fmt -- utf-8
+"Hello, \"World\"\n" fmt -- double quotes
 
-"\n" stdout fmt !
+"\n" fmt
 
 -- multiline str
 "Hello,
 World
-" stdout fmt !
+" fmt
 
-"\n" stdout fmt !
+"\n" fmt
 
 -- character
 'X' =>
 
-"\n" stdout fmt !
+"\n" fmt
 
 -- duplicate
 1 cp => =>
 2 cp => cp => =>
 
-"\n" stdout fmt !
+"\n" fmt
 
 -- pair duplicate
 1 2 pcp => => => =>
 
-"\n" stdout fmt !
+"\n" fmt
 
 -- swap
 1 2 ~ => =>
 
-"\n" stdout fmt !
+"\n" fmt
 
 -- drop
 1 2 ! =>
 
-"\n" stdout fmt !
+"\n" fmt
 
 -- over
 1 2 over => !!
 
-"\n" stdout fmt !
+"\n" fmt
 
 -- bigint
 9999999999999999999 =>

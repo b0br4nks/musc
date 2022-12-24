@@ -4,17 +4,17 @@ use <std.sko>
 -- left shift
 2 4 << =>
 
-"\n" stdout fmt !
+"\n" fmt
 
 -- right shift
 32 1 >> =>
 
-"\n" stdout fmt !
+"\n" fmt
 
 -- bit or
 1 2 or =>
 
-"\n" stdout fmt !
+"\n" fmt
 
 -- bit and
 1 2 & =>
