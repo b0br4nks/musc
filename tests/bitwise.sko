@@ -17,4 +17,4 @@ use <std.sko>
 "\n" fmt
 
 -- bit and
-1 2 & =>
+1 2 and =>

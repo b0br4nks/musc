@@ -1,0 +1,10 @@
+:i argc 0
+:b stdin 96
+abctest ABCTEST Bonjour, j'aimerais cacher mon mot de passe. Rot13 est assez securise ? Merci !
+
+:i returncode 0
+:b stdout 96
+nopgrfg NOPGRFG Obawbhe, w'nvzrenvf pnpure zba zbg qr cnffr. Ebg13 rfg nffrm frphevfr ? Zrepv !
+
+:b stderr 0
+
