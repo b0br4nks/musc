@@ -4,11 +4,11 @@ use <std.sko>
 fn NAME_CAPACITY 256 end
 fn name mem end
 
-"What is your name? " stdout fmt !
+"What is your name? " fmt
 
 NAME_CAPACITY name stdin scan
 cp 0 <= if
-  "[ERROR] Could not read your name...\n" stderr fmt !
+  "[ERROR] Could not read your name...\n" efmt
   1 exit
 end
 
@@ -16,6 +16,6 @@ name over + 1 - &l '\n' = if
   1 -
 end
 
-"Hello, " stdout fmt !
-name stdout fmt !
-"!\n" stdout fmt !
+"Hello, " fmt
+name fmt
+"!\n" fmt

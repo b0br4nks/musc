@@ -1,29 +1,29 @@
 -- arithmetic.sko
 use <std.sko>
 -- add
-"Addition:\n" stdout fmt !
+"Addition:\n" fmt
 1 2 + =>
 
-"\n" stdout fmt !
+"\n" fmt
 
 -- substract
-"Substraction:\n" stdout fmt !
+"Substraction:\n" fmt
 3 2 - =>
 
-"\n" stdout fmt !
+"\n" fmt
 
 -- divide
-"Division:\n" stdout fmt !
+"Division:\n" fmt
 2674 2 / =>
 
-"\n" stdout fmt !
+"\n" fmt
 
 -- modulo
-"Modulo:\n" stdout fmt !
+"Modulo:\n" fmt
 5999 3977 mod =>
 
-"\n" stdout fmt !
+"\n" fmt
 
 -- multiply
-"Multiplication:\n" stdout fmt !
+"Multiplication:\n" fmt
 3 2 * =>

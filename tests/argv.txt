@@ -8,11 +8,9 @@ arg_n
 :b stdin 13
 Hello, World
 
-:i returncode 0
-:b stdout 18
-arg_1
-arg_2
-arg_n
+:i returncode 1
+:b stdout 0
 
-:b stderr 0
+:b stderr 52
+./tests/argv.sko:5:15: ERROR: unknown word `strlen`
 

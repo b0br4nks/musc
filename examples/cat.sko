@@ -7,9 +7,8 @@ fn fd mem end
 fn buffer fd 8 + end
 
 fn cat_fd
-  1
-  while ! BUFFER_CAP buffer fd &64 scan cp 0 > do
-     buffer stdout fmt
+  while BUFFER_CAP buffer fd &64 scan cp 0 > do
+     buffer fmt
   end !
 end
 
@@ -21,9 +20,9 @@ else
     O_RDONLY over nth_argv AT_FDCWD openat
     
     cp 0 < if
-      "ERROR: could not open file " stderr fmt !
-      over nth_argv cp len ~ stderr fmt !
-      "\n" stderr fmt !
+      "ERROR: could not open file " efmt
+      over nth_argv cp len ~ efmt
+      "\n" efmt
       !
     else
       fd ~ *64

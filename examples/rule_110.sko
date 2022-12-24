@@ -21,7 +21,7 @@ out N + 10 *s
         1 +
     end !
 
-    N 1 + out stdout fmt !
+    N 1 + out fmt
 
     -- pattern
     row     &l 1 <<

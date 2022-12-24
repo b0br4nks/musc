@@ -7,13 +7,13 @@ fn is_less
         "yes\n"
     else
         "no\n"
-    end stdout fmt !
+    end fmt
 end
 
 1 2 is_less
 2 1 is_less
 
-"\n" stdout fmt !
+"\n" fmt
 
 -- even fibonacci numbers under 1,000,000
 fn even_fibs

@@ -2,11 +2,11 @@
 use <std.sko>
 
 1 while cp argc < do
-  cp nth_argv len
-  over nth_argv stdout
-  fmt !
+  cp nth_argv strlen
+  over nth_argv
+  fmt
 
-  "\n" stdout fmt !
+  "\n" fmt
 
   1 +
 end !
