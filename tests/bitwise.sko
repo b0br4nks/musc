@@ -18,3 +18,8 @@ use <std.sko>
 
 -- bit and
 1 2 and =>
+
+"\n" fmt
+
+-- not
+0 not 1 + =>

@@ -47,7 +47,7 @@ A [stack-oriented language](https://en.wikipedia.org/wiki/Stack-oriented_program
 
 <span style="color: green;">●</span> [Turing-complete](./examples/rule_110.sko) ([Turing completeness](https://en.wikipedia.org/wiki/Turing_completeness))
 
-<span style="color: red;">●</span> Statically typed ([Static type checking](https://en.wikipedia.org/wiki/Type_system#Static_type_checking))
+<span style="color: green;">●</span> Statically typed ([Static type checking](https://en.wikipedia.org/wiki/Type_system#Static_type_checking))
 
 <span style="color: red;">●</span> Self-hosted (Written in itself, no more Python. [Self-hosting](https://en.wikipedia.org/wiki/Self-hosting_(compilers)))
 
@@ -268,9 +268,8 @@ use <std.sko>
 The `fmt` function from `std.sko` module expects two values on the data stack:
 1. the size of the buffer it needs to print,
 2. the pointer to the beginning of the buffer,
-3. and the output file descriptor where it needs to print to.
 
-The size and the pointer are provided by the string `"Hello, World!"`. The file descriptor is `stdout` function from `std.sko`.
+The size and the pointer are provided by the string `"Hello, World!"`.
 
 #### Character
 
@@ -314,6 +313,11 @@ a b -- a
 - `over` - copy the element below the top of the stack.
 ```
 a b -- a b a
+```
+
+- `rot` - rotate the top three stack elements.
+```
+a b c -- b c a
 ```
 
 #### Comparison
@@ -380,6 +384,10 @@ a b -- a b a
 ```c
 [a: int] [b: int] -- [a & b: int]
 ```
+- `not` - bit `not`.
+```c
+[a: int] -- [~a: int]
+```
 
 #### Control Flow
 
@@ -431,10 +439,10 @@ end
 
 Define a new `<keyword>` that expands into a sequence of `<tokens>` during the compilation.
 
-An example with the keyword `log` and as tokens `1 1 sys3`:
+An example with the keyword `log` and as tokens `stdout SYS_write sys3`:
 ```v
 fn log
-	1 1 sys3
+	stdout SYS_write sys3
 end
 
 "Hello, World!\n" log

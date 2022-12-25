@@ -1,3 +1,7 @@
+fn NULL 0 end
+fn true 0 0 = end
+fn false 0 0 != end
+
 -- Standard streams
 fn stdin  0 end
 fn stdout 1 end
@@ -323,12 +327,16 @@ fn SYS_finit_module 313 end
 fn AT_FDCWD -100 end
 fn O_RDONLY 0 end
 
+fn CLOCK_MONOTONIC 1 end
+fn TIMER_ABSTIME 1 end
+
 -- Wrappers for common syscalls
 fn print SYS_write sys3 end
 fn scan SYS_read sys3 end
 fn openat SYS_openat sys3 end
 fn close SYS_close sys1 end
 fn exit SYS_exit sys1 ! end
+fn clock_nanosleep SYS_clock_nanosleep syscall4 end
 
 fn pcp over over end
 fn !! ! ! end
@@ -343,7 +351,7 @@ fn nth_argv
 end
 
 fn i64
-  dup *64 1 + &64
+  cp &64 1 + *64
 end
 
 fn len
