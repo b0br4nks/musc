@@ -1,3 +1,7 @@
+fn NULL 0 end
+fn true 0 0 = end
+fn false 0 0 != end
+
 -- Standard streams
 fn stdin  0 end
 fn stdout 1 end
@@ -322,6 +326,9 @@ fn SYS_finit_module 313 end
 
 fn AT_FDCWD -100 end
 fn O_RDONLY 0 end
+
+fn CLOCK_MONOTONIC 1 end
+fn TIMER_ABSTIME 1 end
 
 -- Wrappers for common syscalls
 fn print SYS_write sys3 end
