@@ -2,7 +2,7 @@
 :b stdin 0
 
 :i returncode 0
-:b stdout 132
+:b stdout 145
 3
 2
 1
@@ -38,6 +38,13 @@ World
 1
 
 9999999999999999999
+
+3
+2
+1
+1
+3
+2
 
 :b stderr 0
 

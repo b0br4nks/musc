@@ -315,6 +315,11 @@ a b -- a
 a b -- a b a
 ```
 
+- `rot` - rotate the top three stack elements.
+```
+a b c -- b c a
+```
+
 #### Comparison
 
 - `=` - checks if two elements on top of the stack are equal. Removes the elements from the stack and pushes `1` if they are equal and `0` if they are not.
