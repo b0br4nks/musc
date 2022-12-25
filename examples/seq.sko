@@ -1,0 +1,31 @@
+use <std.sko>
+
+fn limit mem end
+
+argc 2 < if
+  "Usage: seq <limit>\n" efmt
+  "ERROR: no limit is provided\n" efmt
+  1 exit
+end
+
+1 nth_argv
+while cp &l 0 != do
+  cp &l '0' < over &l '9' > or if
+    "ERROR: `" efmt
+    1 nth_argv len 1 nth_argv efmt
+    "` is not a correct integer\n" efmt
+    1 exit
+  end
+
+  limit &64 10 *
+  over &l '0' -
+  +
+  limit ~ *64
+
+  1 +
+end !
+
+0 while cp limit &64 < do
+  cp =>
+  1 +
+end !
