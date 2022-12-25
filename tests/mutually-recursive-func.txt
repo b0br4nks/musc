@@ -4,8 +4,8 @@
 :i returncode 1
 :b stdout 0
 
-:b stderr 862
-./tests/mutually-recursive-func.sko:2:5: ERROR: The function exceeded the expansion limit (it expanded 1000 times)
+:b stderr 859
+./tests/mutually-recursive-func.sko:2:5: ERROR: the macro exceeded the expansion limit (it expanded 1000 times)
 ./tests/mutually-recursive-func.sko:6:5: NOTE: expanded from `y`
 ./tests/mutually-recursive-func.sko:2:5: NOTE: expanded from `x`
 ./tests/mutually-recursive-func.sko:6:5: NOTE: expanded from `y`

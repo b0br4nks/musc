@@ -1,0 +1,26 @@
+use <std.sko>
+
+fn BUFF_CAP 1024 end
+fn buffer mem end
+
+while BUFF_CAP buffer stdin scan cp 0 > do
+  0 while pcp > do
+    cp buffer + &l
+
+    cp 'a' >= over 'z' <= and if
+      pcp 'a' - 13 + 26 mod 'a' +
+      ~ buffer + ~ *s
+    end
+
+    cp 'A' >= over 'Z' <= and if
+      pcp 'A' - 13 + 26 mod 'A' +
+      ~ buffer + ~ *s
+    end
+
+    !
+
+    1 +
+  end !
+
+  buffer fmt
+end !

@@ -54,9 +54,9 @@ A [stack-oriented language](https://en.wikipedia.org/wiki/Stack-oriented_program
 ## Examples
 "Hello, World!":
 ```v
-use "std.sko"
+use <std.sko>
 
-"Hello, World!\n" stdout fmt
+"Hello, World!\n" fmt
 ```
 
 Two simple programs:
@@ -65,19 +65,19 @@ Two simple programs:
 
 descending order
 ```v
-use "std.sko"
+use <std.sko>
 
 10 while cp -1 > do
 	cp =>
 	1 -
-end
+end !
 ```
 
 ascending order
 ```v
-use "std.sko"
+use <std.sko>
 
-0 while cp 11 < do cp => 1 + end
+0 while cp 11 < do cp => 1 + end !
 ```
 
 ## Quick Start
@@ -260,7 +260,7 @@ Thus, a single string pushes two values onto the data stack: the size and the po
 
 Example:
 ```
-use "std.sko"
+use <std.sko>
 
 "Hello, World!\n" stdout fmt
 ```
@@ -431,13 +431,13 @@ end
 
 Define a new `<keyword>` that expands into a sequence of `<tokens>` during the compilation.
 
-An example with the keyword `fmt` and as tokens `1 1 sys3`:
+An example with the keyword `log` and as tokens `1 1 sys3`:
 ```v
-fn fmt
+fn log
 	1 1 sys3
 end
 
-"Hello, World!\n" fmt
+"Hello, World!\n" log
 
 -- returns "Hello, World!"
 ```
@@ -446,7 +446,7 @@ end
 
 Include tokens of file `file.sko`
 ```v
-use "file.sko"
+use <file.sko>
 ```
 
 ## FAQ

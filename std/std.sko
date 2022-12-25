@@ -4,7 +4,6 @@ fn stdout 1 end
 fn stderr 2 end
 
 -- Syscalls
--- Stolen from https://filippo.io/linux-syscall-table/
 -- gawk '{ print "fn", "SYS_"$2, $1, "end" }' ./syscalls.in > syscalls.sko
 fn SYS_read 0 end
 fn SYS_write 1 end

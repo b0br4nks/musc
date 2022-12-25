@@ -29,9 +29,9 @@ out N + 10 *s
     or
 
     1 while cp N 2 - < do
-        ~ 1 << 7 &
+        ~ 1 << 7 and
         over row + 1 + &l or
-        pcp 110 ~ >> 1 &
+        pcp 110 ~ >> 1 and
         ~ row + ~ *s
         ~
 
