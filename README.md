@@ -380,6 +380,10 @@ a b -- a b a
 ```c
 [a: int] [b: int] -- [a & b: int]
 ```
+- `not` - bit `not`.
+```c
+[a: int] -- [~a: int]
+```
 
 #### Control Flow
 
