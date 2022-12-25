@@ -47,7 +47,7 @@ A [stack-oriented language](https://en.wikipedia.org/wiki/Stack-oriented_program
 
 <span style="color: green;">●</span> [Turing-complete](./examples/rule_110.sko) ([Turing completeness](https://en.wikipedia.org/wiki/Turing_completeness))
 
-<span style="color: red;">●</span> Statically typed ([Static type checking](https://en.wikipedia.org/wiki/Type_system#Static_type_checking))
+<span style="color: green;">●</span> Statically typed ([Static type checking](https://en.wikipedia.org/wiki/Type_system#Static_type_checking))
 
 <span style="color: red;">●</span> Self-hosted (Written in itself, no more Python. [Self-hosting](https://en.wikipedia.org/wiki/Self-hosting_(compilers)))
 
