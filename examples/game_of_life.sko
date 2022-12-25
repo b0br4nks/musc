@@ -1,0 +1,122 @@
+use <std.sko>
+
+-- constants
+fn N 10 end
+fn ROWS 10 end
+fn COLS 20 end
+fn BOARD_SIZE ROWS COLS * end
+
+-- memory layout
+fn board_current_index mem end
+fn nbors board_current_index 8 + end
+fn value nbors 8 + end
+fn board_base value 8 + end
+fn display BOARD_SIZE 2 * board_base + end
+
+fn board_current
+  board_base board_current_index &64 BOARD_SIZE * +
+end
+
+fn board_next
+  board_base 1 board_current_index &64 - BOARD_SIZE * +
+end
+
+fn sw_boards
+  board_current_index 1 board_current_index &64 - *64
+end
+
+fn display_row
+  0 while cp COLS < do
+    pcp + &l 0 = if
+      display over + '.' *s
+    else
+      display over + '*' *s
+    end
+    1 +
+  end !
+  COLS display + '\n' *s
+  COLS 1 + display fmt
+  !
+end
+
+fn display_board
+  0 while cp ROWS < do
+    pcp COLS * + display_row
+    1 +
+  end !
+  !
+end
+
+fn display_current_board
+  board_current display_board
+end
+
+fn get_current_cell
+  ~ COLS * + board_current + &l
+end
+
+fn set_next_cell
+  value ~ *64
+  ~ COLS * + board_next +
+  value &64
+  *s
+end
+
+fn count_current_nbors
+  nbors 0 *64
+  pcp 1 - ~ 1 - COLS * + board_current + &l 1 = if nbors i64 end
+  pcp 1 - ~     COLS * + board_current + &l 1 = if nbors i64 end
+  pcp 1 - ~ 1 + COLS * + board_current + &l 1 = if nbors i64 end
+  pcp     ~ 1 - COLS * + board_current + &l 1 = if nbors i64 end
+  pcp     ~ 1 + COLS * + board_current + &l 1 = if nbors i64 end
+  pcp 1 + ~ 1 - COLS * + board_current + &l 1 = if nbors i64 end
+  pcp 1 + ~     COLS * + board_current + &l 1 = if nbors i64 end
+  pcp 1 + ~ 1 + COLS * + board_current + &l 1 = if nbors i64 end
+  !!
+  nbors &64
+end
+
+fn put_glider
+   cp 0 COLS * 1 + + 1 *s
+   cp 1 COLS * 2 + + 1 *s
+   cp 2 COLS * 0 + + 1 *s
+   cp 2 COLS * 1 + + 1 *s
+   cp 2 COLS * 2 + + 1 *s
+   !
+end
+
+fn main
+  board_current put_glider
+  
+  0 while cp N < do
+    display_current_board
+    "______________________________\n" fmt
+  
+    0 while cp ROWS < do
+      0 while cp COLS < do
+        pcp get_current_cell 1 = if
+          pcp count_current_nbors
+          cp 2 = ~ 3 = or if
+            pcp 1 set_next_cell
+          else
+            pcp 0 set_next_cell
+          end
+        else
+          pcp count_current_nbors 3 = if
+            pcp 1 set_next_cell
+          else
+            pcp 0 set_next_cell
+          end
+        end
+      
+        1 +
+      end !
+      1 +
+    end !
+  
+    sw_boards
+    1 +
+  end !
+end
+
+main

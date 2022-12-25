@@ -343,7 +343,7 @@ fn nth_argv
 end
 
 fn i64
-  dup *64 1 + &64
+  cp &64 1 + *64
 end
 
 fn len
