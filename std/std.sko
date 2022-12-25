@@ -336,6 +336,7 @@ fn scan SYS_read sys3 end
 fn openat SYS_openat sys3 end
 fn close SYS_close sys1 end
 fn exit SYS_exit sys1 ! end
+fn clock_nanosleep SYS_clock_nanosleep syscall4 end
 
 fn pcp over over end
 fn !! ! ! end
