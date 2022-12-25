@@ -62,6 +62,7 @@ class Intrinsic(Enum):
     CAST_PTR=auto()
     ARGC=auto()
     ARGV=auto()
+    HERE=auto()
     SYSCALL0=auto()
     SYSCALL1=auto()
     SYSCALL2=auto()
@@ -193,7 +194,7 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
                 else:
                     ip += 1
             elif op.typ == OpType.INTRINSIC:
-                assert len(Intrinsic) == 35, "Exhaustive handling of intrinsic in simulate_little_endian_linux()"
+                assert len(Intrinsic) == 36, "Exhaustive handling of intrinsic in simulate_little_endian_linux()"
                 if op.operand == Intrinsic.PLUS:
                     a = stack.pop()
                     b = stack.pop()
@@ -329,6 +330,18 @@ def simulate_little_endian_linux(program: Program, argv: List[str]):
                 elif op.operand == Intrinsic.ARGV:
                     stack.append(argv_buf_ptr)
                     ip += 1
+                elif op.operand == Intrinsic.HERE:
+                    value = ("%s:%d:%d" % op.token.loc).encode('utf-8')
+                    n = len(value)
+                    stack.append(n)
+                    if ip not in str_ptrs:
+                        str_ptr = str_buf_ptr+str_size
+                        str_ptrs[ip] = str_ptr
+                        mem[str_ptr:str_ptr+n] = value
+                        str_size += n
+                        assert str_size <= SIM_STR_CAPACITY, "String buffer overflow"
+                    stack.append(str_ptrs[ip])
+                    ip += 1
                 elif op.operand == Intrinsic.CAST_PTR:
                     ip += 1
                 elif op.operand == Intrinsic.SYSCALL0:
@@ -458,7 +471,7 @@ def type_check_program(program: Program):
             stack.append((DataType.INT, op.token))
             stack.append((DataType.PTR, op.token))
         elif op.typ == OpType.INTRINSIC:
-            assert len(Intrinsic) == 35, "Exhaustive intrinsic handling in type_check_program()"
+            assert len(Intrinsic) == 36, "Exhaustive intrinsic handling in type_check_program()"
             assert isinstance(op.operand, Intrinsic), "This could be a bug in compilation step"
             if op.operand == Intrinsic.PLUS:
                 assert len(DataType) == 3, "Exhaustive type handling in PLUS intrinsic"
@@ -776,6 +789,9 @@ def type_check_program(program: Program):
                 stack.append((DataType.INT, op.token))
             elif op.operand == Intrinsic.ARGV:
                 stack.append((DataType.PTR, op.token))
+            elif op.operand == Intrinsic.HERE:
+                stack.append((DataType.INT, op.token))
+                stack.append((DataType.PTR, op.token))
             elif op.operand == Intrinsic.SYSCALL0:
                 if len(stack) < 1:
                     not_enough_arguments(op)
@@ -976,7 +992,7 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str):
                 assert isinstance(op.operand, int), "This could be a bug in the compilation step"
                 out.write("    jz addr_%d\n" % op.operand)
             elif op.typ == OpType.INTRINSIC:
-                assert len(Intrinsic) == 35, "Exhaustive intrinsic handling in generate_nasm_linux_x86_64()"
+                assert len(Intrinsic) == 36, "Exhaustive intrinsic handling in generate_nasm_linux_x86_64()"
                 if op.operand == Intrinsic.PLUS:
                     out.write("    ;; -- plus --\n")
                     out.write("    pop rax\n")
@@ -1135,6 +1151,14 @@ def generate_nasm_linux_x86_64(program: Program, out_file_path: str):
                     out.write("    mov rax, [args_ptr]\n")
                     out.write("    add rax, 8\n")
                     out.write("    push rax\n")
+                elif op.operand == Intrinsic.HERE:
+                    value = ("%s:%d:%d" % op.token.loc).encode('utf-8')
+                    n = len(value)
+                    out.write("    ;; -- here --\n")
+                    out.write("    mov rax, %d\n" % n)
+                    out.write("    push rax\n")
+                    out.write("    push str_%d\n" % len(strs))
+                    strs.append(value)
                 elif op.operand == Intrinsic.LOAD64:
                     out.write("    ;; -- load64 --\n")
                     out.write("    pop rax\n")
@@ -1231,7 +1255,7 @@ KEYWORD_NAMES = {
     "use": Keyword.USE,
 }
 
-assert len(Intrinsic) == 35, "Exhaustive INTRINSIC_BY_NAMES definition"
+assert len(Intrinsic) == 36, "Exhaustive INTRINSIC_BY_NAMES definition"
 INTRINSIC_BY_NAMES = {
     "+": Intrinsic.PLUS,
     "-": Intrinsic.MINUS,
@@ -1261,6 +1285,7 @@ INTRINSIC_BY_NAMES = {
     "cast(ptr)": Intrinsic.CAST_PTR,
     "argc": Intrinsic.ARGC,
     "argv": Intrinsic.ARGV,
+    'here': Intrinsic.HERE,
     "sys0": Intrinsic.SYSCALL0,
     "sys1": Intrinsic.SYSCALL1,
     "sys2": Intrinsic.SYSCALL2,
