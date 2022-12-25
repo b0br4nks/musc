@@ -268,9 +268,8 @@ use <std.sko>
 The `fmt` function from `std.sko` module expects two values on the data stack:
 1. the size of the buffer it needs to print,
 2. the pointer to the beginning of the buffer,
-3. and the output file descriptor where it needs to print to.
 
-The size and the pointer are provided by the string `"Hello, World!"`. The file descriptor is `stdout` function from `std.sko`.
+The size and the pointer are provided by the string `"Hello, World!"`.
 
 #### Character
 
@@ -435,10 +434,10 @@ end
 
 Define a new `<keyword>` that expands into a sequence of `<tokens>` during the compilation.
 
-An example with the keyword `log` and as tokens `1 1 sys3`:
+An example with the keyword `log` and as tokens `stdout SYS_write sys3`:
 ```v
 fn log
-	1 1 sys3
+	stdout SYS_write sys3
 end
 
 "Hello, World!\n" log
