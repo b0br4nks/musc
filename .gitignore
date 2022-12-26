@@ -1,6 +1,4 @@
-output*
+output
 __pycache__/
-.sko_
-clean.py
-x.py
-k.sko
+*.asm
+*.o
