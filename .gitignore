@@ -2,3 +2,5 @@ output
 __pycache__/
 *.asm
 *.o
+x.py
+k.sko

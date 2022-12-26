@@ -16,7 +16,7 @@ fn board_base value 8 + end
 fn display BOARD_SIZE 2 * board_base + end
 
 fn putd
-  cp 0 = if
+  if cp 0 = do
     "0" fmt
   else
     putd_buffer PUTD_BUFFER_CAP +
@@ -46,7 +46,7 @@ end
 
 fn display_row
   0 while cp COLS < do
-    pcp + &l 0 = if
+    if pcp + &l 0 = do
       display over + '.' *s
     else
       display over + '#' *s
@@ -91,37 +91,37 @@ end
 fn count_current_nbors
   nbors 0 *64
 
-  pcp 1 - ~ 1 - ~ pcp in_bounds
-  rot rot ~ COLS * + board_current + &l 1 =
-  and if nbors i64 end
+  if pcp 1 - ~ 1 - ~ pcp in_bounds
+    rot rot ~ COLS * + board_current + &l 1 =
+    and do nbors i64 end
 
-  pcp 1 - pcp in_bounds
-  rot rot ~ COLS * + board_current + &l 1 =
-  and if nbors i64 end
+  if pcp 1 - pcp in_bounds
+    rot rot ~ COLS * + board_current + &l 1 =
+    and do nbors i64 end
 
-  pcp 1 - ~ 1 + ~ pcp in_bounds
-  rot rot ~ COLS * + board_current + &l 1 =
-  and if nbors i64 end
+  if pcp 1 - ~ 1 + ~ pcp in_bounds
+    rot rot ~ COLS * + board_current + &l 1 =
+    and do nbors i64 end
 
-  pcp ~ 1 - ~ pcp in_bounds
-  rot rot ~ COLS * + board_current + &l 1 =
-  and if nbors i64 end
+  if pcp ~ 1 - ~ pcp in_bounds
+    rot rot ~ COLS * + board_current + &l 1 =
+    and do nbors i64 end
 
-  pcp ~ 1 + ~ pcp in_bounds
-  rot rot ~ COLS * + board_current + &l 1 =
-  and if nbors i64 end
+  if pcp ~ 1 + ~ pcp in_bounds
+    rot rot ~ COLS * + board_current + &l 1 =
+    and do nbors i64 end
 
-  pcp 1 + ~ 1 - ~ pcp in_bounds
-  rot rot ~ COLS * + board_current + &l 1 =
-  and if nbors i64 end
+  if pcp 1 + ~ 1 - ~ pcp in_bounds
+    rot rot ~ COLS * + board_current + &l 1 =
+    and do nbors i64 end
 
-  pcp 1 + pcp in_bounds
-  rot rot ~ COLS * + board_current + &l 1 =
-  and if nbors i64 end
+  if pcp 1 + pcp in_bounds
+    rot rot ~ COLS * + board_current + &l 1 =
+    and do nbors i64 end
 
-  pcp 1 + ~ 1 + ~ pcp in_bounds
-  rot rot ~ COLS * + board_current + &l 1 =
-  and if nbors i64 end
+  if pcp 1 + ~ 1 + ~ pcp in_bounds
+    rot rot ~ COLS * + board_current + &l 1 =
+    and do nbors i64 end
 
   !!
   nbors &64
@@ -130,15 +130,15 @@ end
 fn compute_next_board
   0 while cp ROWS < do
     0 while cp COLS < do
-      pcp get_current_cell 1 = if
+      if pcp get_current_cell 1 = do
         pcp count_current_nbors
-        cp 2 = ~ 3 = or if
+        if cp 2 = ~ 3 = or do
           pcp 1 set_next_cell
         else
           pcp 0 set_next_cell
         end
       else
-        pcp count_current_nbors 3 = if
+        if pcp count_current_nbors 3 = do
           pcp 1 set_next_cell
         else
           pcp 0 set_next_cell
