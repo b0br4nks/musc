@@ -379,11 +379,14 @@ fn streq
   and
 end
 
+fn sfmt
+  print !
+end
 
 fn fmt
-  stdout print !
+  stdout sfmt
 end
 
 fn efmt
-  stderr print !
+  stderr sfmt
 end

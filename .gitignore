@@ -1,5 +1,4 @@
 *.o
-*.asm
 output
 __pycache__/
 skorpio

@@ -189,6 +189,7 @@ fn usage
   "  SUBCOMMANDS:\n" efmt
   "    -s              Simulate the program.\n" efmt
   "    -c              Compile the program\n" efmt
+  "    -h              Print this help to stderr and exit with 0 code\n" efmt
 end
 
 
@@ -206,11 +207,14 @@ fn main
     simulate-ops
   else cp "-c\0" ~ ! streq if
     compile-ops
+  else cp "-h\0" ~ ! streq if
+    usage
+    0 exit
   else
     usage
     "ERROR: unknown subcommand `" efmt cp cp len ~ efmt "`\n" efmt
     1 exit
-  end end
+  end end end
   !
 end
 
