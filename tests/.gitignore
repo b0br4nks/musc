@@ -1,3 +1,5 @@
+*.asm
+*.o
 arithmetic
 bitwise
 comparison

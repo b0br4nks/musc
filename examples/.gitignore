@@ -1,3 +1,5 @@
+*.asm
+*.o
 hello_world
 rule_110
 name
