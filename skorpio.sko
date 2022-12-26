@@ -41,7 +41,7 @@ fn putd
     while over 0 > do
       1 - cp rot
       10 divmod
-      rot ~ '0' + . ~
+      rot ~ '0' + *s ~
     end
 
     cp
@@ -184,6 +184,34 @@ fn program_123
   OP_PRINT    0 push-op
 end
 
-program_8
+fn usage
+  "Usage: skorpio <SUBCOMMAND>\n" efmt
+  "  SUBCOMMANDS:\n" efmt
+  "    -s              Simulate the program.\n" efmt
+  "    -c              Compile the program\n" efmt
+end
 
-simulate-ops
+
+fn main
+  argc 2 < if
+    usage
+    "ERROR: subcommand is not provided\n" efmt
+    1 exit
+  end
+
+  program_123
+
+  1 nth_argv
+  cp "-s\0" ~ ! streq if
+    simulate-ops
+  else cp "com\0" ~ ! streq if
+    compile-ops
+  else
+    usage
+    "ERROR: unknown subcommand\n" efmt
+    1 exit
+  end end
+  !
+end
+
+main

@@ -364,6 +364,22 @@ fn len
     ~ -
 end
 
+fn streq
+  while
+    over &l 0 != over &l 0 != and if
+       over &l over &l =
+    else
+       false
+    end
+  do
+    1 + ~ 1 +
+  end
+  &l 0 =
+  ~ &l 0 =
+  and
+end
+
+
 fn fmt
   stdout print !
 end
