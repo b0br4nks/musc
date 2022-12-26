@@ -204,11 +204,11 @@ fn main
   1 nth_argv
   cp "-s\0" ~ ! streq if
     simulate-ops
-  else cp "com\0" ~ ! streq if
+  else cp "-c\0" ~ ! streq if
     compile-ops
   else
     usage
-    "ERROR: unknown subcommand\n" efmt
+    "ERROR: unknown subcommand `" efmt cp cp len ~ efmt "`\n" efmt
     1 exit
   end end
   !
