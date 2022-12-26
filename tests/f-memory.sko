@@ -1,0 +1,18 @@
+use <std.sko>
+
+-- write "abc" into the memory
+97 mem 0 + :k
+98 mem 1 + :k
+99 mem 2 + :k
+10 mem 3 + :k
+
+4 mem fmt
+
+mem 0 + cp *k 1 + ~ :k
+mem 1 + cp *k 1 + ~ :k
+mem 2 + cp *k 1 + ~ :k
+
+4 mem fmt
+
+18446744073709551615 mem :K
+mem *K =>

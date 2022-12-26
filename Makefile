@@ -1,6 +1,6 @@
 MAKEFLAGS+=--silent
 
-default: update test clean
+default: update test
 
 update:
 	./test.py update output ./euler/ && ./test.py update output ./examples/ && ./test.py update output ./tests/

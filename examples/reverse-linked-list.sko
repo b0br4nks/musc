@@ -19,12 +19,12 @@ end
 
 fn push_node
   over alloc_node pcp ~ &64 *node/prev *64
-  ~ &64 cast(ptr) ~ *node/value
+  ~ &64 ::ptr ~ *node/value
 end
 
 fn pop_node
-  cp &64 cast(ptr) &node/value ~
-  cp &64 cast(ptr) &node/prev *64
+  cp &64 ::ptr &node/value ~
+  cp &64 ::ptr &node/prev *64
 end
 
 -- initialize list_a

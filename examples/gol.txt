@@ -1,0 +1,13 @@
+:i argc 0
+:b stdin 0
+
+:i returncode 1
+:b stdout 0
+
+:b stderr 317
+./examples/gol.sko:49:21: ERROR: `else` can only be used in `if`-blocks
+./examples/gol.sko:63:18: NOTE: expanded from `display_row`
+./examples/gol.sko:70:17: NOTE: expanded from `display_board`
+./examples/gol.sko:169:5: NOTE: expanded from `display_current_board`
+./examples/gol.sko:179:1: NOTE: expanded from `main`
+
