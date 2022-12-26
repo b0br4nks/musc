@@ -1,4 +1,7 @@
+*.o
+*.asm
 output
 __pycache__/
+skorpio
 x.py
 k.sko

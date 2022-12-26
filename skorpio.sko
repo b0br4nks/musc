@@ -1,0 +1,189 @@
+use <std.sko>
+
+fn PUTD_BUFFER_CAP 32 end
+fn MEM_CAPACITY 640000 end
+fn SIM_STACK_CAP 1024 end
+
+fn OP_PUSH_INT 0 end
+fn OP_PLUS     1 end
+fn OP_PRINT    2 end
+
+fn sizeof(Op) 16 end
+
+-- Memory Layout
+fn putd-buffer mem end
+fn sim-stack-count putd-buffer PUTD_BUFFER_CAP + end
+fn sim-stack sim-stack-count 8 + end
+fn ops-count sim-stack SIM_STACK_CAP 8 * + end
+fn ops ops-count 8 + end
+
+fn sim-stack-push
+  sim-stack-count *K SIM_STACK_CAP >= if
+    here efmt ": ERROR: data stack overflow in simulation mode" efmt 1 exit
+  end
+  sim-stack sim-stack-count *K 8 * + :K
+  sim-stack-count i64
+end
+
+fn sim-stack-pop
+  sim-stack-count *K 0 = if
+    here efmt ": ERROR: data stack underflow in simulation mode" efmt 1 exit
+  end
+  sim-stack-count d64
+  sim-stack sim-stack-count *K 8 * + *K
+end
+
+fn putd
+  cp 0 = if
+    "0" fmt
+  else
+    putd-buffer PUTD_BUFFER_CAP +
+    while over 0 > do
+      1 - cp rot
+      10 divmod
+      rot ~ '0' + . ~
+    end
+
+    cp
+    putd-buffer PUTD_BUFFER_CAP + ~ - ~ fmt
+  end
+  !
+end
+
+fn push-op
+  ops-count *K sizeof(Op) * ops +
+  cp 8 + rot ~ :K
+  :K
+  ops-count i64
+end
+
+fn dump-ops
+  0 while cp ops-count *K < do
+    -- ptr ptr
+    cp sizeof(Op) * ops +
+    "Type:    " fmt cp     *K =>
+    "Operand: " fmt 8 + *K =>
+    "----------\n" fmt
+    1 +
+  end
+  !
+end
+
+fn compile-ops
+  "BITS 64\n" fmt
+  "segment .text\n" fmt
+  "print:\n" fmt
+  "    mov     r9, -3689348814741910323\n" fmt
+  "    sub     rsp, 40\n" fmt
+  "    mov     BYTE [rsp+31], 10\n" fmt
+  "    lea     rcx, [rsp+30]\n" fmt
+  ".L2:\n" fmt
+  "    mov     rax, rdi\n" fmt
+  "    lea     r8, [rsp+32]\n" fmt
+  "    mul     r9\n" fmt
+  "    mov     rax, rdi\n" fmt
+  "    sub     r8, rcx\n" fmt
+  "    shr     rdx, 3\n" fmt
+  "    lea     rsi, [rdx+rdx*4]\n" fmt
+  "    add     rsi, rsi\n" fmt
+  "    sub     rax, rsi\n" fmt
+  "    add     eax, 48\n" fmt
+  "    mov     BYTE [rcx], al\n" fmt
+  "    mov     rax, rdi\n" fmt
+  "    mov     rdi, rdx\n" fmt
+  "    mov     rdx, rcx\n" fmt
+  "    sub     rcx, 1\n" fmt
+  "    cmp     rax, 9\n" fmt
+  "    ja      .L2\n" fmt
+  "    lea     rax, [rsp+32]\n" fmt
+  "    mov     edi, 1\n" fmt
+  "    sub     rdx, rax\n" fmt
+  "    xor     eax, eax\n" fmt
+  "    lea     rsi, [rsp+32+rdx]\n" fmt
+  "    mov     rdx, r8\n" fmt
+  "    mov     rax, 1\n" fmt
+  "    syscall\n" fmt
+  "    add     rsp, 40\n" fmt
+  "    ret\n" fmt
+  "global _start\n" fmt
+  "_start:\n" fmt
+  "    mov [args_ptr], rsp\n" fmt
+
+  0 while cp ops-count *K < do
+    cp sizeof(Op) * ops +
+
+    cp *K OP_PUSH_INT = if
+       "    ;; -- push int " fmt cp 8 + *K putd " --\n" fmt
+       "    mov rax, " fmt cp 8 + *K putd "\n" fmt
+       "    push rax\n" fmt
+    else cp *K OP_PLUS = if
+       "    ;; -- plus --\n" fmt
+       "    pop rax\n" fmt
+       "    pop rbx\n" fmt
+       "    add rax, rbx\n" fmt
+       "    push rax\n" fmt
+    else cp *K OP_PRINT = if
+       "    ;; -- print --\n" fmt
+       "    pop rdi\n" fmt
+       "    call print\n" fmt
+    else
+       here efmt ": unreachable\n" efmt 1 exit
+    end end end -- TODO: introduce a better construction to avoid this madness
+
+    !
+
+    1 +
+  end
+  !
+
+  "    mov rax, 60\n" fmt
+  "    mov rdi, 0\n" fmt
+  "    syscall\n" fmt
+  "segment .bss\n" fmt
+  "args_ptr: resq 1\n" fmt
+  "mem: resb " fmt MEM_CAPACITY putd "\n" fmt
+end  
+
+fn simulate-ops
+  0 while cp ops-count *K < do
+    cp sizeof(Op) * ops +
+
+    cp *K OP_PUSH_INT = if
+       cp 8 + *K sim-stack-push
+    else cp *K OP_PLUS = if
+       sim-stack-pop
+       sim-stack-pop
+       +
+       sim-stack-push
+    else cp *K OP_PRINT = if
+       sim-stack-pop =>
+    else
+       here efmt ": unreachable\n" efmt 1 exit
+    end end end -- TODO: introduce a better construction to avoid this madness
+
+    !
+
+    1 +
+  end
+  !
+end  
+
+fn program_8
+  OP_PUSH_INT 4 push-op
+  OP_PUSH_INT 4 push-op
+  OP_PLUS     0  push-op
+  OP_PRINT    0  push-op
+end
+
+fn program_123
+  OP_PUSH_INT 1 push-op
+  OP_PRINT    0 push-op
+  OP_PUSH_INT 2 push-op
+  OP_PRINT    0 push-op
+  OP_PUSH_INT 3 push-op
+  OP_PRINT    0 push-op
+end
+
+program_8
+
+simulate-ops
