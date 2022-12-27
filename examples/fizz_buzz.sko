@@ -1,0 +1,14 @@
+use <std.sko>
+
+1 while cp 100 < do
+  cp 15 mod 0 = if
+    "FizzBuzz\n" fmt
+  else cp 3 mod 0 = if
+    "Fizz\n" fmt
+  else cp 5 mod 0 = if
+    "Buzz\n" fmt
+  else 
+    cp =>
+  end end end
+  1 +
+end !
