@@ -1,14 +1,16 @@
 use <std.sko>
 
-fn PUTD_BUFFER_CAP 32 end
+fn PUTD_BUFFER_CAP 32  end
 fn MEM_CAPACITY 640000 end
-fn SIM_STACK_CAP 1024 end
+fn SIM_STACK_CAP 1024  end
 
-fn OP_PUSH_INT 0 end
-fn OP_PLUS     1 end
-fn OP_PRINT    2 end
+fn OP_PUSH_INT 0  end
+fn OP_PLUS     1  end
+fn OP_PRINT    2  end
 
-fn sizeof(Op) 16 end
+fn Op.type    ()  end
+fn Op.operand 8 + end
+fn sizeof(Op) 16  end
 
 -- Memory Layout
 fn putd-buffer mem end
@@ -17,7 +19,7 @@ fn sim-stack sim-stack-count 8 + end
 fn ops-count sim-stack SIM_STACK_CAP 8 * + end
 fn ops ops-count 8 + end
 
-fn sim-stack-push
+fn sim-stack-push -- u64
   sim-stack-count *K SIM_STACK_CAP >= if
     here efmt ": ERROR: data stack overflow in simulation mode" efmt 1 exit
   end
@@ -25,7 +27,7 @@ fn sim-stack-push
   sim-stack-count i64
 end
 
-fn sim-stack-pop
+fn sim-stack-pop -- u64
   sim-stack-count *K 0 = if
     here efmt ": ERROR: data stack underflow in simulation mode" efmt 1 exit
   end
@@ -33,7 +35,7 @@ fn sim-stack-pop
   sim-stack sim-stack-count *K 8 * + *K
 end
 
-fn putd
+fn putd -- u64
   cp 0 = if
     "0" fmt
   else
@@ -50,10 +52,10 @@ fn putd
   !
 end
 
-fn push-op
+fn push-op -- type operand
   ops-count *K sizeof(Op) * ops +
-  cp 8 + rot ~ :K
-  :K
+  cp Op.operand rot ~ :K
+  Op.type :K
   ops-count i64
 end
 
@@ -61,8 +63,8 @@ fn dump-ops
   0 while cp ops-count *K < do
     -- ptr ptr
     cp sizeof(Op) * ops +
-    "Type:    " fmt cp     *K =>
-    "Operand: " fmt 8 + *K =>
+    "Type:    " fmt cp Op.type *K =>
+    "Operand: " fmt Op.operand *K =>
     "----------\n" fmt
     1 +
   end
@@ -112,23 +114,23 @@ fn compile-ops
   0 while cp ops-count *K < do
     cp sizeof(Op) * ops +
 
-    cp *K OP_PUSH_INT = if
-       "    ;; -- push int " fmt cp 8 + *K putd " --\n" fmt
-       "    mov rax, " fmt cp 8 + *K putd "\n" fmt
-       "    push rax\n" fmt
-    else cp *K OP_PLUS = if
+    cp Op.type *K OP_PUSH_INT = if
+       "    ;; -- push int " fmt cp Op.operand *K putd " --\n" fmt
+       "    mov rax, "       fmt cp Op.operand *K putd "\n" fmt
+       "    push rax\n"      fmt
+    else Op.type cp *K OP_PLUS = if
        "    ;; -- plus --\n" fmt
        "    pop rax\n" fmt
        "    pop rbx\n" fmt
        "    add rax, rbx\n" fmt
        "    push rax\n" fmt
-    else cp *K OP_PRINT = if
+    else cp Op.type *K OP_PRINT = if
        "    ;; -- print --\n" fmt
        "    pop rdi\n" fmt
        "    call print\n" fmt
     else
        here efmt ": unreachable\n" efmt 1 exit
-    end end end -- TODO: introduce a better construction to avoid this madness
+    end end end
 
     !
 
@@ -148,18 +150,18 @@ fn simulate-ops
   0 while cp ops-count *K < do
     cp sizeof(Op) * ops +
 
-    cp *K OP_PUSH_INT = if
-       cp 8 + *K sim-stack-push
-    else cp *K OP_PLUS = if
+    cp Op.type *K OP_PUSH_INT = if
+       cp Op.operand *K sim-stack-push
+    else cp Op.type *K OP_PLUS = if
        sim-stack-pop
        sim-stack-pop
        +
        sim-stack-push
-    else cp *K OP_PRINT = if
+    else cp Op.type *K OP_PRINT = if
        sim-stack-pop =>
     else
        here efmt ": unreachable\n" efmt 1 exit
-    end end end -- TODO: introduce a better construction to avoid this madness
+    end end end
 
     !
 
@@ -171,8 +173,8 @@ end
 fn program_8
   OP_PUSH_INT 4 push-op
   OP_PUSH_INT 4 push-op
-  OP_PLUS     0  push-op
-  OP_PRINT    0  push-op
+  OP_PLUS     0 push-op
+  OP_PRINT    0 push-op
 end
 
 fn program_123
@@ -189,6 +191,7 @@ fn usage
   "  SUBCOMMANDS:\n" efmt
   "    -s              Simulate the program.\n" efmt
   "    -c              Compile the program\n" efmt
+  "    -d              Dump the ops of the program\n" efmt
   "    -h              Print this help to stderr and exit with 0 code\n" efmt
 end
 
@@ -210,11 +213,13 @@ fn main
   else cp "-h\0" ~ ! streq if
     usage
     0 exit
+  else cp "-d\0" ~ ! streq if
+    dump-ops
   else
     usage
     "ERROR: unknown subcommand `" efmt cp cp len ~ efmt "`\n" efmt
     1 exit
-  end end end
+  end end end end
   !
 end
 

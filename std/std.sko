@@ -1,4 +1,5 @@
 fn NULL 0 end
+fn () end
 fn true 0 0 = end
 fn false 0 0 != end
 
