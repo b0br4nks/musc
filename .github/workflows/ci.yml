@@ -34,7 +34,7 @@ jobs:
         run: |
           mypy ./skorpio.py
           mypy ./test.py
-          ./pypy3.7-v7.3.5-linux64/bin/pypy3 ./test.py run ./skorpio.sko
+          ./pypy3.7-v7.3.5-linux64/bin/pypy3 ./skorpio.py -c ./skorpio.sko
           ./pypy3.7-v7.3.5-linux64/bin/pypy3 ./test.py run ./tests/
           ./pypy3.7-v7.3.5-linux64/bin/pypy3 ./test.py run ./examples/
           ./pypy3.7-v7.3.5-linux64/bin/pypy3 ./test.py run ./euler/

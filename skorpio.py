@@ -1726,19 +1726,19 @@ def cmd_call_echoed(cmd: List[str], silent: bool=False) -> int:
 
 def usage(compiler_name: str):
     print("Usage: %s [OPTIONS] <SUBCOMMAND> [ARGS]\n" % compiler_name)
+    print("OPTIONS:")
+    print("  -dbg                     Enable debug mode.")
+    print("  -I           <path>      Add the path to the include search list.")
+    print("  -E   <expansion-limit>   Function and use expansion limit. (Default %d)" % DEFAULT_EXPANSION_LIMIT)
+    print("  --unsafe                 Disable type checking.\n")
+    print("SUBCOMMANDS:")
+    print("  -s           <file>      Simulate the program.")
+    print("  -c [OPTIONS] <file>      Compile the program.")
+    print("  -h                       Print help to STDOUT and exit 0.\n")
     print("  OPTIONS:")
-    print("    -dbg                     Enable debug mode.")
-    print("    -I           <path>      Add the path to the include search list.")
-    print("    -E   <expansion-limit>   Function and use expansion limit. (Default %d)" % DEFAULT_EXPANSION_LIMIT)
-    print("    --unsafe                 Disable type checking.\n")
-    print("  SUBCOMMANDS:")
-    print("    -s           <file>      Simulate the program.")
-    print("    -c [OPTIONS] <file>      Compile the program.")
-    print("    -h                       Print help to STDOUT and exit 0.\n")
-    print("        OPTIONS:")
-    print("          -r                       Run the program after successful compilation.")
-    print("          -o         <file|dir>    Customize the output path.")
-    print("          --silent                 Silent mode. Hide infos about compilation phases.\n")
+    print("    -r                       Run the program after successful compilation.")
+    print("    -o         <file|dir>    Customize the output path.")
+    print("    --silent                 Silent mode. Hide infos about compilation phases.\n")
 
 
 if __name__ == "__main__" and "__file__" in globals():
